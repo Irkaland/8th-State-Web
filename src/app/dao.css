@@ -1,0 +1,2358 @@
+/* ============================================================
+   8th State Production - "One Continuous Take" (Digital Art Object
+   Direction 01). Implements the approved .dc.html handoff.
+
+   Brand hexes are FIXED per handoff sheet 2j - no derived colours.
+   Fonts: Adevas (display) · Optika (UI/body) · Glacier (numerals,
+   chapter titles) · ALK Sanet (KA companions).
+   ============================================================ */
+
+:root {
+  --dao-red: #d03e26;
+  --dao-blue: #2374b3;
+  --dao-green: #126149;
+  --dao-mint: #7ad4c9;
+  --dao-yellow: #fff9ab;
+  --dao-orange: #e16912;
+  --dao-gold: #f0ab11;
+  --dao-brown: #6c3e13;
+  --dao-ink: #131210;
+  --dao-paper: #f2ede3;
+
+  --dao-f-display: var(--f-adevas), var(--f-sanet), serif;
+  --dao-f-ui: var(--f-optika), var(--f-georgian), sans-serif;
+  --dao-f-numeral: var(--f-glacier), sans-serif;
+  --dao-f-ka: var(--f-sanet), var(--f-georgian), sans-serif;
+
+  /* Act gutters: 32px desktop · 24px @900 · 18px @390 (handoff 2a/2b) */
+  --dao-gutter: 32px;
+  --dao-tear-h: 58px; /* act boundary height, scales with viewport */
+
+  /* v7 unified motion timing system (5h) - the five families replace all
+     per-component timings where they conflict. Never linear for object
+     motion, never default ease, no springs, no opacity hard cuts. */
+  --dao-ease-micro: cubic-bezier(0.25, 0.1, 0.25, 1); /* 120-280ms hover/paint/paper */
+  --dao-ease-ui: cubic-bezier(0.3, 0, 0.15, 1); /* 240-400ms controls/filters/tabs */
+  --dao-ease-editorial: cubic-bezier(0.22, 1, 0.36, 1); /* 500-900ms entrances - long soft tail */
+  --dao-ease-scene: cubic-bezier(0.4, 0, 0.2, 1); /* 600-1400ms chapter/curtain/track */
+  --dao-track-ease: cubic-bezier(0.32, 0, 0.12, 1); /* 5d carousel track */
+  --dao-ease-exit: cubic-bezier(0.64, 0, 0.78, 0); /* outgoing layers */
+  /* legacy alias - existing entrances resolve to the EDITORIAL family */
+  --dao-ease-out: var(--dao-ease-editorial);
+}
+html {
+  /* v7 §26: no blank overscroll exposure on any shell */
+  overscroll-behavior: none;
+}
+@media (max-width: 960px) {
+  :root {
+    --dao-gutter: 24px;
+    --dao-tear-h: 44px;
+  }
+}
+@media (max-width: 560px) {
+  :root {
+    --dao-gutter: 18px;
+    --dao-tear-h: 32px;
+  }
+}
+
+/* ---------- material utilities ---------- */
+
+.dao {
+  background: var(--dao-ink);
+  color: var(--dao-paper);
+  font-family: var(--dao-f-ui);
+  overflow-x: clip;
+}
+.dao ::selection {
+  background: var(--dao-red);
+  color: var(--dao-paper);
+}
+
+/* Masked brand glyph: colour comes from background-color, shape from --m. */
+.dao-mask {
+  display: block;
+  -webkit-mask: var(--m) center / contain no-repeat;
+  mask: var(--m) center / contain no-repeat;
+}
+.dao-mask--cover {
+  -webkit-mask: var(--m) center / cover no-repeat;
+  mask: var(--m) center / cover no-repeat;
+}
+
+/* Torn-edge act boundary (pre-masked layer, translate-only motion). */
+.dao-tear {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--dao-tear-h);
+  pointer-events: none;
+  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+}
+.dao-tear--top {
+  top: 0;
+}
+.dao-tear--flip {
+  transform: scaleY(-1);
+}
+
+/* Texture overlays */
+.dao-grain,
+.dao-grain--strong,
+.dao-weave {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dao-grain {
+  background: url("/assets/textures/paper-grain.webp");
+  background-size: 352px;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+}
+.dao-grain--strong {
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+.dao-weave {
+  background: url("/assets/textures/canvas-weave.webp");
+  background-size: 512px;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+}
+@media (max-width: 560px) {
+  .dao-grain,
+  .dao-grain--strong {
+    background-size: 280px;
+  }
+  .dao-weave {
+    background-size: 400px;
+  }
+}
+
+/* Corner act metadata */
+.dao-label {
+  font-family: var(--dao-f-ui);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+@media (max-width: 960px) {
+  .dao-label {
+    font-size: 9.5px;
+  }
+}
+@media (max-width: 560px) {
+  .dao-label {
+    font-size: 8.5px;
+    letter-spacing: 0.2em;
+  }
+}
+
+/* Paint-stroke strike (hover/active underline language). Parent must be
+   position:relative. Draws left→right in 240ms per handoff 2g. */
+.dao-strike {
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 100%;
+  height: 8px;
+  background: var(--dao-red);
+  -webkit-mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 240ms var(--dao-ease-micro);
+  pointer-events: none;
+}
+.dao-strike--on,
+a:hover > .dao-strike,
+a:focus-visible > .dao-strike,
+button:hover > .dao-strike,
+button:focus-visible > .dao-strike {
+  transform: scaleX(1);
+}
+
+/* ---------- motion primitives (spec table 2h) ---------- */
+
+/* text-masked-rise: translateY 100% under clip → 0 · 550ms/line · 90ms stagger */
+.dao-rise {
+  display: block;
+  overflow: hidden;
+}
+.dao-rise > * {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 550ms var(--dao-ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.is-in .dao-rise > *,
+.dao-rise.is-in > * {
+  transform: translateY(0);
+}
+
+/* v7 5e E1: masked horizontal entrance - content enters from its own side */
+.dao-rise--x > * {
+  transform: translateX(var(--x, -60px));
+}
+.is-in .dao-rise--x > *,
+.dao-rise--x.is-in > * {
+  transform: translateX(0);
+}
+
+/* soft fade-up for secondary elements (fields, metadata) */
+.dao-fade {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 500ms ease,
+    transform 500ms var(--dao-ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.is-in .dao-fade,
+.dao-fade.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* text-side-entry: translateX ±60px + clip → 0 · 700ms ease-out */
+.dao-side {
+  opacity: 0;
+  transform: translateX(var(--x, 60px));
+  transition:
+    opacity 700ms ease,
+    transform 700ms var(--dao-ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.is-in .dao-side,
+.dao-side.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes dao-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes dao-sun-turn {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dao-rise > *,
+  .dao-fade,
+  .dao-side {
+    transform: none !important;
+    transition: opacity 200ms ease !important;
+  }
+  .dao-rise > * {
+    opacity: 0;
+  }
+  .is-in .dao-rise > *,
+  .dao-rise.is-in > * {
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   Chrome - persistent serpent chip + burger trigger (1b / 2d)
+   ============================================================ */
+
+.dao-chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px var(--dao-gutter) 0;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+.dao-chrome > * {
+  pointer-events: auto;
+}
+.dao-chrome--idle {
+  opacity: 0;
+}
+.dao-chrome--idle > * {
+  pointer-events: none;
+}
+
+/* v7 #5: global chrome auto-hide - after 1.8s idle the mark, EN/KA and
+   return tab fade to 0 and the burger chip to 25% (600ms out / 250ms in).
+   Never hides focused controls or while the menu is open (JS-guarded);
+   CSS focus-within is the belt-and-braces layer. */
+html[data-dao-idle] .dao-chrome__brand,
+html[data-dao-idle] .dao-chrome .dao-lang,
+html[data-dao-idle] .dao-returntab {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease;
+}
+html[data-dao-idle] .dao-burger {
+  opacity: 0.25;
+  transition: opacity 600ms ease;
+}
+.dao-chrome__brand,
+.dao-chrome .dao-lang,
+.dao-returntab,
+.dao-burger {
+  transition: opacity 250ms ease;
+}
+html[data-dao-idle] .dao-chrome:focus-within .dao-chrome__brand,
+html[data-dao-idle] .dao-chrome:focus-within .dao-lang,
+html[data-dao-idle] .dao-chrome:focus-within .dao-burger,
+html[data-dao-idle] .dao-returntab:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* v7 #1: contextual return control - printed paper tab, top-left after the
+   mark, slightly rotated; hover straightens to 0° and lifts 1px. Ground-
+   aware inversion via modifiers. Never a breadcrumb, never a pill. */
+.dao-returntab {
+  position: fixed;
+  top: 30px;
+  left: calc(var(--dao-gutter) + 228px);
+  z-index: 61;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--dao-ink);
+  background: var(--dao-paper);
+  border: 0;
+  padding: 9px 15px;
+  min-height: 34px;
+  transform: rotate(-1deg);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition:
+    transform 200ms var(--dao-ease-micro),
+    box-shadow 200ms var(--dao-ease-micro);
+}
+.dao-returntab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/textures/paper-grain.webp");
+  background-size: 180px;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.dao-returntab:hover,
+.dao-returntab:focus-visible {
+  color: var(--dao-ink);
+  transform: rotate(0deg) translateY(-1px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+}
+.dao-returntab--ink {
+  color: var(--dao-paper);
+  background: var(--dao-ink);
+}
+.dao-returntab--ink:hover,
+.dao-returntab--ink:focus-visible {
+  color: var(--dao-paper);
+}
+.dao-returntab > span {
+  position: relative;
+}
+@media (max-width: 560px) {
+  .dao-returntab {
+    left: auto;
+    right: calc(var(--dao-gutter) + 120px);
+    top: 24px;
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    padding: 9px 12px;
+  }
+  /* 390: arrow-only tab; label reveals on press/focus */
+  .dao-returntab .dao-returntab__label {
+    display: none;
+  }
+  .dao-returntab:focus-visible .dao-returntab__label,
+  .dao-returntab:active .dao-returntab__label {
+    display: inline;
+  }
+}
+.dao-chrome__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--dao-paper);
+}
+.dao-chrome__brand:hover {
+  color: var(--dao-paper);
+}
+.dao-chrome__mark {
+  width: 54px;
+  height: 28px;
+  background: var(--dao-paper);
+  --m: url("/assets/graphics/serpent-mark.webp");
+  transition: background-color 250ms ease;
+}
+.dao-chrome__word {
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  transition: color 250ms ease;
+}
+/* §05: on dark and photographic grounds the paper chrome carries a soft
+   material shadow so it never sinks into imagery - no boxes needed */
+.dao-chrome:not(.dao-chrome--light) .dao-chrome__word,
+.dao-chrome:not(.dao-chrome--light) .dao-lang {
+  text-shadow: 0 1px 12px rgba(19, 18, 16, 0.55);
+}
+.dao-chrome:not(.dao-chrome--light) .dao-chrome__mark {
+  filter: drop-shadow(0 1px 6px rgba(19, 18, 16, 0.45));
+}
+.dao-chrome__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.dao-lang {
+  display: flex;
+  gap: 14px;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: rgba(242, 237, 227, 0.88);
+  transition: color 250ms ease;
+}
+.dao-lang a {
+  color: inherit;
+  padding-bottom: 3px;
+  border-bottom: 2px solid transparent;
+}
+.dao-lang a:hover {
+  color: var(--dao-yellow);
+  border-color: rgba(255, 249, 171, 0.4);
+}
+.dao-lang a[aria-current="true"] {
+  color: var(--dao-yellow);
+  border-color: var(--dao-yellow);
+}
+
+/* burger - paper chip with two hand-drawn strokes */
+.dao-burger {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  /* §05: the paper chip reads on every ground, incl. dark photography */
+  background: rgba(242, 237, 227, 0.14);
+  box-shadow: 0 1px 10px rgba(19, 18, 16, 0.25);
+  border: 0;
+  padding: 0;
+  transition:
+    background-color 250ms ease,
+    box-shadow 250ms ease;
+}
+.dao-burger__line {
+  position: absolute;
+  right: 9px;
+  height: 3px;
+  background: var(--dao-paper);
+  -webkit-mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  transition:
+    transform 300ms var(--dao-ease-out),
+    width 300ms var(--dao-ease-out),
+    top 300ms var(--dao-ease-out);
+}
+.dao-burger__line:nth-child(1) {
+  top: 17px;
+  width: 30px;
+}
+.dao-burger__line:nth-child(2) {
+  top: 26px;
+  width: 22px;
+}
+.dao-burger[aria-expanded="true"] .dao-burger__line:nth-child(1) {
+  top: 21px;
+  width: 28px;
+  height: 4px;
+  transform: rotate(45deg);
+}
+.dao-burger[aria-expanded="true"] .dao-burger__line:nth-child(2) {
+  top: 21px;
+  width: 28px;
+  height: 4px;
+  transform: rotate(-45deg);
+}
+.dao-chrome--light .dao-chrome__mark,
+.dao-chrome--light .dao-burger__line {
+  background: var(--dao-ink);
+}
+.dao-chrome--light .dao-chrome__brand,
+.dao-chrome--light .dao-chrome__word {
+  color: var(--dao-ink);
+}
+.dao-chrome--light .dao-burger {
+  background: rgba(19, 18, 16, 0.1);
+  box-shadow: none;
+}
+.dao-chrome--light .dao-lang {
+  color: rgba(19, 18, 16, 0.85);
+}
+.dao-chrome--light .dao-lang a[aria-current="true"] {
+  color: var(--dao-brown);
+  border-color: var(--dao-brown);
+}
+
+/* ============================================================
+   Navigation - fullscreen ink sheet (1b / 2c / 2d)
+   ============================================================ */
+
+.dao-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--dao-ink);
+  /* v7 #2: one intentional fullscreen composition - no scrollbars, no dead
+     canvas. Internal scroll only below 620px viewport height. */
+  overflow: hidden;
+  transform: translate3d(0, -102%, 0);
+  transition: transform 520ms var(--dao-ease-scene);
+  visibility: hidden;
+  will-change: transform;
+}
+@media (max-height: 620px) {
+  .dao-nav {
+    overflow-y: auto;
+  }
+}
+.dao-nav.is-open {
+  transform: translateY(0);
+  visibility: visible;
+}
+/* v7 #3: curtain-up close - phase 3 of 4 (sheet travels up with its torn
+   edge, 420ms SCENE, delayed so links exit their masks first). */
+.dao-nav.is-closing {
+  transition:
+    transform 420ms var(--dao-ease-scene) 180ms,
+    visibility 0s linear 640ms;
+}
+/* phase 1: links + KA labels exit into masks, reverse stagger (see JS delays) */
+.dao-nav.is-closing .dao-nav__mask > * {
+  transform: translateY(105%);
+  transition: transform 140ms var(--dao-ease-exit);
+  transition-delay: var(--dx, 0ms);
+}
+/* phase 2: preview + serpent retreat, scale .96 + fade, overlapped */
+.dao-nav.is-closing .dao-nav__serpent {
+  transform: rotate(12deg) scale(0.96);
+  opacity: 0;
+  transition:
+    transform 160ms var(--dao-ease-ui),
+    opacity 160ms ease;
+}
+.dao-nav.is-closing .dao-nav__preview {
+  transform: rotate(var(--pr, -1.5deg)) scale(0.96);
+  opacity: 0;
+  transition:
+    transform 160ms var(--dao-ease-ui),
+    opacity 160ms ease;
+}
+/* torn leading edge on the dropping sheet */
+.dao-nav::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--dao-tear-h) + 1px);
+  height: var(--dao-tear-h);
+  background: var(--dao-ink);
+  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  transform: scaleY(-1);
+}
+.dao-nav__serpent {
+  position: absolute;
+  right: -220px;
+  top: -80px;
+  width: 900px;
+  height: 1100px;
+  background: rgba(208, 62, 38, 0.16);
+  --m: url("/assets/graphics/serpent-mark.webp");
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+.dao-nav__list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* v7 #2: row metrics scale with vh so the 8 destinations always compose
+     one intentional scene - no dead canvas, no scrollbars at 1440×800+ */
+  padding: clamp(80px, 13vh, 130px) var(--dao-gutter) clamp(70px, 11vh, 110px);
+  max-width: 1200px;
+}
+.dao-nav__row {
+  display: flex;
+  align-items: baseline;
+  gap: 26px;
+  padding: clamp(2px, 0.7vh, 8px) 0;
+}
+.dao-nav__num {
+  font-family: var(--dao-f-numeral);
+  font-size: 15px;
+  color: rgba(242, 237, 227, 0.4);
+}
+.dao-nav__link {
+  position: relative;
+  font-family: var(--dao-f-display);
+  /* eight destinations: type scales with viewport HEIGHT (v7 #2) */
+  font-size: clamp(26px, 5.4vh, 64px);
+  line-height: 1.1;
+  color: var(--dao-paper);
+  transition: color 200ms ease;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+}
+.dao-nav__link--sm {
+  font-size: clamp(20px, 3.5vh, 46px);
+}
+.dao-nav__link--lab:hover [data-dao-bloom],
+.dao-nav__link--lab:focus-visible [data-dao-bloom] {
+  opacity: 1 !important;
+}
+.dao-nav__link:hover,
+.dao-nav__link:focus-visible {
+  color: var(--dao-blue);
+}
+.dao-nav__link--lab:hover,
+.dao-nav__link--lab:focus-visible {
+  color: var(--dao-mint);
+}
+.dao-nav__link--lab:hover .dao-strike,
+.dao-nav__link--lab:focus-visible .dao-strike {
+  transform: scaleX(1);
+}
+.dao-nav__ka {
+  font-family: var(--dao-f-ka);
+  font-size: 20px;
+  color: rgba(242, 237, 227, 0.45);
+}
+.dao-nav__row--lab .dao-nav__ka {
+  color: rgba(122, 212, 201, 0.7);
+}
+/* masked rise of links, 60ms stagger */
+.dao-nav__mask {
+  display: block;
+  overflow: hidden;
+}
+.dao-nav__mask > * {
+  display: flex;
+  transform: translateY(105%);
+  transition: transform 480ms var(--dao-ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.dao-nav.is-open .dao-nav__mask > * {
+  transform: translateY(0);
+}
+/* WORK categories accordion */
+.dao-nav__cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px 26px;
+  padding: 6px 0 18px 66px;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 350ms var(--dao-ease-out),
+    opacity 300ms ease;
+}
+.dao-nav__cats.is-open {
+  max-height: 240px;
+  opacity: 1;
+}
+.dao-nav__cat {
+  position: relative;
+  color: rgba(242, 237, 227, 0.8);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.dao-nav__cat:hover,
+.dao-nav__cat:focus-visible {
+  color: var(--dao-paper);
+}
+.dao-nav__cat--lab {
+  color: var(--dao-mint);
+}
+.dao-nav__cat--lab:hover,
+.dao-nav__cat--lab:focus-visible {
+  color: var(--dao-mint);
+}
+.dao-nav__row.is-dim .dao-nav__link {
+  color: rgba(242, 237, 227, 0.55);
+}
+.dao-nav__row.is-dim .dao-nav__link--lab {
+  color: rgba(122, 212, 201, 0.55);
+}
+.dao-nav__foot {
+  position: absolute;
+  bottom: 34px;
+  left: var(--dao-gutter);
+  display: flex;
+  gap: 14px;
+}
+/* v7 #4: hover preview - a torn-edged paper photograph pinned INTO the
+   serpent midground (right third, vertically centred on the hovered row).
+   Secondary to type: max 300×190 at 1440; hidden below 900w. */
+.dao-nav__preview {
+  position: absolute;
+  right: 11%;
+  top: var(--py, 50%);
+  width: min(300px, 22vw);
+  height: min(190px, 14vw);
+  transform: rotate(var(--pr, -1.5deg));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    top 320ms var(--dao-ease-ui),
+    transform 320ms var(--dao-ease-ui),
+    opacity 260ms ease;
+}
+.dao-nav__preview.is-live {
+  opacity: 1;
+}
+.dao-nav__preview::before {
+  /* torn paper header pinning the photo into the scene */
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: -10px;
+  height: 14px;
+  background: var(--dao-paper);
+  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+}
+.dao-nav__previewinner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #454340;
+}
+.dao-nav__preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+.dao-nav__preview img.is-on {
+  opacity: 1;
+}
+@media (max-width: 899px) {
+  .dao-nav__preview {
+    display: none;
+  }
+}
+@media (max-width: 960px) {
+  .dao-nav__list {
+    padding-top: 110px;
+  }
+  .dao-nav__ka {
+    font-size: 14px;
+  }
+  .dao-nav__cats {
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 40px;
+  }
+  .dao-nav__row {
+    gap: 14px;
+  }
+  .dao-nav__num {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dao-nav {
+    transition: opacity 150ms ease;
+    transform: none;
+    opacity: 0;
+  }
+  .dao-nav.is-open {
+    opacity: 1;
+  }
+  .dao-nav__mask > * {
+    transform: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .dao-nav.is-open .dao-nav__mask > * {
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   Act 00 - Studio Ident (locked)
+   ============================================================ */
+
+.dao-ident {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--dao-red);
+  overflow: hidden;
+  /* exit (§01F): the ident leaves the stage as a physical layer - slow
+     start, accelerating lift, ~1050ms. No abrupt cut. */
+  transition: transform 1050ms var(--dao-ease-exit);
+  will-change: transform;
+}
+.dao-ident.is-leaving {
+  transform: translate3d(0, -112%, 0);
+}
+/* torn trailing edge as the sheet tears away upward */
+.dao-ident::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--dao-tear-h) + 1px);
+  height: var(--dao-tear-h);
+  background: var(--dao-red);
+  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  transform: scaleY(-1);
+}
+.dao-ident__splash {
+  position: absolute;
+  top: -60px;
+  right: -80px;
+  width: 420px;
+  height: 420px;
+  background: var(--dao-ink);
+  opacity: 0.12;
+  --m: url("/assets/textures/paint-splash.webp");
+}
+.dao-ident__center {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 34px;
+}
+.dao-ident__markwrap {
+  position: relative;
+  width: clamp(250px, 39vw, 560px);
+  aspect-ratio: 2 / 1;
+}
+/* Ident choreography (§01): the serpent crawls in horizontally from
+   outside the frame - long deceleration, a mid-path undulation, no bounce.
+   Sun descends from above (offset timing), moon rises from below. */
+.dao-ident__serpent {
+  position: absolute;
+  inset: 0;
+  background: var(--dao-paper);
+  --m: url("/assets/graphics/serpent-mark.webp");
+  transform: translate3d(-92vw, 3vh, 0) rotate(-2.5deg);
+  will-change: transform;
+}
+.dao-ident.is-drawn .dao-ident__serpent {
+  animation: dao-ident-snake 1350ms var(--dao-ease-editorial) both;
+}
+@keyframes dao-ident-snake {
+  0% {
+    transform: translate3d(-92vw, 3vh, 0) rotate(-2.5deg);
+  }
+  55% {
+    transform: translate3d(-7vw, 0.7vh, 0) rotate(-0.7deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+.dao-ident__sun,
+.dao-ident__moon {
+  position: absolute;
+  opacity: 0;
+  will-change: transform;
+}
+.dao-ident__sun {
+  left: 17%;
+  top: 42%;
+  width: 9.3%;
+  aspect-ratio: 1;
+  background: var(--dao-ink);
+  --m: url("/assets/graphics/sun.webp");
+  transform: translate3d(0, -58vh, 0);
+}
+.dao-ident.is-drawn .dao-ident__sun {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 1150ms cubic-bezier(0.3, 0.9, 0.25, 1) 200ms,
+    opacity 300ms ease 200ms;
+}
+.dao-ident__moon {
+  right: 21.5%;
+  top: 34%;
+  width: 7.9%;
+  aspect-ratio: 1;
+  background: var(--dao-paper);
+  --m: url("/assets/graphics/moon.webp");
+  transform: translate3d(0, 55vh, 0);
+}
+.dao-ident.is-drawn .dao-ident__moon {
+  opacity: 0.9;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 1200ms var(--dao-ease-editorial) 350ms,
+    opacity 300ms ease 350ms;
+}
+/* typography reveals directionally (§01D): left text from the left,
+   right text from the right - short travel, editorial pace */
+.dao-ident__corner {
+  opacity: 0;
+  transition:
+    opacity 700ms ease,
+    transform 700ms var(--dao-ease-editorial);
+}
+.dao-ident__corner--tl,
+.dao-ident__corner--bl {
+  transform: translate3d(-26px, 0, 0);
+}
+.dao-ident__corner--tr,
+.dao-ident__corner--br {
+  transform: translate3d(26px, 0, 0);
+}
+.dao-ident.is-drawn .dao-ident__corner {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+.dao-ident.is-drawn .dao-ident__corner--tl {
+  transition-delay: 550ms;
+}
+.dao-ident.is-drawn .dao-ident__corner--tr {
+  transition-delay: 620ms;
+}
+.dao-ident.is-drawn .dao-ident__corner--bl {
+  transition-delay: 690ms;
+}
+.dao-ident.is-drawn .dao-ident__corner--br {
+  transition-delay: 760ms;
+}
+/* official logo on its printed paper label, bottom centre (§02) */
+.dao-ident__logolabel {
+  position: absolute;
+  left: 50%;
+  bottom: 76px;
+  transform: translate3d(-50%, 14px, 0) rotate(-1deg);
+  background: var(--dao-paper);
+  padding: 9px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition:
+    opacity 700ms ease 850ms,
+    transform 700ms var(--dao-ease-editorial) 850ms;
+}
+.dao-ident.is-drawn .dao-ident__logolabel {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0) rotate(-1deg);
+}
+.dao-ident__logolabel img {
+  display: block;
+  width: clamp(64px, 6.5vw, 92px);
+  height: auto;
+  mix-blend-mode: multiply;
+}
+@media (max-width: 560px) {
+  .dao-ident__logolabel {
+    bottom: 64px;
+  }
+  .dao-ident__sun {
+    transform: translate3d(0, -40vh, 0);
+  }
+  .dao-ident__moon {
+    transform: translate3d(0, 38vh, 0);
+  }
+}
+.dao-ident__words {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.dao-ident__title {
+  font-family: var(--dao-f-display);
+  font-size: clamp(42px, 6.4vw, 92px);
+  line-height: 1;
+  color: var(--dao-paper);
+  letter-spacing: 0.04em;
+}
+.dao-ident__sub {
+  font-weight: 500;
+  font-size: clamp(10px, 1vw, 15px);
+  letter-spacing: 0.62em;
+  color: var(--dao-ink);
+  padding-left: 0.62em;
+}
+.dao-ident__corner {
+  position: absolute;
+  color: rgba(255, 249, 171, 0.85);
+}
+.dao-ident__corner--tl {
+  top: 28px;
+  left: var(--dao-gutter);
+}
+.dao-ident__corner--tr {
+  top: 28px;
+  right: var(--dao-gutter);
+}
+.dao-ident__corner--bl {
+  bottom: 30px;
+  left: var(--dao-gutter);
+  color: rgba(19, 18, 16, 0.75);
+}
+.dao-ident__corner--br {
+  bottom: 30px;
+  right: var(--dao-gutter);
+  color: rgba(19, 18, 16, 0.75);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dao-ident {
+    transition: opacity 300ms ease;
+  }
+  .dao-ident.is-leaving {
+    transform: none;
+    opacity: 0;
+  }
+  /* static composition: no crawl, no sun/moon travel - short fades only */
+  .dao-ident__serpent {
+    transform: none;
+    opacity: 0;
+    transition: opacity 250ms ease;
+  }
+  .dao-ident.is-drawn .dao-ident__serpent {
+    animation: none;
+    opacity: 1;
+  }
+  .dao-ident__sun,
+  .dao-ident__moon,
+  .dao-ident__corner--tl,
+  .dao-ident__corner--tr,
+  .dao-ident__corner--bl,
+  .dao-ident__corner--br,
+  .dao-ident__logolabel {
+    transform: none !important;
+  }
+  .dao-ident.is-drawn .dao-ident__sun,
+  .dao-ident.is-drawn .dao-ident__moon,
+  .dao-ident.is-drawn .dao-ident__corner,
+  .dao-ident.is-drawn .dao-ident__logolabel {
+    transition:
+      opacity 250ms ease,
+      transform 0s;
+  }
+  .dao-ident__logolabel {
+    transform: translateX(-50%) !important;
+  }
+}
+
+/* ============================================================
+   Act 01 - Master Showreel
+   ============================================================ */
+
+.dao-reel {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  background: var(--dao-ink);
+  overflow: hidden;
+}
+.dao-reel__media,
+.dao-reel__media video,
+.dao-reel__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dao-reel__media {
+  background: #454340;
+}
+.dao-reel__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(19, 18, 16, 0.55) 0%,
+    rgba(19, 18, 16, 0) 22%,
+    rgba(19, 18, 16, 0) 72%,
+    rgba(19, 18, 16, 0.5) 100%
+  );
+  pointer-events: none;
+}
+.dao-reel__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: none;
+  border: 0;
+  color: var(--dao-paper);
+  transition: transform 300ms var(--dao-ease-out);
+}
+.dao-reel__play:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+.dao-reel__rosette {
+  width: clamp(58px, 6.7vw, 96px);
+  aspect-ratio: 1;
+  background: rgba(242, 237, 227, 0.92);
+  --m: url("/assets/graphics/rosette.webp");
+}
+.dao-reel__playlabel {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  padding-left: 0.4em;
+}
+.dao-reel__meta {
+  position: absolute;
+  bottom: 32px;
+  left: var(--dao-gutter);
+  display: flex;
+  gap: 26px;
+  color: rgba(242, 237, 227, 0.8);
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .dao-reel__meta {
+    flex-direction: column;
+    gap: 4px;
+    bottom: 18px;
+  }
+}
+
+/* ============================================================
+   Act 02 - Studio Introduction (orbital)
+   ============================================================ */
+
+.dao-intro {
+  position: relative;
+  min-height: 72vw;
+  max-height: 1200px;
+  background: var(--dao-paper);
+  color: var(--dao-ink);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 140px var(--dao-gutter);
+}
+.dao-intro__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(840px, 58vw);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1px dashed rgba(108, 62, 19, 0.35);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dao-intro__orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  will-change: transform;
+  pointer-events: none;
+}
+.dao-intro__sat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: rotate(var(--a)) translateY(calc(min(840px, 58vw) / -2));
+}
+.dao-intro__sat > * {
+  transform: rotate(calc(-1 * var(--a) - var(--spin, 0deg)));
+}
+.dao-intro__still {
+  box-shadow: 0 10px 26px rgba(19, 18, 16, 0.25);
+  overflow: hidden;
+  position: relative;
+}
+.dao-intro__still img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dao-intro__chip {
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  padding: 7px 12px;
+  box-shadow: 0 4px 12px rgba(19, 18, 16, 0.15);
+  white-space: nowrap;
+}
+/* v7 orbit v2 population - production codes, film-strip fragments, scrap */
+.dao-intro__code {
+  font-family: var(--dao-f-numeral);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--dao-brown);
+  white-space: nowrap;
+}
+.dao-intro__film {
+  position: relative;
+  display: block;
+  width: 118px;
+  height: 64px;
+  overflow: hidden;
+  transform: rotate(-3deg);
+  box-shadow: 0 8px 20px rgba(19, 18, 16, 0.25);
+  border-top: 5px solid var(--dao-ink);
+  border-bottom: 5px solid var(--dao-ink);
+  background: #454340;
+}
+.dao-intro__film--b {
+  transform: rotate(2.5deg);
+  width: 104px;
+  height: 58px;
+}
+.dao-intro__scrap {
+  display: block;
+  width: 54px;
+  height: 40px;
+  background: #fff url("/assets/textures/paper-grain.webp");
+  background-size: 140px;
+  background-blend-mode: multiply;
+  transform: rotate(4deg);
+  box-shadow: 0 6px 14px rgba(19, 18, 16, 0.2);
+}
+/* O3: past 70% scroll the fragments recede and drift outward while the
+   statement takes focus */
+.dao-intro__sat > * {
+  transition:
+    opacity 600ms var(--dao-ease-editorial),
+    margin-top 600ms var(--dao-ease-editorial);
+}
+.dao-intro.is-focused .dao-intro__sat > * {
+  opacity: 0.45;
+  margin-top: -20px;
+}
+.dao-intro__center {
+  position: relative;
+  width: min(600px, 84vw);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+.dao-intro__logomark {
+  width: clamp(96px, 11vw, 156px);
+  height: auto;
+  mix-blend-mode: multiply;
+  opacity: 0.94;
+}
+.dao-intro__statement {
+  font-family: var(--dao-f-display);
+  font-size: clamp(24px, 2.9vw, 42px);
+  line-height: 1.28;
+  color: var(--dao-ink);
+  text-wrap: pretty;
+}
+.dao-intro__rule {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.dao-intro__stroke {
+  width: 120px;
+  height: 8px;
+  background: var(--dao-red);
+  --m: url("/assets/textures/paint-stroke.webp");
+}
+.dao-intro__cta {
+  position: relative;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--dao-ink);
+}
+.dao-intro__cta:hover {
+  color: var(--dao-red);
+}
+.dao-intro__corner {
+  position: absolute;
+  color: var(--dao-brown);
+}
+.dao-intro__corner--tl {
+  top: 36px;
+  left: var(--dao-gutter);
+}
+
+/* 390 - orbit becomes a constellation (2b) */
+.dao-intro__constellation {
+  display: none;
+}
+@media (max-width: 720px) {
+  .dao-intro {
+    min-height: 0;
+    max-height: none;
+    display: block;
+    padding: 240px var(--dao-gutter) 220px;
+  }
+  .dao-intro__ring,
+  .dao-intro__orbit {
+    display: none;
+  }
+  .dao-intro__center {
+    margin: 0 auto;
+    text-align: left;
+    align-items: flex-start;
+  }
+  .dao-intro__statement {
+    font-size: 24px;
+    line-height: 1.34;
+  }
+  .dao-intro__constellation {
+    display: block;
+  }
+  .dao-intro__constellation {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .dao-intro__constellation .dao-intro__still,
+  .dao-intro__constellation .dao-mask {
+    position: absolute;
+  }
+  .dao-intro__ring--m {
+    display: block;
+    position: absolute;
+    border: 1px dashed rgba(108, 62, 19, 0.35);
+    border-radius: 50%;
+    width: 340px;
+    aspect-ratio: 1;
+    transform: none;
+    left: -70px;
+    top: 40px;
+  }
+  .dao-intro__ring--m2 {
+    left: auto;
+    right: -60px;
+    top: auto;
+    bottom: 90px;
+    width: 300px;
+  }
+}
+
+/* ============================================================
+   Act 03 - Selected Work (blue chapter system)
+   ============================================================ */
+
+.dao-work {
+  position: relative;
+  background: var(--dao-ink);
+  overflow: hidden;
+  padding: 88px 0 120px;
+}
+.dao-work__serpent {
+  position: absolute;
+  left: -140px;
+  right: -140px;
+  top: 180px;
+  height: 120px;
+  background: rgba(242, 237, 227, 0.07);
+  --m: url("/assets/graphics/serpent-long.webp");
+  pointer-events: none;
+}
+.dao-work__head {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 0 var(--dao-gutter);
+}
+.dao-work__title {
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(30px, 4.4vw, 64px);
+  line-height: 1;
+  color: var(--dao-paper);
+  letter-spacing: 0.01em;
+}
+.dao-work__counter {
+  position: relative;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  /* #fff (not paper) on the blue chip: reaches WCAG AA at this size,
+     visually identical on the small chip. */
+  color: #fff;
+  background: var(--dao-blue);
+  padding: 6px 11px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.dao-work__counter .dao-grain {
+  background-size: 200px;
+}
+/* v7 #8: one physical track (5d S1-S7). Centre frame scale 1 / 0°, the
+   neighbours scale .72 / ±14° rotateY / 50% opacity; every input moves the
+   same track. */
+.dao-work__stage {
+  position: relative;
+  height: clamp(300px, 40vw, 560px);
+  margin-top: 50px;
+  perspective: 1400px;
+  --dao-track-shift: min(620px, 46vw);
+  touch-action: pan-y;
+}
+.dao-work__stage:focus-visible {
+  outline: 2px solid var(--dao-blue);
+  outline-offset: 6px;
+}
+.dao-work__item {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(820px, 62vw);
+  height: 100%;
+  margin-left: calc(min(820px, 62vw) / -2);
+  opacity: 0.5;
+  transition:
+    transform 720ms var(--dao-track-ease),
+    opacity 480ms ease;
+  will-change: transform;
+}
+.dao-work__item.is-active {
+  opacity: 1;
+}
+.dao-work__item.is-offstage {
+  opacity: 0;
+  pointer-events: none;
+}
+/* drag follows the finger 1:1 - no easing while the finger is down */
+.dao-work__item.is-dragging {
+  transition: opacity 480ms ease;
+}
+/* the blue chapter sheet is parented to the active frame (physical paper) */
+.dao-work__sheet {
+  position: absolute;
+  left: -28px;
+  right: -28px;
+  top: -26px;
+  bottom: -24px;
+  transform: rotate(-1.6deg);
+  background: var(--dao-blue);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 360ms ease;
+}
+.dao-work__item.is-active .dao-work__sheet {
+  opacity: 1;
+}
+.dao-work__sheet::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -16px;
+  height: 28px;
+  background: var(--dao-blue);
+  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+}
+.dao-work__frame {
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  background: #454340;
+  overflow: hidden;
+}
+.dao-work__stagelink[type="button"] {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+/* metadata swaps in sync with the travelling frame */
+.dao-work__caption {
+  animation: dao-caption-in 420ms var(--dao-ease-editorial) 260ms backwards;
+}
+@keyframes dao-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* the active progress stroke fills as the 5s timer runs */
+.dao-work__prog {
+  position: relative;
+  overflow: hidden;
+}
+.dao-work__progfill {
+  position: absolute;
+  inset: 0;
+  background: var(--dao-red);
+  transform-origin: left center;
+  animation: dao-prog-fill 5s linear forwards;
+}
+@keyframes dao-prog-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+/* S7 - reduced motion: no track travel, 240ms crossfade; direction shown
+   by the metadata's 12px slide only; auto-advance is off (JS). */
+.dao-work--reduced .dao-work__item {
+  transform: none !important;
+  transition: opacity 240ms ease;
+}
+.dao-work--reduced .dao-work__item:not(.is-active) {
+  opacity: 0;
+  pointer-events: none;
+}
+.dao-work--reduced .dao-work__caption {
+  animation: dao-caption-in-reduced 240ms ease backwards;
+}
+@keyframes dao-caption-in-reduced {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dao-work__frame img,
+.dao-work__frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dao-work__badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #fff;
+  background: var(--dao-blue);
+  padding: 6px 10px;
+  z-index: 2;
+}
+.dao-work__stagelink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.dao-work__caption {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 0 var(--dao-gutter);
+}
+.dao-work__name {
+  position: relative;
+  font-family: var(--dao-f-display);
+  font-size: clamp(27px, 3.2vw, 46px);
+  line-height: 1;
+  color: var(--dao-paper);
+  display: inline-block;
+}
+.dao-work__name .dao-strike {
+  left: 8%;
+  width: 84%;
+  bottom: -10px;
+  height: 10px;
+}
+.dao-work__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 22px;
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: rgba(242, 237, 227, 0.8);
+  text-transform: uppercase;
+}
+.dao-work__role {
+  color: var(--dao-paper);
+}
+.dao-work__tick {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: var(--dao-blue);
+  margin-right: 10px;
+}
+.dao-work__progress {
+  position: absolute;
+  bottom: 34px;
+  left: var(--dao-gutter);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.dao-work__prog {
+  height: 5px;
+  width: 18px;
+  background: rgba(242, 237, 227, 0.35);
+  -webkit-mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  border: 0;
+  padding: 0;
+  transition:
+    width 300ms var(--dao-ease-out),
+    background-color 300ms ease;
+}
+.dao-work__prog.is-active {
+  width: 34px;
+  height: 6px;
+  background: rgba(242, 237, 227, 0.35);
+}
+.dao-work__all {
+  position: absolute;
+  bottom: 30px;
+  right: var(--dao-gutter);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--dao-paper);
+}
+.dao-work__all:hover {
+  color: var(--dao-paper);
+}
+.dao-work__base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14px;
+  background: var(--dao-blue);
+  overflow: hidden;
+}
+@media (max-width: 720px) {
+  .dao-work {
+    padding-bottom: 100px;
+  }
+  .dao-work__head {
+    gap: 10px;
+  }
+  .dao-work__counter {
+    font-size: 8.5px;
+    padding: 4px 8px;
+  }
+  /* the same track at 390: active frame with a 24px next-frame peek */
+  .dao-work__stage {
+    height: 64vw;
+    min-height: 240px;
+    margin-top: 34px;
+    --dao-track-shift: calc(100vw - 78px);
+  }
+  .dao-work__item {
+    width: calc(100vw - 96px);
+    margin-left: calc((100vw - 96px) / -2);
+  }
+  .dao-work__sheet {
+    left: -12px;
+    right: -12px;
+    top: -10px;
+    bottom: -10px;
+  }
+  .dao-work__caption {
+    align-items: flex-start;
+    text-align: left;
+    margin-top: 30px;
+  }
+  .dao-work__meta {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+  }
+  .dao-work__base {
+    height: 10px;
+  }
+}
+
+/* ============================================================
+   Act 04 - Services (editorial index)
+   ============================================================ */
+
+.dao-svc {
+  position: relative;
+  background: var(--dao-paper);
+  color: var(--dao-ink);
+  overflow: hidden;
+  padding: 96px var(--dao-gutter) 110px;
+}
+.dao-svc__title {
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(30px, 4.4vw, 64px);
+  line-height: 1;
+  color: var(--dao-ink);
+}
+.dao-svc__intro {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--dao-brown);
+  max-width: 300px;
+}
+.dao-svc__grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0 56px;
+  margin-top: 60px;
+}
+.dao-svc__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  padding-top: 18px;
+  border-right: 1px solid rgba(19, 18, 16, 0.15);
+}
+.dao-svc__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 20px;
+}
+.dao-svc__groupname {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+}
+.dao-svc__groupdesc {
+  font-size: 11.5px;
+  color: rgba(19, 18, 16, 0.55);
+}
+.dao-svc__ornament {
+  margin-top: auto;
+  width: 120px;
+  height: 120px;
+  background: rgba(19, 18, 16, 0.1);
+  --m: url("/assets/graphics/symbols-50.webp");
+}
+.dao-svc__list {
+  display: flex;
+  flex-direction: column;
+}
+.dao-svc__row {
+  border-bottom: 1px solid rgba(19, 18, 16, 0.14);
+}
+.dao-svc__row:last-child {
+  border-bottom: 0;
+}
+.dao-svc__rowbtn {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  width: 100%;
+  padding: 13px 0;
+  background: none;
+  border: 0;
+  color: var(--dao-ink);
+  text-align: left;
+  transition:
+    padding-left 250ms var(--dao-ease-out),
+    background-color 250ms ease;
+}
+.dao-svc__num {
+  font-family: var(--dao-f-numeral);
+  font-size: 14px;
+  transition: color 200ms ease;
+}
+.dao-svc__name {
+  position: relative;
+  font-family: var(--dao-f-display);
+  font-size: clamp(21px, 2.8vw, 40px);
+  line-height: 1;
+}
+.dao-svc__name .dao-strike {
+  height: 9px;
+  background: var(--g, var(--dao-orange));
+}
+.dao-svc__rowbtn:hover,
+.dao-svc__rowbtn:focus-visible,
+.dao-svc__row.is-open .dao-svc__rowbtn {
+  padding-left: 18px;
+  background: var(--tint, rgba(224, 105, 18, 0.06));
+}
+.dao-svc__rowbtn:hover .dao-strike,
+.dao-svc__rowbtn:focus-visible .dao-strike,
+.dao-svc__row.is-open .dao-strike {
+  transform: scaleX(1);
+}
+.dao-svc__rowbtn:hover .dao-svc__num,
+.dao-svc__row.is-open .dao-svc__num {
+  color: var(--g, var(--dao-orange));
+}
+.dao-svc__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 350ms var(--dao-ease-out);
+}
+.dao-svc__row.is-open .dao-svc__body {
+  grid-template-rows: 1fr;
+}
+.dao-svc__bodyin {
+  overflow: hidden;
+}
+.dao-svc__detail {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 6px 0 20px 34px;
+}
+.dao-svc__desc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(19, 18, 16, 0.7);
+  max-width: 480px;
+}
+.dao-svc__frag {
+  margin-left: auto;
+  width: 200px;
+  height: 120px;
+  transform: rotate(2.5deg);
+  box-shadow: 0 12px 28px rgba(19, 18, 16, 0.28);
+  position: relative;
+  overflow: hidden;
+  flex: none;
+}
+.dao-svc__frag img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dao-svc__grouphead {
+  padding: 14px 0 6px;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  border-bottom: 1px solid rgba(19, 18, 16, 0.14);
+}
+/* Inline group heads replace the rail below 960 (handoff 2a/2b). */
+.dao-svc__grouphead--inline {
+  display: none;
+}
+@media (max-width: 960px) {
+  .dao-svc__grouphead--inline {
+    display: block;
+  }
+}
+.dao-svc__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 48px;
+  gap: 20px;
+}
+.dao-svc__all {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--dao-ink);
+}
+.dao-svc__all:hover {
+  color: var(--dao-red);
+}
+@media (max-width: 960px) {
+  .dao-svc__grid {
+    grid-template-columns: 1fr;
+    margin-top: 30px;
+  }
+  .dao-svc__rail {
+    display: none;
+  }
+  .dao-svc__frag {
+    width: 120px;
+    height: 74px;
+  }
+  .dao-svc__detail {
+    padding-left: 23px;
+    gap: 14px;
+  }
+}
+
+/* ============================================================
+   Act 05 - Studio Lab
+   ============================================================ */
+
+.dao-lab {
+  position: relative;
+  background: var(--dao-green);
+  overflow: hidden;
+  padding: 150px var(--dao-gutter) 150px;
+  min-height: 620px;
+}
+.dao-lab__rose {
+  position: absolute;
+  left: -60px;
+  bottom: -40px;
+  width: clamp(220px, 32vw, 460px);
+  aspect-ratio: 1;
+  background: rgba(122, 212, 201, 0.22);
+  --m: url("/assets/graphics/floral-rose.webp");
+}
+.dao-lab__stem {
+  position: absolute;
+  right: clamp(16px, 6vw, 80px);
+  top: 120px;
+  width: clamp(100px, 16vw, 230px);
+  aspect-ratio: 23 / 30;
+  background: var(--dao-mint);
+  --m: url("/assets/graphics/stem.webp");
+  transform: rotate(6deg);
+}
+.dao-lab__bloom {
+  position: absolute;
+  right: clamp(140px, 21vw, 300px);
+  top: 300px;
+  width: clamp(70px, 9vw, 130px);
+  aspect-ratio: 13 / 15;
+  background: var(--dao-yellow);
+  --m: url("/assets/graphics/bloom.webp");
+  transform: rotate(-8deg);
+}
+.dao-lab__label {
+  position: absolute;
+  top: 110px;
+  left: var(--dao-gutter);
+  color: var(--dao-mint);
+}
+.dao-lab__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 760px;
+  position: relative;
+}
+.dao-lab__title {
+  font-family: var(--dao-f-display);
+  font-size: clamp(48px, 7.6vw, 110px);
+  line-height: 0.98;
+  color: var(--dao-yellow);
+}
+.dao-lab__copy {
+  font-size: clamp(12.5px, 1.1vw, 16px);
+  line-height: 1.65;
+  color: var(--dao-paper);
+  max-width: 520px;
+  text-wrap: pretty;
+}
+.dao-lab__ctarow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.dao-lab__cta {
+  position: relative;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  color: var(--dao-yellow);
+  padding: 12px 0;
+}
+.dao-lab__cta:hover {
+  color: var(--dao-yellow);
+}
+.dao-lab__cta .dao-strike {
+  background: var(--dao-mint);
+  bottom: 3px;
+  transform: scaleX(1);
+  transition: height 200ms ease;
+}
+.dao-lab__cta:hover .dao-strike,
+.dao-lab__cta:focus-visible .dao-strike {
+  height: 10px;
+}
+.dao-lab__wreath {
+  width: 34px;
+  height: 34px;
+  background: var(--dao-mint);
+  --m: url("/assets/graphics/wreath.webp");
+}
+.dao-lab__ticker {
+  position: absolute;
+  bottom: 56px;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(122, 212, 201, 0.3);
+  border-bottom: 1px solid rgba(122, 212, 201, 0.3);
+}
+.dao-lab__tickerrow {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: dao-ticker 36s linear infinite;
+  padding: 12px 0;
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(13px, 1.4vw, 20px);
+  letter-spacing: 0.18em;
+  color: rgba(242, 237, 227, 0.85);
+}
+.dao-lab__tickerrow > span {
+  padding-right: 48px;
+}
+@media (max-width: 720px) {
+  .dao-lab {
+    padding: 100px var(--dao-gutter) 120px;
+    min-height: 0;
+  }
+  .dao-lab__label {
+    top: 56px;
+  }
+  .dao-lab__bloom {
+    display: none;
+  }
+  .dao-lab__stem {
+    top: 70px;
+  }
+  .dao-lab__ticker {
+    bottom: 30px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dao-lab__tickerrow {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   Act 06 - Contact + end credits
+   ============================================================ */
+
+.dao-contact {
+  position: relative;
+  background: var(--dao-ink);
+  overflow: hidden;
+  /* room for the v7 End of Reel production card */
+  padding: 170px var(--dao-gutter) 320px;
+}
+.dao-contact__sun {
+  position: absolute;
+  right: -160px;
+  top: 60px;
+  width: clamp(280px, 44vw, 640px);
+  aspect-ratio: 1;
+  background: rgba(242, 237, 227, 0.06);
+  --m: url("/assets/graphics/sun.webp");
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dao-contact__sun {
+    animation: dao-sun-turn 40s linear infinite alternate;
+  }
+}
+.dao-contact__label {
+  position: absolute;
+  top: 104px;
+  left: var(--dao-gutter);
+  color: rgba(242, 237, 227, 0.55);
+}
+.dao-contact__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 80px;
+}
+.dao-contact__invite {
+  font-family: var(--dao-f-display);
+  font-size: clamp(44px, 6.6vw, 96px);
+  line-height: 1.02;
+  color: var(--dao-paper);
+}
+.dao-contact__invite .dao-dot {
+  color: var(--dao-red);
+}
+.dao-contact__note {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(242, 237, 227, 0.75);
+  max-width: 460px;
+  text-wrap: pretty;
+}
+.dao-contact__facts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 15px;
+  color: var(--dao-paper);
+}
+.dao-contact__fact {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+.dao-contact__factlabel {
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--dao-mint);
+  width: 70px;
+  flex: none;
+}
+.dao-contact__tbd {
+  border-bottom: 1px dashed rgba(242, 237, 227, 0.3);
+  color: rgba(242, 237, 227, 0.55);
+}
+.dao-contact__left {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.dao-contact__form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: 14px;
+}
+.dao-contact__formnote {
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: rgba(242, 237, 227, 0.5);
+}
+.dao-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dao-field label {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--dao-paper);
+}
+.dao-field input,
+.dao-field textarea {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(242, 237, 227, 0.4);
+  border-radius: 0;
+  color: var(--dao-paper);
+  font-family: var(--dao-f-ui);
+  font-size: 15px;
+  padding: 6px 0 10px;
+  min-height: 34px;
+  resize: vertical;
+}
+.dao-field input:focus,
+.dao-field textarea:focus {
+  border-bottom-color: var(--dao-paper);
+}
+.dao-contact__send {
+  align-self: flex-start;
+  position: relative;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--dao-ink);
+  background: var(--dao-yellow);
+  padding: 14px 26px;
+  border: 0;
+  transition:
+    transform 200ms var(--dao-ease-out),
+    box-shadow 200ms ease;
+}
+.dao-contact__send:hover,
+.dao-contact__send:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+.dao-contact__star {
+  position: absolute;
+  right: -14px;
+  top: -14px;
+  width: 30px;
+  height: 30px;
+  background: var(--dao-red);
+  --m: url("/assets/graphics/star-solid.webp");
+  transition: transform 300ms var(--dao-ease-out);
+}
+.dao-contact__send:hover .dao-contact__star,
+.dao-contact__send:focus-visible .dao-contact__star {
+  transform: rotate(45deg);
+}
+/* end credits */
+.dao-credits {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-top: 1px solid rgba(242, 237, 227, 0.16);
+  padding: 26px var(--dao-gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.dao-credits__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+/* v7 #13 End of Reel: a closing production card, not a footer row. The full
+   logo sits on its cream paper label (never raw on ink), 128px desktop /
+   84 / 70, printed with grain, and settles 1° on entrance. */
+.dao-credits__chip {
+  position: relative;
+  background: var(--dao-paper);
+  padding: 16px 22px;
+  transform: rotate(-1.5deg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .is-in .dao-credits__chip {
+    animation: dao-label-settle 700ms var(--dao-ease-editorial) both;
+  }
+}
+@keyframes dao-label-settle {
+  from {
+    transform: rotate(-2.5deg);
+  }
+  to {
+    transform: rotate(-1.5deg);
+  }
+}
+.dao-credits__chip img {
+  display: block;
+  width: 128px;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+@media (max-width: 960px) {
+  .dao-credits__chip img {
+    width: 84px;
+  }
+}
+@media (max-width: 560px) {
+  .dao-credits__chip img {
+    width: 70px;
+  }
+}
+.dao-credits__id {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.dao-credits__wordmark {
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.32em;
+  color: var(--dao-paper);
+}
+.dao-credits__line {
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: rgba(242, 237, 227, 0.6);
+}
+.dao-credits__symbols {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.dao-credits__symbols .dao-mask {
+  width: 20px;
+  height: 20px;
+  background: rgba(242, 237, 227, 0.5);
+}
+.dao-credits__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+}
+.dao-credits__links a {
+  color: rgba(242, 237, 227, 0.6);
+}
+.dao-credits__links a:hover {
+  color: var(--dao-paper);
+}
+@media (max-width: 960px) {
+  .dao-contact__grid {
+    gap: 44px;
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
+@media (max-width: 720px) {
+  .dao-contact {
+    padding: 130px var(--dao-gutter) 260px;
+  }
+  .dao-contact__grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+  .dao-credits {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .dao-credits__symbols {
+    display: none;
+  }
+}

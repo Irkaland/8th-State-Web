@@ -1,0 +1,15 @@
+# Build + dependency output
+.next/
+node_modules/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# Design-reference exports (design-canvas HTML/JS — not app source)
+_design-reference/
+*.dc.html
+
+# Media + lockfiles
+public/media/
+package-lock.json
