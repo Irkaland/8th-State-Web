@@ -23,6 +23,16 @@ describe("locale route mapping", () => {
     expect(stripLocale("/")).toBe("/");
   });
 
+  it("strips the proxy's internal /en tree (KA burger 404 regression)", () => {
+    // The proxy rewrites unprefixed EN requests to /en/... internally; if
+    // that pathname leaks into the language switcher it must never produce
+    // /ka/en/... (which resolved to the branded 404).
+    expect(stripLocale("/en")).toBe("/");
+    expect(stripLocale("/en/work")).toBe("/work");
+    expect(switchLocalePath("/en", "ka")).toBe("/ka");
+    expect(switchLocalePath("/en/services", "ka")).toBe("/ka/services");
+  });
+
   it("detects the active locale from a pathname", () => {
     expect(localeFromPathname("/ka/work")).toBe("ka");
     expect(localeFromPathname("/work")).toBe("en");

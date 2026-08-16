@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { Messages } from "@/i18n";
 import type { Locale } from "@/i18n/locales";
 import { switchLocalePath } from "@/i18n/locales";
@@ -28,14 +29,20 @@ const HOLD_UNTIL_MS = 2450;
 export function StudioIdent({ locale, messages }: { locale: Locale; messages: Messages }) {
   const m = messages.dao.ident;
   const pathname = usePathname() || "/";
-  const [phase, setPhase] = useState<"hold" | "drawn" | "leaving" | "gone">("hold");
+  // Lazy initial state: on internal client-side navigation the ident mounts
+  // already "gone" - it must never paint, not even for one frame (§01).
+  // On a real document load the module flag is fresh and the ident holds.
+  const [phase, setPhase] = useState<"hold" | "drawn" | "leaving" | "gone">(() =>
+    identPlayedThisLoad ? "gone" : "hold",
+  );
   const leftRef = useRef(false);
 
   useEffect(() => {
     if (identPlayedThisLoad) {
+      // already played on this document load - the lazy initial state
+      // mounted this instance as "gone", nothing to run
       leftRef.current = true;
-      const skip = window.setTimeout(() => setPhase("gone"), 0);
-      return () => window.clearTimeout(skip);
+      return;
     }
     identPlayedThisLoad = true;
 
@@ -125,18 +132,18 @@ export function StudioIdent({ locale, messages }: { locale: Locale; messages: Me
       <div className="dao-label dao-ident__corner dao-ident__corner--bl">{m.city}</div>
       <div className="dao-ident__corner dao-ident__corner--br">
         <span className="dao-lang">
-          <a
+          <Link
             href={switchLocalePath(pathname, "en")}
             aria-current={locale === "en" ? "true" : undefined}
           >
             EN
-          </a>
-          <a
+          </Link>
+          <Link
             href={switchLocalePath(pathname, "ka")}
             aria-current={locale === "ka" ? "true" : undefined}
           >
             KA
-          </a>
+          </Link>
         </span>
       </div>
     </div>

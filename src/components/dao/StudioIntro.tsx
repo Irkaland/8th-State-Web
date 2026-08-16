@@ -10,9 +10,9 @@ import { useInViewOnce, usePrefersReducedMotion } from "./hooks";
 
 /**
  * Act 02 - Studio Introduction, v7 orbit v2 (contract #7, states O1-O4).
- * The floating photo cards are replaced by an abstract orbital population:
- * service names on paper chips, production codes in Glacier, brand glyphs,
- * two narrow film-strip fragments (the only imagery) and one paper scrap.
+ * The orbital population is brandbook-only (§05): service names on paper
+ * chips, production codes in Glacier, brand glyphs (moon, sun, swallow,
+ * spiral, star, rosette) and one paper scrap - no project imagery here.
  * Scroll maps to rotation (-20°..+20°) AND scale (1.4 -> 1.0) with 0.08
  * lerp; fragments counter-rotate to stay legible; past 70% they recede to
  * 45% opacity and drift 20px outward while the central statement takes
@@ -33,8 +33,10 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
     let raf = 0;
     let rot = 0;
     let scale = 1.4;
+    let foc = 0;
     let targetRot = -20;
     let targetScale = 1.4;
+    let targetFoc = 0;
     let progress = 0;
     let running = false;
     let start = 0;
@@ -45,13 +47,18 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
       const ambient = progress > 0.96 ? Math.sin((now - start) / 5000) * 1.2 : 0;
       rot += (targetRot + ambient - rot) * 0.08;
       scale += (targetScale - scale) * 0.08;
+      foc += (targetFoc - foc) * 0.08;
       const orbit = orbitRef.current;
       if (orbit) {
         orbit.style.setProperty("--spin", `${rot.toFixed(3)}deg`);
         orbit.style.setProperty("--oscale", scale.toFixed(4));
       }
       section.style.setProperty("--drift", `${(rot / 20) * 12}px`);
-      if (running || Math.abs(targetRot - rot) > 0.01) raf = requestAnimationFrame(tick);
+      // §04: the central statement moves into focus (small travel + scale
+      // development) as the orbit hands the scene over to it.
+      section.style.setProperty("--tfoc", foc.toFixed(4));
+      if (running || Math.abs(targetRot - rot) > 0.01 || Math.abs(targetFoc - foc) > 0.005)
+        raf = requestAnimationFrame(tick);
       else raf = 0;
     };
 
@@ -62,6 +69,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
       progress = p;
       targetRot = -20 + p * 40;
       targetScale = 1.4 - Math.min(1, p * 1.6) * 0.4;
+      targetFoc = Math.min(1, Math.max(0, (p - 0.16) / 0.42));
       section.classList.toggle("is-focused", p > 0.42);
       if (!raf) raf = requestAnimationFrame(tick);
     };
@@ -107,17 +115,20 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         style={{ transform: "rotate(var(--spin, 0deg)) scale(var(--oscale, 1))" }}
         aria-hidden="true"
       >
-        {/* film-strip fragment 01 - one of only two pieces of imagery */}
+        {/* §05: the orbital population is brandbook-only - no project
+            imagery in this section. Glyphs, chips, codes and one paper
+            fragment compose the ring. */}
         <Sat a={0}>
-          <span className="dao-intro__film">
-            <Image
-              src="/media/aom-film-still.jpg"
-              alt=""
-              fill
-              sizes="120px"
-              className="object-cover"
-            />
-          </span>
+          <span
+            className="dao-mask"
+            style={{
+              ["--m" as string]: "url(/assets/graphics/moon.webp)",
+              width: 46,
+              height: 46,
+              background: "var(--dao-ink)",
+              opacity: 0.85,
+            }}
+          />
         </Sat>
         <Sat a={36}>
           <span className="dao-intro__code">PRJ-01 · 24 FPS</span>
@@ -169,7 +180,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         <Sat a={216}>
           <span
             className="dao-intro__chip"
-            style={{ background: "var(--dao-green)", color: "var(--dao-paper)" }}
+            style={{ background: "var(--dao-green)", color: "var(--dao-ink)" }}
           >
             {up(m.chipLab)}
           </span>
@@ -178,9 +189,16 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
           <span className="dao-intro__code">2026</span>
         </Sat>
         <Sat a={268}>
-          <span className="dao-intro__film dao-intro__film--b">
-            <Image src="/media/volvo-film.jpg" alt="" fill sizes="120px" className="object-cover" />
-          </span>
+          <span
+            className="dao-mask"
+            style={{
+              ["--m" as string]: "url(/assets/graphics/rosette.webp)",
+              width: 56,
+              height: 56,
+              background: "var(--dao-red)",
+              opacity: 0.9,
+            }}
+          />
         </Sat>
         <Sat a={296}>
           <span
@@ -282,7 +300,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         <p className="dao-intro__statement">
           {statementGroups.map((group, i) => (
             <span key={i} className="dao-rise">
-              <span style={{ ["--d" as string]: `${i * 90}ms` }}>{group}</span>
+              <span style={{ ["--d" as string]: `${i * 120}ms` }}>{group}</span>
             </span>
           ))}
         </p>

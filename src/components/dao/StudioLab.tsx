@@ -3,17 +3,18 @@
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { useInViewOnce } from "./hooks";
+import { LabTickerRow } from "./LabTicker";
 import { up } from "@/lib/cn";
 
 /**
- * Act 05 - Studio Lab portal. Green room in the same house: #126149 field,
- * botanicals grow in staggered (120ms) after the sheet threshold, mint CTA
- * with paint-stroke, Glacier ticker (36s loop; paused under reduced motion).
+ * Act 05 - Studio Lab portal. Green room in the same house: the brand
+ * olive #9DAB5C field (§07), cream botanicals grow in staggered (120ms)
+ * after the sheet threshold, ink CTA with paint-stroke, Glacier ticker
+ * (36s loop; paused under reduced motion).
  */
 export function StudioLab({ locale, messages }: { locale: Locale; messages: Messages }) {
   const m = messages.dao.lab;
   const sectionRef = useInViewOnce<HTMLElement>(0.25);
-  const ticker = m.ticker.map((w) => up(w)).join(" ✳ ") + " ✳ ";
 
   return (
     <section
@@ -71,10 +72,7 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
       </div>
 
       <div className="dao-lab__ticker" aria-hidden="true">
-        <div className="dao-lab__tickerrow">
-          <span>{ticker}</span>
-          <span>{ticker}</span>
-        </div>
+        <LabTickerRow words={m.ticker} />
       </div>
     </section>
   );

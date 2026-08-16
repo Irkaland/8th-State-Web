@@ -208,20 +208,20 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
         </Link>
         <div className="dao-chrome__right">
           <span className="dao-lang">
-            <a
+            <Link
               href={switchLocalePath(pathname, "en")}
               aria-current={locale === "en" ? "true" : undefined}
               aria-label={messages.common.switchToEnglish}
             >
               EN
-            </a>
-            <a
+            </Link>
+            <Link
               href={switchLocalePath(pathname, "ka")}
               aria-current={locale === "ka" ? "true" : undefined}
               aria-label={messages.common.switchToGeorgian}
             >
               KA
-            </a>
+            </Link>
           </span>
           <button
             ref={burgerRef}
@@ -410,18 +410,20 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
         </div>
 
         <div className="dao-nav__foot dao-lang">
-          <a
+          <Link
             href={switchLocalePath(pathname, "en")}
             aria-current={locale === "en" ? "true" : undefined}
+            onClick={close}
           >
             EN
-          </a>
-          <a
+          </Link>
+          <Link
             href={switchLocalePath(pathname, "ka")}
             aria-current={locale === "ka" ? "true" : undefined}
+            onClick={close}
           >
             KA
-          </a>
+          </Link>
         </div>
       </div>
     </>
@@ -460,7 +462,10 @@ function NavRow({
         <span className="dao-nav__num" aria-hidden="true">
           {n}
         </span>
-        <a
+        {/* client-side Link, never a raw <a>: a raw anchor forces a full
+            document load, which replays the Studio Ident on every burger
+            navigation (§01) */}
+        <Link
           href={href}
           className={cn("dao-nav__link", lab && "dao-nav__link--lab", small && "dao-nav__link--sm")}
           onMouseEnter={onHover}
@@ -499,7 +504,7 @@ function NavRow({
               />
             </>
           )}
-        </a>
+        </Link>
         <span className="dao-nav__ka" lang={/[ა-ჰ]/.test(ka) ? "ka" : "en"} aria-hidden="true">
           {ka}
         </span>

@@ -10,6 +10,20 @@
 
 /* ---------- shared route scaffolding ---------- */
 
+/* §13/§14: the canvas behind the document (what rubber-band overscroll
+   exposes) follows each route's own ground. The global default is ink
+   (globals.css); routes whose final section is paper or the lab olive
+   re-tint it so the page appears to continue naturally past its true end.
+   Never a white browser default. */
+html:has(.dsv),
+html:has(.dlg),
+html:has(.dgp__cover) {
+  background: var(--dao-paper);
+}
+html:has(.dlb) {
+  background: var(--dao-green);
+}
+
 .dao-page {
   position: relative;
   min-height: 100svh;
@@ -1389,7 +1403,7 @@
   bottom: 60px;
   width: 120px;
   height: 160px;
-  background: var(--dao-mint);
+  background: rgba(242, 237, 227, 0.75);
   --m: url("/assets/graphics/stem.webp");
 }
 .dst__roomsserpent {
@@ -1448,7 +1462,8 @@
 
 .dlb {
   background: var(--dao-green);
-  color: var(--dao-paper);
+  /* ink text on the olive field (§07) - cream no longer reaches contrast */
+  color: var(--dao-ink);
 }
 .dlb__cover {
   position: relative;
@@ -1460,7 +1475,7 @@
   bottom: -60px;
   width: clamp(240px, 39vw, 560px);
   aspect-ratio: 1;
-  background: rgba(122, 212, 201, 0.2);
+  background: rgba(242, 237, 227, 0.35);
   --m: url("/assets/graphics/floral-rose.webp");
 }
 .dlb__stem {
@@ -1469,7 +1484,7 @@
   top: 60px;
   width: clamp(110px, 18vw, 260px);
   aspect-ratio: 26 / 34;
-  background: var(--dao-mint);
+  background: rgba(242, 237, 227, 0.75);
   --m: url("/assets/graphics/stem.webp");
   transform: rotate(7deg);
 }
@@ -1496,12 +1511,12 @@
   font-family: var(--dao-f-display);
   font-size: clamp(62px, 10.4vw, 150px);
   line-height: 0.96;
-  color: var(--dao-yellow);
+  color: var(--dao-ink);
 }
 .dlb__copy {
   font-size: clamp(12.5px, 1.2vw, 17px);
   line-height: 1.7;
-  color: var(--dao-paper);
+  color: rgba(19, 18, 16, 0.82);
   max-width: 520px;
   text-wrap: pretty;
 }
@@ -1511,14 +1526,14 @@
   font-weight: 600;
   font-size: 10.5px;
   letter-spacing: 0.26em;
-  color: var(--dao-yellow);
+  color: var(--dao-ink);
   flex-wrap: wrap;
 }
 .dlb__coverlinks a {
-  color: var(--dao-yellow);
+  color: var(--dao-ink);
 }
 .dlb__coverlinks a:hover {
-  color: var(--dao-mint);
+  color: rgba(19, 18, 16, 0.6);
 }
 /* v7 #10 - three equal Field Notes filters + the separate LAB WORK link */
 .dlb__filterrow {
@@ -1538,36 +1553,36 @@
   min-height: 44px;
   font: inherit;
   letter-spacing: inherit;
-  color: rgba(242, 237, 227, 0.75);
+  color: rgba(19, 18, 16, 0.62);
   cursor: pointer;
   transition: color 240ms var(--dao-ease-ui);
 }
 .dlb__filter:hover,
 .dlb__filter:focus-visible {
-  color: var(--dao-paper);
+  color: var(--dao-ink);
 }
 .dlb__filter .dao-strike {
-  background: var(--dao-mint);
+  background: var(--dao-yellow);
   bottom: 0;
   height: 6px;
 }
 .dlb__filter[aria-pressed="true"] {
-  color: var(--dao-yellow);
+  color: var(--dao-ink);
 }
 .dlb__filter[aria-pressed="true"] .dao-strike {
   transform: scaleX(1);
 }
 .dlb__filtersep {
-  color: rgba(242, 237, 227, 0.3);
+  color: rgba(19, 18, 16, 0.3);
 }
 .dlb__labworklink {
-  color: var(--dao-mint);
+  color: var(--dao-ink);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
 .dlb__labworklink:hover {
-  color: var(--dao-yellow);
+  color: rgba(19, 18, 16, 0.6);
 }
 /* whole-card interaction: lift 2px, deeper shadow, tinted marker (400ms
    recompose on filter change) */
@@ -1618,7 +1633,8 @@
 .dlb__notestitle {
   font-family: var(--dao-f-numeral);
   font-size: clamp(34px, 3.9vw, 56px);
-  color: var(--dao-green);
+  /* darkened lab green on cream - the raw olive fails 3:1 at display size */
+  color: var(--dao-green-ink);
 }
 .dlb__notesgrid {
   position: relative;
@@ -1673,7 +1689,7 @@
   font-weight: 500;
   font-size: 8.5px;
   letter-spacing: 0.2em;
-  color: var(--dao-green);
+  color: var(--dao-green-ink);
   text-transform: uppercase;
 }
 .dlb__notestar {
@@ -1727,7 +1743,7 @@
   color: var(--dao-yellow);
 }
 .dlb__collab {
-  border-top: 1px solid rgba(122, 212, 201, 0.35);
+  border-top: 1px solid rgba(19, 18, 16, 0.3);
   margin-top: 90px;
   padding-top: 34px;
   display: flex;
@@ -1740,7 +1756,7 @@
   font-family: var(--dao-f-display);
   font-size: clamp(22px, 2.4vw, 34px);
   line-height: 1.3;
-  color: var(--dao-paper);
+  color: var(--dao-ink);
   max-width: 640px;
   text-wrap: pretty;
 }
@@ -1750,8 +1766,8 @@
   left: 0;
   right: 0;
   overflow: hidden;
-  border-top: 1px solid rgba(122, 212, 201, 0.3);
-  border-bottom: 1px solid rgba(122, 212, 201, 0.3);
+  border-top: 1px solid rgba(19, 18, 16, 0.3);
+  border-bottom: 1px solid rgba(19, 18, 16, 0.3);
 }
 @media (max-width: 960px) {
   .dlb__notesgrid {
@@ -2318,8 +2334,8 @@
   transform: scaleX(1);
 }
 .dbr__chip--lab {
-  color: var(--dao-green);
-  border-color: rgba(18, 97, 73, 0.5);
+  color: var(--dao-green-ink);
+  border-color: rgba(86, 98, 46, 0.55);
 }
 .dbr__chip--lab .dao-strike {
   background: var(--dao-green);

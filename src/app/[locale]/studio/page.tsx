@@ -187,7 +187,8 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
             <div className="dao-grain--strong" style={{ opacity: 0.4 }} aria-hidden="true" />
             <span className="dst__labstem dao-mask" aria-hidden="true" />
             <div className="dst__labpanel-inner">
-              <span className="dao-kicker" style={{ color: "var(--dao-mint)" }}>
+              {/* ink text on the olive lab panel (§07 contrast) */}
+              <span className="dao-kicker" style={{ color: "rgba(19,18,16,.75)" }}>
                 {up(m.dao.nav.lab)}
               </span>
               <span
@@ -195,7 +196,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                   fontFamily: "var(--dao-f-display)",
                   fontSize: 30,
                   lineHeight: 1.1,
-                  color: "var(--dao-yellow)",
+                  color: "var(--dao-ink)",
                   whiteSpace: "pre-line",
                 }}
               >
@@ -204,12 +205,12 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
               <Link
                 href={localeHref(locale, "/studio-lab")}
                 className="dao-cta"
-                style={{ color: "var(--dao-yellow)", fontSize: 10, marginTop: 10 }}
+                style={{ color: "var(--dao-ink)", fontSize: 10, marginTop: 10 }}
               >
                 {up(R.enterLab)} <span aria-hidden="true">→</span>
                 <span
                   className="dao-strike"
-                  style={{ background: "var(--dao-mint)" }}
+                  style={{ background: "var(--dao-yellow)" }}
                   aria-hidden="true"
                 />
               </Link>

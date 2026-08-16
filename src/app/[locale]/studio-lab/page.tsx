@@ -6,6 +6,7 @@ import { getMessages } from "@/i18n";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { LabProvider, LabFilterRow, LabNotesGrid } from "@/components/dao/LabFieldNotes";
+import { LabTickerRow } from "@/components/dao/LabTicker";
 import { up } from "@/lib/cn";
 
 export async function generateMetadata({
@@ -33,7 +34,6 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
   const m = getMessages(locale);
   const R = m.daoRoutes.lab;
   const cr = m.daoRoutes.contentRequired;
-  const ticker = m.dao.lab.ticker.map((w) => up(w)).join(" ✳ ") + " ✳ ";
 
   return (
     <DaoShell
@@ -71,7 +71,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
             <div
               style={{ position: "relative", display: "flex", flexDirection: "column", gap: 26 }}
             >
-              <span className="dao-kicker dao-fade" style={{ color: "var(--dao-mint)" }}>
+              <span className="dao-kicker dao-fade" style={{ color: "rgba(19,18,16,.75)" }}>
                 {up(R.kicker)}
               </span>
               <h1 className="dlb__title">
@@ -111,7 +111,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               </div>
               <div
                 className="dao-rule-h"
-                style={{ marginTop: 26, background: "rgba(18,97,73,.6)" }}
+                style={{ marginTop: 26, background: "rgba(86,98,46,.6)" }}
                 aria-hidden="true"
               />
               <LabNotesGrid messages={m} />
@@ -128,7 +128,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               />
               <h2
                 className="dlb__notestitle"
-                style={{ color: "var(--dao-paper)", position: "relative" }}
+                style={{ color: "var(--dao-ink)", position: "relative" }}
               >
                 {up(R.labWork)}
               </h2>
@@ -156,19 +156,19 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                 <Link
                   href={localeHref(locale, "/work?category=studio-lab")}
                   className="dao-cta"
-                  style={{ color: "var(--dao-yellow)" }}
+                  style={{ color: "var(--dao-ink)" }}
                 >
                   {up(R.allLabWork)} <span aria-hidden="true">→</span>
                   <span
                     className="dao-strike"
-                    style={{ background: "var(--dao-mint)" }}
+                    style={{ background: "var(--dao-yellow)" }}
                     aria-hidden="true"
                   />
                 </Link>
               </div>
               <div className="dlb__collab">
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 640 }}>
-                  <span className="dao-kicker" style={{ color: "var(--dao-mint)" }}>
+                  <span className="dao-kicker" style={{ color: "rgba(19,18,16,.75)" }}>
                     {up(R.collaboration)}
                   </span>
                   <p className="dlb__collabtext">
@@ -196,10 +196,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
             style={{ position: "relative", bottom: "auto", marginBottom: 0 }}
             aria-hidden="true"
           >
-            <div className="dao-lab__tickerrow">
-              <span>{ticker}</span>
-              <span>{ticker}</span>
-            </div>
+            <LabTickerRow words={m.dao.lab.ticker} />
           </div>
         </div>
       </LabProvider>

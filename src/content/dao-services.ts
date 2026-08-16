@@ -44,8 +44,9 @@ export const DAO_SERVICE_GROUPS: DaoServiceGroup[] = [
   },
   {
     id: "finishing",
-    colour: "#126149",
-    tint: "rgba(18, 97, 73, 0.06)",
+    // darkened lab olive (--dao-green-ink): readable as small text on paper
+    colour: "#56622e",
+    tint: "rgba(157, 171, 92, 0.12)",
     name: { en: "Finishing", ka: "დასრულება" },
     layer: { en: "The completion layer", ka: "დასრულების შრე" },
   },

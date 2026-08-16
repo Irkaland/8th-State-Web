@@ -32,7 +32,7 @@ export function LabProvider({ children }: { children: React.ReactNode }) {
 const TINTS: Record<LabFilter, string> = {
   research: "var(--dao-mint)",
   education: "var(--dao-yellow)",
-  experiments: "#9dab5c",
+  experiments: "var(--dao-green)",
 };
 
 export function LabFilterRow({ locale, messages }: { locale: Locale; messages: Messages }) {
@@ -114,7 +114,7 @@ export function LabNotesGrid({ messages }: { messages: Messages }) {
             <span className="dlb__notename">
               {n.name} - {cr}
             </span>
-            <span className="dlb__noteid" style={{ color: "var(--dao-green)" }}>
+            <span className="dlb__noteid" style={{ color: "var(--dao-green-ink)" }}>
               <span className="dlb__notedot" aria-hidden="true" />
               {n.tag}
             </span>
@@ -124,7 +124,7 @@ export function LabNotesGrid({ messages }: { messages: Messages }) {
       ))}
       {/* the designed CONTENT REQUIRED state keeps the notebook honest */}
       <div className="dlb__annotation" style={{ maxWidth: 380 }}>
-        <span className="dao-kicker" style={{ color: "var(--dao-green)" }}>
+        <span className="dao-kicker" style={{ color: "var(--dao-green-ink)" }}>
           {up(R.annotation)}
         </span>
         <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--dao-ink)" }}>

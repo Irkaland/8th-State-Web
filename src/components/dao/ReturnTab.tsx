@@ -13,7 +13,8 @@ import { cn } from "@/lib/cn";
  * cream tab on blue/green). History-aware: if this page load has seen an
  * earlier internal route, the tab uses history.back() (restoring archive
  * scroll/filter for free); otherwise it navigates to the explicit fallback.
- * The user is never trapped. 44px arrow-only treatment at 390 (CSS).
+ * The user is never trapped. Hidden on mobile (≤720, CSS §11) - the brand
+ * mark, the burger and the browser back gesture carry navigation there.
  */
 let routeDepthThisLoad = 0;
 

@@ -10,7 +10,11 @@
 :root {
   --dao-red: #d03e26;
   --dao-blue: #2374b3;
-  --dao-green: #126149;
+  /* §07: the Studio Lab primary green is the approved brand olive. */
+  --dao-green: #9dab5c;
+  /* Darkened lab green for small text/accents on paper grounds - same hue,
+     brought to WCAG AA (the same treatment the neutral greys received). */
+  --dao-green-ink: #56622e;
   --dao-mint: #7ad4c9;
   --dao-yellow: #fff9ab;
   --dao-orange: #e16912;
@@ -237,10 +241,10 @@ button:focus-visible > .dao-strike {
 
 @keyframes dao-ticker {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 @keyframes dao-sun-turn {
@@ -379,23 +383,12 @@ html[data-dao-idle] .dao-returntab:focus-within {
 .dao-returntab > span {
   position: relative;
 }
-@media (max-width: 560px) {
+/* §11: no contextual return control on mobile - the brand mark, the burger
+   and the browser's own back gesture carry navigation. The tab is fixed-
+   position, so removing it leaves no gap. Desktop / tablet keep it. */
+@media (max-width: 720px) {
   .dao-returntab {
-    left: auto;
-    right: calc(var(--dao-gutter) + 120px);
-    top: 24px;
-    min-width: 44px;
-    min-height: 44px;
-    justify-content: center;
-    padding: 9px 12px;
-  }
-  /* 390: arrow-only tab; label reveals on press/focus */
-  .dao-returntab .dao-returntab__label {
     display: none;
-  }
-  .dao-returntab:focus-visible .dao-returntab__label,
-  .dao-returntab:active .dao-returntab__label {
-    display: inline;
   }
 }
 .dao-chrome__brand {
@@ -1244,23 +1237,6 @@ html[data-dao-idle] .dao-returntab:focus-within {
   color: var(--dao-brown);
   white-space: nowrap;
 }
-.dao-intro__film {
-  position: relative;
-  display: block;
-  width: 118px;
-  height: 64px;
-  overflow: hidden;
-  transform: rotate(-3deg);
-  box-shadow: 0 8px 20px rgba(19, 18, 16, 0.25);
-  border-top: 5px solid var(--dao-ink);
-  border-bottom: 5px solid var(--dao-ink);
-  background: #454340;
-}
-.dao-intro__film--b {
-  transform: rotate(2.5deg);
-  width: 104px;
-  height: 58px;
-}
 .dao-intro__scrap {
   display: block;
   width: 54px;
@@ -1290,6 +1266,18 @@ html[data-dao-idle] .dao-returntab:focus-within {
   flex-direction: column;
   align-items: center;
   gap: 26px;
+  /* §04: the statement develops into focus as the orbit recedes - short
+     travel (26px) + slight scale (0.955 -> 1), driven by the lerped scroll
+     progress (--tfoc). Defaults to the settled state without JS / under
+     reduced motion. */
+  transform: translate3d(0, calc((1 - var(--tfoc, 1)) * 26px), 0)
+    scale(calc(0.955 + var(--tfoc, 1) * 0.045));
+  will-change: transform;
+}
+/* the statement lines rise out of their masks a touch slower here - the
+   editorial reveal reads as one gesture with the focus development */
+.dao-intro__statement .dao-rise > span {
+  transition-duration: 700ms;
 }
 .dao-intro__logomark {
   width: clamp(96px, 11vw, 156px);
@@ -1947,13 +1935,15 @@ html[data-dao-idle] .dao-returntab:focus-within {
   padding: 150px var(--dao-gutter) 150px;
   min-height: 620px;
 }
+/* On the olive field the botanicals print in cream - mint sinks into
+   #9DAB5C (§07). */
 .dao-lab__rose {
   position: absolute;
   left: -60px;
   bottom: -40px;
   width: clamp(220px, 32vw, 460px);
   aspect-ratio: 1;
-  background: rgba(122, 212, 201, 0.22);
+  background: rgba(242, 237, 227, 0.35);
   --m: url("/assets/graphics/floral-rose.webp");
 }
 .dao-lab__stem {
@@ -1962,7 +1952,7 @@ html[data-dao-idle] .dao-returntab:focus-within {
   top: 120px;
   width: clamp(100px, 16vw, 230px);
   aspect-ratio: 23 / 30;
-  background: var(--dao-mint);
+  background: rgba(242, 237, 227, 0.75);
   --m: url("/assets/graphics/stem.webp");
   transform: rotate(6deg);
 }
@@ -1980,7 +1970,7 @@ html[data-dao-idle] .dao-returntab:focus-within {
   position: absolute;
   top: 110px;
   left: var(--dao-gutter);
-  color: var(--dao-mint);
+  color: rgba(19, 18, 16, 0.75);
 }
 .dao-lab__body {
   display: flex;
@@ -1993,12 +1983,14 @@ html[data-dao-idle] .dao-returntab:focus-within {
   font-family: var(--dao-f-display);
   font-size: clamp(48px, 7.6vw, 110px);
   line-height: 0.98;
-  color: var(--dao-yellow);
+  /* ink on the olive field - 7.5:1; yellow no longer reaches contrast on
+     #9DAB5C (§07/§20) */
+  color: var(--dao-ink);
 }
 .dao-lab__copy {
   font-size: clamp(12.5px, 1.1vw, 16px);
   line-height: 1.65;
-  color: var(--dao-paper);
+  color: rgba(19, 18, 16, 0.82);
   max-width: 520px;
   text-wrap: pretty;
 }
@@ -2012,14 +2004,14 @@ html[data-dao-idle] .dao-returntab:focus-within {
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.32em;
-  color: var(--dao-yellow);
+  color: var(--dao-ink);
   padding: 12px 0;
 }
 .dao-lab__cta:hover {
-  color: var(--dao-yellow);
+  color: var(--dao-ink);
 }
 .dao-lab__cta .dao-strike {
-  background: var(--dao-mint);
+  background: var(--dao-yellow);
   bottom: 3px;
   transform: scaleX(1);
   transition: height 200ms ease;
@@ -2031,7 +2023,7 @@ html[data-dao-idle] .dao-returntab:focus-within {
 .dao-lab__wreath {
   width: 34px;
   height: 34px;
-  background: var(--dao-mint);
+  background: rgba(242, 237, 227, 0.9);
   --m: url("/assets/graphics/wreath.webp");
 }
 .dao-lab__ticker {
@@ -2040,8 +2032,8 @@ html[data-dao-idle] .dao-returntab:focus-within {
   left: 0;
   right: 0;
   overflow: hidden;
-  border-top: 1px solid rgba(122, 212, 201, 0.3);
-  border-bottom: 1px solid rgba(122, 212, 201, 0.3);
+  border-top: 1px solid rgba(19, 18, 16, 0.3);
+  border-bottom: 1px solid rgba(19, 18, 16, 0.3);
 }
 .dao-lab__tickerrow {
   display: inline-flex;
@@ -2051,10 +2043,27 @@ html[data-dao-idle] .dao-returntab:focus-within {
   font-family: var(--dao-f-numeral);
   font-size: clamp(13px, 1.4vw, 20px);
   letter-spacing: 0.18em;
-  color: rgba(242, 237, 227, 0.85);
+  color: rgba(19, 18, 16, 0.8);
+  /* §09: promote to its own compositor layer so the loop keeps moving on
+     mobile browsers that throttle main-thread repaints */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 .dao-lab__tickerrow > span {
   padding-right: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+/* §08: the ✳ separator as a brand star asset - U+2733 falls back to an
+   emoji / missing glyph on several mobile font stacks */
+.dao-lab__tickstar {
+  display: inline-block;
+  width: 0.5em;
+  aspect-ratio: 1;
+  margin: 0 22px;
+  flex: none;
+  background: rgba(19, 18, 16, 0.6);
+  --m: url("/assets/graphics/star-4.webp");
 }
 @media (max-width: 720px) {
   .dao-lab {

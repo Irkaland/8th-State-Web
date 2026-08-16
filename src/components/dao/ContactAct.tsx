@@ -107,7 +107,12 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
 
       {/* end credits - the closing production card (v7 #13) */}
       <footer className="dao-credits">
-        <div className="dao-credits__brand">
+        {/* the closing production card is also a way home (§12) */}
+        <Link
+          href={localeHref(locale, "/")}
+          className="dao-credits__brand"
+          aria-label="8th State Production"
+        >
           <span className="dao-credits__chip">
             <span className="dao-grain" style={{ backgroundSize: "200px" }} aria-hidden="true" />
             <Image
@@ -123,7 +128,7 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
               {up(messages.dao.ident.city)} - {up(c.endWord)}
             </span>
           </span>
-        </div>
+        </Link>
         <div className="dao-credits__symbols" aria-hidden="true">
           <span
             className="dao-mask"
@@ -150,18 +155,18 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
           <Link href={localeHref(locale, "/contact")}>{up(messages.dao.nav.contact)}</Link>
           <Link href={localeHref(locale, "/privacy")}>{up(c.legal)}</Link>
           <span className="dao-lang" style={{ gap: 14 }}>
-            <a
+            <Link
               href={switchLocalePath(pathname, "en")}
               aria-current={locale === "en" ? "true" : undefined}
             >
               EN
-            </a>
-            <a
+            </Link>
+            <Link
               href={switchLocalePath(pathname, "ka")}
               aria-current={locale === "ka" ? "true" : undefined}
             >
               KA
-            </a>
+            </Link>
           </span>
         </nav>
       </footer>

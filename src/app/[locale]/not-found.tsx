@@ -19,19 +19,41 @@ export default function NotFound() {
   return (
     <main id="main" className="dao d404">
       <div className="dao-weave" aria-hidden="true" />
-      <span
-        className="dao-mask"
-        aria-hidden="true"
+      {/* the brand mark is a home link on every page, the 404 included (§12) */}
+      <Link
+        href={localeHref(locale, "/")}
+        aria-label="8th State Production"
         style={{
-          ["--m" as string]: "url(/assets/graphics/serpent-mark.webp)",
           position: "absolute",
           top: 24,
           left: "var(--dao-gutter)",
-          width: 42,
-          height: 22,
-          background: "var(--dao-paper)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          minHeight: 44,
         }}
-      />
+      >
+        <span
+          className="dao-mask"
+          aria-hidden="true"
+          style={{
+            ["--m" as string]: "url(/assets/graphics/serpent-mark.webp)",
+            width: 42,
+            height: 22,
+            background: "var(--dao-paper)",
+          }}
+        />
+        <span
+          style={{
+            fontWeight: 500,
+            fontSize: 11,
+            letterSpacing: "0.3em",
+            color: "var(--dao-paper)",
+          }}
+        >
+          8TH STATE
+        </span>
+      </Link>
       <div className="d404__frame" aria-hidden="true">
         <span className="d404__swallow dao-mask" />
       </div>

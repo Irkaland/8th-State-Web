@@ -70,14 +70,31 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* §03: the page scrolls normally (wheel / trackpad / keyboard / touch)
+     but the browser scrollbar itself is never shown. Firefox: */
+  scrollbar-width: none;
+  /* §13/§14: the canvas behind every route is the site's ink - rubber-band
+     overscroll and any accidental gap must never expose a white field. */
+  background: #131210;
+}
+/* Chrome / Edge / Safari viewport scrollbar */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body {
-  background: var(--warm);
+  /* matches the dao ink shell; individual routes paint their own grounds */
+  background: #131210;
   color: var(--ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* §15: horizontal gestures may animate inside components, but the body
+     itself never scrolls sideways */
+  overflow-x: clip;
 }
 
 /* Pointer affordance for interactive controls (Tailwind v4 Preflight omits it on <button>). */

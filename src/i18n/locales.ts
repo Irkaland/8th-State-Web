@@ -31,11 +31,15 @@ export function localeHref(locale: Locale, path: string): string {
 
 /**
  * Given a real browser pathname, return the locale-independent path.
- * "/ka/work" -> "/work" ; "/work" -> "/work" ; "/ka" -> "/" ; "/" -> "/"
+ * "/ka/work" -> "/work" ; "/work" -> "/work" ; "/ka" -> "/" ; "/" -> "/".
+ * Also strips the internal "/en" tree the proxy rewrites unprefixed EN
+ * requests to - when that rewritten pathname leaks into a client component
+ * (e.g. usePathname during SSR), the language switcher must never build
+ * "/ka/en/..." hrefs (the KA burger 404 bug).
  */
 export function stripLocale(pathname: string): string {
-  if (pathname === "/ka") return "/";
-  if (pathname.startsWith("/ka/")) return pathname.slice(3) || "/";
+  if (pathname === "/ka" || pathname === "/en") return "/";
+  if (pathname.startsWith("/ka/") || pathname.startsWith("/en/")) return pathname.slice(3) || "/";
   return pathname || "/";
 }
 
