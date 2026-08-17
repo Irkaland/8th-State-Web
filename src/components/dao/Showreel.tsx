@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import type { Messages } from "@/i18n";
 
 /**
@@ -38,7 +39,6 @@ export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: b
       <div className="dao-reel__media">
         <video
           ref={videoRef}
-          poster={REEL_POSTER}
           preload="metadata"
           playsInline
           muted
@@ -48,6 +48,23 @@ export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: b
         >
           {hasReel && <source src={REEL_SRC} type="video/mp4" />}
         </video>
+        {/* §Perf Phase 1: the poster frame is layered over the video as an
+            optimized responsive image instead of the raw 2400×3600 poster
+            attribute - .dao-reel__media img carries the exact same
+            absolute/inset/cover rules as the video, so the crop and
+            composition are identical. It leaves the stage the moment
+            playback starts, exactly like a native poster. */}
+        {!playing && (
+          <Image
+            src={REEL_POSTER}
+            alt=""
+            fill
+            sizes="100vw"
+            quality={82}
+            className="object-cover"
+            aria-hidden="true"
+          />
+        )}
       </div>
       <div className="dao-reel__scrim" aria-hidden="true" />
       {/* red torn boundary handed down from the ident */}

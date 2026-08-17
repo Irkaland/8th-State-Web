@@ -1,0 +1,25 @@
+# Perf Phase 1 - static media cache policy.
+#
+# /media and /assets filenames are stable (NOT content-hashed), so a
+# max-age=1y + immutable policy would risk serving stale artwork if a file
+# is ever replaced under the same URL. Instead: a bounded 7-day browser TTL
+# with 30-day stale-while-revalidate. Repeat visits within a week make zero
+# requests for these assets; after that the browser revalidates in the
+# background (SWR) instead of blocking. Worst-case staleness after an
+# in-place asset swap is 7 days; a deploy still invalidates Netlify's edge
+# cache immediately, as before.
+#
+# Deliberately NOT covered: HTML documents, RSC responses, /_next/* (already
+# immutable), and anything the routing proxy handles - the §02/§21 routing
+# contract is untouched by headers on static files (both paths are excluded
+# from the proxy matcher).
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"

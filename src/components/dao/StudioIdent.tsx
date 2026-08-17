@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import type { Messages } from "@/i18n";
 import type { Locale } from "@/i18n/locales";
@@ -129,10 +130,20 @@ export function StudioIdent({ locale, messages }: { locale: Locale; messages: Me
       </div>
 
       {/* official full logo on its printed paper label (§02) - the approved
-          treatment for the black wordmark on saturated grounds */}
+          treatment for the black wordmark on saturated grounds. Delivered
+          through the image pipeline at its rendered size (clamp 64-92px,
+          dao.css) with DPR-aware srcset - same artwork, same alpha, same
+          proportions; priority keeps the label print-in on schedule. */}
       <div className="dao-ident__logolabel" aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/brand/8th-state-logo.png" alt="" />
+        <Image
+          src="/assets/brand/8th-state-logo.png"
+          alt=""
+          width={92}
+          height={92}
+          sizes="92px"
+          quality={90}
+          priority
+        />
       </div>
 
       <div className="dao-label dao-ident__corner dao-ident__corner--bl">{m.city}</div>

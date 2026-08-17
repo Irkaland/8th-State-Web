@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Messages } from "@/i18n";
@@ -21,6 +22,12 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
   const [workOpen, setWorkOpen] = useState(false);
   const [light, setLight] = useState(false);
   const [preview, setPreview] = useState<{ key: string; top: number; rot: number } | null>(null);
+  // §Perf Phase 1: preview media mounts only once the sheet can actually
+  // display it (open on a ≥900px viewport - below that the preview is
+  // display:none, dao.css). Until then not a single preview byte is
+  // requested; once mounted the sources stay mounted so hover swaps remain
+  // instant for the rest of the page load.
+  const [previewsReady, setPreviewsReady] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
 
@@ -40,7 +47,18 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     return () => document.documentElement.removeAttribute("data-dao-nav-open");
   }, [open]);
 
-  const toggle = () => (open ? close() : setOpen(true));
+  const armPreviews = useCallback(() => {
+    if (window.matchMedia("(min-width: 900px)").matches) setPreviewsReady(true);
+  }, []);
+
+  const toggle = () => {
+    if (open) {
+      close();
+    } else {
+      armPreviews();
+      setOpen(true);
+    }
+  };
 
   // Esc closes; focus is trapped while open.
   useEffect(() => {
@@ -185,6 +203,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
   // v7 #4: preview follows the hovered row (vertically centred on it) and
   // alternates ±1.5° rotation per link.
   const hoverPreview = (key: string, index: number) => (e: React.SyntheticEvent<HTMLElement>) => {
+    // covers the rare resize across 900px while the sheet is already open
+    armPreviews();
     const rect = e.currentTarget.getBoundingClientRect();
     setPreview({ key, top: rect.top + rect.height / 2, rot: index % 2 ? 1.5 : -1.5 });
   };
@@ -431,10 +451,22 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
           aria-hidden="true"
         >
           <span className="dao-nav__previewinner">
-            {Object.entries(previews).map(([key, src]) => (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img key={key} src={src} alt="" className={preview?.key === key ? "is-on" : ""} />
-            ))}
+            {/* optimized responsive sources at the preview's real display
+                size (max 300×190, dao.css) - same files, same cover crop,
+                same crossfade; DPR handled by the srcset (sizes=300px). */}
+            {previewsReady &&
+              Object.entries(previews).map(([key, src]) => (
+                <Image
+                  key={key}
+                  src={src}
+                  alt=""
+                  width={600}
+                  height={380}
+                  sizes="300px"
+                  loading="eager"
+                  className={preview?.key === key ? "is-on" : ""}
+                />
+              ))}
           </span>
         </div>
 
