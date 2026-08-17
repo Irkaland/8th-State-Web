@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page, type Response } from "@playwright/test";
 import { gotoRoute } from "./helpers";
 
 /**
@@ -36,6 +36,22 @@ const KA_ROUTES = [
   "/ka/start-a-project",
   "/ka/privacy",
 ];
+
+function collectInternalHardLoadRedirects(page: Page) {
+  const redirects: string[] = [];
+  page.on("response", (response: Response) => {
+    const request = response.request();
+    const url = new URL(response.url());
+    const isNextNavigationFetch =
+      url.searchParams.has("_rsc") ||
+      request.headers()["rsc"] === "1" ||
+      Boolean(request.headers()["next-router-state-tree"]);
+    if (isNextNavigationFetch && response.status() === 307 && response.headers().location === "/") {
+      redirects.push(`${url.pathname}${url.search} -> /`);
+    }
+  });
+  return redirects;
+}
 
 test.describe("KA routing", () => {
   test("every KA destination resolves - never the 404 frame", async ({ page }) => {
@@ -83,6 +99,86 @@ test.describe("KA routing", () => {
       .evaluateAll((els) => els.map((el) => el.getAttribute("href") ?? ""));
     expect(langHrefs.length).toBeGreaterThan(0);
     for (const href of langHrefs) expect(href).not.toMatch(/\/en(\/|$)/);
+  });
+});
+
+test.describe("Production routing regression", () => {
+  // Behave like a real visitor. This catches proxy redirects of Next RSC
+  // navigation fetches, which the default suite bypass header intentionally skips.
+  test.use({ extraHTTPHeaders: {} });
+
+  test("Home direct links reach Work and Contact without a hard-load redirect", async ({
+    page,
+  }) => {
+    const redirects = collectInternalHardLoadRedirects(page);
+    await gotoRoute(page, "/");
+
+    await page.locator('main a[href="/work"]').last().click();
+    await expect(page).toHaveURL(/\/work$/);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+
+    await gotoRoute(page, "/");
+    await page.locator('main a[href="/contact"]').last().click();
+    await expect(page).toHaveURL(/\/contact$/);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+
+    expect(redirects).toEqual([]);
+  });
+
+  test("burger destinations route normally without a hard-load redirect", async ({ page }) => {
+    const redirects = collectInternalHardLoadRedirects(page);
+    const targets = [
+      "/services",
+      "/studio",
+      "/studio-lab",
+      "/process",
+      "/georgia-production",
+      "/contact",
+      "/start-a-project",
+    ];
+
+    await gotoRoute(page, "/");
+    for (const href of targets) {
+      await page.mouse.move(300, 400);
+      await page.locator(".dao-burger").click();
+      await page.locator(`#dao-nav a[href="${href}"]`).first().click();
+      await expect(page).toHaveURL(new RegExp(`${href.replace(/[/-]/g, "\\$&")}$`));
+      await expect(page.locator(".dao-ident")).toHaveCount(0);
+      await expect(page.locator(".d404")).toHaveCount(0);
+    }
+
+    await page.mouse.move(300, 400);
+    await page.locator(".dao-burger").click();
+    await page.getByRole("button", { name: /work categories/i }).click();
+    await page.locator('#dao-nav a[href="/work"]').first().click();
+    await expect(page).toHaveURL(/\/work$/);
+
+    expect(redirects).toEqual([]);
+  });
+
+  test("EN to KA internal navigation works without replaying the ident", async ({ page }) => {
+    const redirects = collectInternalHardLoadRedirects(page);
+    await gotoRoute(page, "/");
+    await page.locator('main a[href="/contact"]').last().click();
+    await expect(page).toHaveURL(/\/contact$/);
+    await page.mouse.move(300, 400);
+    await page
+      .getByRole("link", { name: /Georgian/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/ka\/contact$/);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+    await expect(page.locator(".d404")).toHaveCount(0);
+    expect(redirects).toEqual([]);
+  });
+
+  test("hard browser refresh still re-enters Home correctly", async ({ page }) => {
+    await page.goto("/studio");
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator(".dao-ident")).toBeVisible();
+    await page.keyboard.press("Escape").catch(() => {});
+    await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
+    await expect(page.locator(".dao-reel")).toBeVisible();
   });
 });
 

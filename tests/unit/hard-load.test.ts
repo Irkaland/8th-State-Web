@@ -9,6 +9,11 @@ function headers(map: Record<string, string> = {}) {
   };
 }
 
+function searchParams(keys: string[] = []) {
+  const params = new Set(keys);
+  return { has: (n: string) => params.has(n) };
+}
+
 describe("hardLoadRedirect (§02 refresh contract)", () => {
   it("redirects a real document load of any EN deep route to /", () => {
     for (const path of [
@@ -40,6 +45,18 @@ describe("hardLoadRedirect (§02 refresh contract)", () => {
   it("never redirects internal client-side navigations (RSC fetches)", () => {
     expect(hardLoadRedirect("/studio", "GET", headers({ rsc: "1" }))).toBeNull();
     expect(hardLoadRedirect("/ka/work", "GET", headers({ rsc: "1" }))).toBeNull();
+    expect(hardLoadRedirect("/work", "GET", headers(), searchParams(["_rsc"]))).toBeNull();
+    expect(
+      hardLoadRedirect(
+        "/contact",
+        "GET",
+        headers({ "next-router-state-tree": "[tree]" }),
+        searchParams(["_rsc"]),
+      ),
+    ).toBeNull();
+    expect(
+      hardLoadRedirect("/services", "GET", headers({ "next-url": "/en" }), searchParams(["_rsc"])),
+    ).toBeNull();
   });
 
   it("never redirects prefetches", () => {

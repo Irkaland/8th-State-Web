@@ -39,7 +39,12 @@ export function proxy(request: NextRequest) {
   }
 
   // §02/§14: hard document loads always re-enter at the locale home.
-  const home = hardLoadRedirect(pathname, request.method, request.headers);
+  const home = hardLoadRedirect(
+    pathname,
+    request.method,
+    request.headers,
+    request.nextUrl.searchParams,
+  );
   if (home !== null) {
     const url = request.nextUrl.clone();
     url.pathname = home;
