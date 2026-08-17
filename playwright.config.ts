@@ -16,6 +16,11 @@ export default defineConfig({
     baseURL: BASE,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
+    // §02 refresh contract: real document loads of deep routes redirect to
+    // the locale home. Suites need to render deep routes directly, so every
+    // request carries the bypass header; the dedicated refresh tests
+    // override this with an empty header set to act like a real browser.
+    extraHTTPHeaders: { "x-dao-hard-load": "allow" },
   },
   projects: [
     {

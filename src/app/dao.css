@@ -713,13 +713,6 @@ html[data-dao-idle] .dao-returntab:focus-within {
 .dao-nav__row.is-dim .dao-nav__link--lab {
   color: rgba(122, 212, 201, 0.55);
 }
-.dao-nav__foot {
-  position: absolute;
-  bottom: 34px;
-  left: var(--dao-gutter);
-  display: flex;
-  gap: 14px;
-}
 /* v7 #4: hover preview - a torn-edged paper photograph pinned INTO the
    serpent midground (right third, vertically centred on the hovered row).
    Secondary to type: max 300×190 at 1440; hidden below 900w. */
@@ -1229,7 +1222,7 @@ html[data-dao-idle] .dao-returntab:focus-within {
   box-shadow: 0 4px 12px rgba(19, 18, 16, 0.15);
   white-space: nowrap;
 }
-/* v7 orbit v2 population - production codes, film-strip fragments, scrap */
+/* v7 orbit v2 population - production codes + brand glyphs */
 .dao-intro__code {
   font-family: var(--dao-f-numeral);
   font-size: 13px;
@@ -1237,15 +1230,16 @@ html[data-dao-idle] .dao-returntab:focus-within {
   color: var(--dao-brown);
   white-space: nowrap;
 }
-.dao-intro__scrap {
-  display: block;
-  width: 54px;
-  height: 40px;
-  background: #fff url("/assets/textures/paper-grain.webp");
-  background-size: 140px;
-  background-blend-mode: multiply;
-  transform: rotate(4deg);
-  box-shadow: 0 6px 14px rgba(19, 18, 16, 0.2);
+/* §08: official curled serpent mark (serpent-mark.webp, the snake of the
+   global brand chip) in the orbit - ink on the cream ground per the
+   approved light-ground treatment, slightly rotated, never dominant */
+.dao-intro__serpent {
+  width: 58px;
+  height: 30px;
+  background: var(--dao-ink);
+  opacity: 0.82;
+  --m: url("/assets/graphics/serpent-mark.webp");
+  transform: rotate(-6deg);
 }
 /* O3: past 70% scroll the fragments recede and drift outward while the
    statement takes focus */

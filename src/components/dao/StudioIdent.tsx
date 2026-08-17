@@ -46,6 +46,12 @@ export function StudioIdent({ locale, messages }: { locale: Locale; messages: Me
     }
     identPlayedThisLoad = true;
 
+    // §02/§15: a real document load always begins at the top - the browser
+    // must never restore the previous scroll position. The reset happens
+    // behind the ident sheet, so there is no visible jump after render.
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const leave = () => {
       if (leftRef.current) return;
       leftRef.current = true;

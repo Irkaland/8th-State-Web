@@ -11,6 +11,16 @@ import { gotoRoute } from "./helpers";
  *  G/H. ticker glyphs + ticker motion on mobile
  *  J. mobile contextual return controls
  *  L. white end-of-page / overscroll canvas
+ *
+ * Final navigation + refresh pass additions:
+ *  M. one visible EN/KA switcher while the burger menu is open
+ *  N. real document loads always re-enter at the locale home showreel
+ *     (these tests drop the x-dao-hard-load bypass header the rest of the
+ *     suite uses to render deep routes directly)
+ *  O. reload resets scroll to the top
+ *  P. brand mark resets Home to the showreel top, never replays the ident
+ *  Q. studio intro orbit: white square gone, official curled serpent in
+ *  R. ticker physically moves at 320
  */
 
 const KA_ROUTES = [
@@ -98,6 +108,129 @@ test.describe("Studio Ident playback", () => {
     await expect(page.locator(".dao-reel")).toBeVisible();
     await expect(page.locator(".dao-ident")).toHaveCount(0);
   });
+
+  test("the brand mark resets an already-scrolled Home to the showreel top", async ({ page }) => {
+    await gotoRoute(page, "/");
+    await page.mouse.move(300, 400);
+    await page.evaluate(() => window.scrollTo(0, 3000));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+    await page.getByRole("link", { name: "8th State Production" }).first().click();
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 8_000 })
+      .toBeLessThan(2);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test("switching EN → KA is client-side and never replays the ident", async ({ page }) => {
+    await gotoRoute(page, "/studio");
+    await page.mouse.move(300, 400);
+    await page
+      .getByRole("link", { name: /Georgian/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/ka\/studio$/);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+  });
+});
+
+test.describe("Burger menu language switcher (§01)", () => {
+  test("exactly one visible EN/KA switcher while the menu is open", async ({ page }) => {
+    await gotoRoute(page, "/");
+    await page.mouse.move(300, 400);
+    await page.locator(".dao-burger").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    // the sheet itself carries no switcher ...
+    await expect(page.locator("#dao-nav .dao-lang")).toHaveCount(0);
+    // ... the top-right chrome control is the single switcher of the overlay
+    await expect(page.locator(".dao-chrome .dao-lang")).toHaveCount(1);
+    await expect(page.locator(".dao-chrome .dao-lang")).toBeVisible();
+    // ... and no other switcher (e.g. the end-credits footer one, which is
+    // page content) is actually on screen while the sheet is open
+    const extraOnScreen = await page.evaluate(() => {
+      const langs = Array.from(document.querySelectorAll<HTMLElement>(".dao-lang"));
+      return langs.filter((el) => {
+        if (el.closest(".dao-chrome")) return false;
+        const r = el.getBoundingClientRect();
+        const inViewport =
+          r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+        if (!inViewport) return false;
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        // covered by the fullscreen sheet = not visible to the visitor
+        return !top || !top.closest("#dao-nav");
+      }).length;
+    });
+    expect(extraOnScreen).toBe(0);
+  });
+
+  test("the top-right switcher stays functional while the menu is open", async ({ page }) => {
+    await gotoRoute(page, "/");
+    await page.mouse.move(300, 400);
+    await page.locator(".dao-burger").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.locator(".dao-chrome .dao-lang a", { hasText: "KA" }).click();
+    await expect(page).toHaveURL(/\/ka$/);
+    await expect(page.locator(".d404")).toHaveCount(0);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+    // switching also closes the sheet
+    await expect(page.getByRole("dialog")).toBeHidden();
+  });
+});
+
+test.describe("Refresh contract (§02/§14) - real document loads", () => {
+  // Behave like a real browser: no bypass header on any request.
+  test.use({ extraHTTPHeaders: {} });
+
+  test("a document load of any deep route re-enters at the home showreel", async ({ page }) => {
+    for (const [route, home] of [
+      ["/studio", /\/$/],
+      ["/work", /\/$/],
+      ["/studio-lab", /\/$/],
+      ["/ka/studio", /\/ka$/],
+    ] as const) {
+      await page.goto(route);
+      await expect(page, `${route} did not land on its locale home`).toHaveURL(home);
+      // the ident plays on the hard load ...
+      await expect(page.locator(".dao-ident")).toBeVisible();
+      await page.keyboard.press("Escape").catch(() => {});
+      await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
+      // ... and hands over to the Master Showreel at the top
+      await expect(page.locator(".dao-reel")).toBeVisible();
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    }
+  });
+
+  test("reloading Home resets scroll to the showreel top", async ({ page }) => {
+    await gotoRoute(page, "/");
+    await page.evaluate(() => window.scrollTo(0, 2600));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+    await page.reload();
+    // the ident replays on a real reload, covering the reset
+    await expect(page.locator(".dao-ident")).toBeVisible();
+    await page.keyboard.press("Escape").catch(() => {});
+    await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5_000 }).toBe(0);
+    await expect(page.locator(".dao-reel")).toBeVisible();
+  });
+});
+
+test.describe("Studio intro orbit (§08/§09)", () => {
+  test("the white orbital square is gone and the official curled serpent is in", async ({
+    page,
+  }) => {
+    await gotoRoute(page, "/");
+    await expect(page.locator(".dao-intro__scrap")).toHaveCount(0);
+    const serpent = page.locator(".dao-intro__orbit .dao-intro__serpent");
+    await expect(serpent).toHaveCount(1);
+    const mask = await serpent.evaluate(
+      (el) =>
+        getComputedStyle(el).maskImage ||
+        (getComputedStyle(el) as CSSStyleDeclaration & { webkitMaskImage?: string })
+          .webkitMaskImage ||
+        "",
+    );
+    expect(mask).toContain("serpent-mark.webp");
+  });
 });
 
 test.describe("Hidden scrollbar + canvas grounds", () => {
@@ -180,6 +313,35 @@ test.describe("Mobile (390)", () => {
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
       expect(overflow, `${route} overflows horizontally`).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+test.describe("Mobile (320)", () => {
+  test.use({ viewport: { width: 320, height: 568 } });
+
+  test("the lab ticker physically moves at 320 (home + lab room)", async ({ page }) => {
+    for (const route of ["/", "/studio-lab"]) {
+      await gotoRoute(page, route);
+      // scroll the STATIC wrapper into view - the row itself never becomes
+      // "stable" for Playwright precisely because it is always moving
+      const wrap = page.locator(".dao-lab__ticker, .dlb__ticker").first();
+      await wrap.scrollIntoViewIfNeeded();
+      const row = page.locator(".dao-lab__tickerrow").first();
+      const t1 = await row.evaluate((el) => getComputedStyle(el).transform);
+      await page.waitForTimeout(500);
+      const t2 = await row.evaluate((el) => getComputedStyle(el).transform);
+      expect(t2, `${route} ticker is frozen at 320`).not.toBe(t1);
+    }
+  });
+
+  test("no horizontal body overflow at 320", async ({ page }) => {
+    for (const route of ["/", "/studio-lab"]) {
+      await gotoRoute(page, route);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `${route} overflows horizontally at 320`).toBeLessThanOrEqual(1);
     }
   });
 });

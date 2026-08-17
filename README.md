@@ -111,6 +111,12 @@ _design-reference/        # Extracted Wireframe + UI Mockup (reference only)
 
 `/robots.txt`, `/sitemap.xml`, `/icon.svg`, `/og.png` are generated.
 
+### Refresh / hard-load contract
+
+A **real document load** (first visit, browser refresh, address-bar entry) of any deep route is redirected by `src/proxy.ts` to its locale home (`/` or `/ka`): the Studio Ident plays, then the homepage opens at the top of the Master Showreel (`history.scrollRestoration` is forced to `manual`; the scroll reset happens behind the Ident, so there is no visible jump). Internal client-side navigations and prefetches are RSC fetches (they carry the `rsc` header) and are never redirected - the Ident never replays on them. Policy: `src/lib/hard-load.ts` (unit-tested).
+
+Automated suites that must render a deep route directly send the `x-dao-hard-load: allow` header (set globally in `playwright.config.ts`); the dedicated refresh tests drop it to behave like a real browser.
+
 ---
 
 ## Editing content

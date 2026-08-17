@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { useInViewOnce } from "./hooks";
@@ -63,10 +64,16 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
           {m.copy}
         </p>
         <div className="dao-lab__ctarow dao-fade" style={{ ["--d" as string]: "320ms" }}>
-          <a href={localeHref(locale, "/studio-lab")} className="dao-lab__cta" aria-label={m.cta}>
+          {/* client-side Link, never a raw <a>: a raw anchor forces a full
+              document load, which replays the Studio Ident (§03/§10) */}
+          <Link
+            href={localeHref(locale, "/studio-lab")}
+            className="dao-lab__cta"
+            aria-label={m.cta}
+          >
             {up(m.cta)}
             <span className="dao-strike" aria-hidden="true" />
-          </a>
+          </Link>
           <span className="dao-lab__wreath dao-mask" aria-hidden="true" />
         </div>
       </div>

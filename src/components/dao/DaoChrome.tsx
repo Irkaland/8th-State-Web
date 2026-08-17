@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Messages } from "@/i18n";
-import { type Locale, localeHref, switchLocalePath } from "@/i18n/locales";
+import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/locales";
 import { cn } from "@/lib/cn";
 
 /**
@@ -58,8 +58,13 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
       const focusables = Array.from(
         nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
       ).filter((el) => el.offsetParent !== null);
+      // §01: the single EN/KA switcher lives in the top-right chrome (the
+      // burger sheet carries none) - keep it reachable inside the trap.
+      const lang = Array.from(
+        document.querySelectorAll<HTMLElement>(".dao-chrome .dao-lang a"),
+      ).filter((el) => el.offsetParent !== null);
       const burger = burgerRef.current;
-      const all = burger ? [...focusables, burger] : focusables;
+      const all = burger ? [...focusables, ...lang, burger] : [...focusables, ...lang];
       if (all.length === 0) return;
       const idx = all.indexOf(document.activeElement as HTMLElement);
       let next = idx;
@@ -195,6 +200,27 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     start: "/media/bts-set.jpg",
   };
 
+  // §04/§05: the brand mark is an explicit client-side Home destination
+  // (never history.back, never a raw document load - a hard load would
+  // replay the Studio Ident). Already on Home: return to the top of the
+  // Master Showreel (smooth via the html scroll-behavior; instant under
+  // reduced motion). From any other route the Link navigates client-side
+  // and Next resets scroll to the top.
+  const onBrand = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (open || closing) close();
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (stripLocale(pathname) === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0 });
+    }
+  };
+
+  // §01: one language switcher only - the top-right control. It stays
+  // functional while the sheet is open, so a switch also closes the sheet.
+  const onLang = () => {
+    if (open || closing) close();
+  };
+
   return (
     <>
       <div className={cn("dao-chrome", light && !open && "dao-chrome--light")}>
@@ -202,6 +228,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
           href={localeHref(locale, "/")}
           className="dao-chrome__brand"
           aria-label="8th State Production"
+          onClick={onBrand}
         >
           <span className="dao-chrome__mark dao-mask" aria-hidden="true" />
           <span className="dao-chrome__word">8TH STATE</span>
@@ -212,6 +239,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
               href={switchLocalePath(pathname, "en")}
               aria-current={locale === "en" ? "true" : undefined}
               aria-label={messages.common.switchToEnglish}
+              onClick={onLang}
             >
               EN
             </Link>
@@ -219,6 +247,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
               href={switchLocalePath(pathname, "ka")}
               aria-current={locale === "ka" ? "true" : undefined}
               aria-label={messages.common.switchToGeorgian}
+              onClick={onLang}
             >
               KA
             </Link>
@@ -409,22 +438,9 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
           </span>
         </div>
 
-        <div className="dao-nav__foot dao-lang">
-          <Link
-            href={switchLocalePath(pathname, "en")}
-            aria-current={locale === "en" ? "true" : undefined}
-            onClick={close}
-          >
-            EN
-          </Link>
-          <Link
-            href={switchLocalePath(pathname, "ka")}
-            aria-current={locale === "ka" ? "true" : undefined}
-            onClick={close}
-          >
-            KA
-          </Link>
-        </div>
+        {/* §01: no second EN/KA inside the sheet - the top-right chrome
+            control (z-index above the sheet) is the single switcher in both
+            menu-open and menu-closed states */}
       </div>
     </>
   );

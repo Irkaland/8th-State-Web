@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Messages } from "@/i18n";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
@@ -11,8 +12,8 @@ import { useInViewOnce, usePrefersReducedMotion } from "./hooks";
 /**
  * Act 02 - Studio Introduction, v7 orbit v2 (contract #7, states O1-O4).
  * The orbital population is brandbook-only (§05): service names on paper
- * chips, production codes in Glacier, brand glyphs (moon, sun, swallow,
- * spiral, star, rosette) and one paper scrap - no project imagery here.
+ * chips, production codes in Glacier and brand glyphs (moon, sun, swallow,
+ * curled serpent mark, spiral, star, rosette) - no project imagery here.
  * Scroll maps to rotation (-20°..+20°) AND scale (1.4 -> 1.0) with 0.08
  * lerp; fragments counter-rotate to stay legible; past 70% they recede to
  * 45% opacity and drift 20px outward while the central statement takes
@@ -116,8 +117,8 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         aria-hidden="true"
       >
         {/* §05: the orbital population is brandbook-only - no project
-            imagery in this section. Glyphs, chips, codes and one paper
-            fragment compose the ring. */}
+            imagery in this section. Glyphs, chips and codes compose the
+            ring. */}
         <Sat a={0}>
           <span
             className="dao-mask"
@@ -163,8 +164,13 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
             }}
           />
         </Sat>
+        {/* §08: the official curled serpent brand mark (the asset behind the
+            global snake + 8TH STATE chip) replaces the former white paper
+            scrap between the swallow and the Studio Lab chip - ink on the
+            cream ground (the approved light-ground treatment), quiet, with
+            the same orbit motion as its neighbours */}
         <Sat a={166}>
-          <span className="dao-intro__scrap" />
+          <span className="dao-intro__serpent dao-mask" />
         </Sat>
         <Sat a={196}>
           <span
@@ -306,9 +312,11 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         </p>
         <div className="dao-intro__rule dao-fade" style={{ ["--d" as string]: "350ms" }}>
           <span className="dao-intro__stroke dao-mask--cover" aria-hidden="true" />
-          <a href={localeHref(locale, "/studio")} className="dao-intro__cta">
+          {/* client-side Link, never a raw <a>: a raw anchor forces a full
+              document load, which replays the Studio Ident (§03/§10) */}
+          <Link href={localeHref(locale, "/studio")} className="dao-intro__cta">
             {up(m.cta)} <span aria-hidden="true">→</span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

@@ -16,7 +16,9 @@ test.describe("Homepage - One Continuous Take", () => {
 
   test("any input skips the ident immediately", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator(".dao-ident")).toBeVisible();
+    // wait for the drawn phase - the same effect that draws also attaches
+    // the skip listeners; a keypress before hydration tests nothing
+    await expect(page.locator(".dao-ident.is-drawn")).toBeVisible();
     await page.keyboard.press("Enter");
     await expect(page.locator(".dao-ident")).toBeHidden({ timeout: 3_000 });
   });
