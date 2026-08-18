@@ -25,6 +25,43 @@ const FRAGMENTS: Record<string, string> = {
 };
 
 /**
+ * Worked-example fragment. The lazy row image must never paint before it is
+ * fully decoded: mobile Safari/Chrome fill the undecoded area with opaque
+ * white, which flashes inside the shadowed fragment box. The wrapper stays
+ * transparent (paper shows through) until load + decode, then reveals.
+ */
+function FragImage({ src, ready, onReady }: { src: string; ready: boolean; onReady: () => void }) {
+  const mark = (img: HTMLImageElement) => {
+    // next/image also fires onLoad for failed loads (decode() rejection is
+    // swallowed upstream) - a broken image must keep the paper visible.
+    if (!(img.naturalWidth > 0)) return;
+    if (typeof img.decode === "function") {
+      img.decode().then(onReady, onReady);
+    } else {
+      onReady();
+    }
+  };
+  return (
+    <div className={cn("dao-svc__frag", ready && "is-ready")} aria-hidden="true">
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="200px"
+        className="object-cover"
+        // Cached images can finish before hydration attaches onLoad.
+        ref={(img) => {
+          if (img && !ready && img.complete) mark(img);
+        }}
+        onLoad={(e) => {
+          if (!ready) mark(e.currentTarget);
+        }}
+      />
+    </div>
+  );
+}
+
+/**
  * Act 04 - Services. Editorial typographic index: group rail (four coloured
  * layers) + nine Adevas rows. A row opens to a plain-language explanation
  * and a worked-example fragment; hover indents with the group-coloured
@@ -34,6 +71,10 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
   const m = messages.dao.services;
   const sectionRef = useInViewOnce<HTMLElement>(0.12);
   const [open, setOpen] = useState<string | null>("03"); // hover state shown captured in 1a
+  // Fragments that have finished load + decode stay ready for the session,
+  // so revisiting a row reveals instantly without refetching.
+  const [ready, setReady] = useState<Record<string, boolean>>({});
+  const markReady = (n: string) => setReady((r) => (r[n] ? r : { ...r, [n]: true }));
 
   const groupOf = (id: string) => DAO_SERVICE_GROUPS.find((g) => g.id === id)!;
 
@@ -139,15 +180,11 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
                     <div className="dao-svc__bodyin">
                       <div className="dao-svc__detail">
                         <p className="dao-svc__desc">{t(s.desc, locale)}</p>
-                        <div className="dao-svc__frag" aria-hidden="true">
-                          <Image
-                            src={FRAGMENTS[s.n] ?? "/media/bts-set.jpg"}
-                            alt=""
-                            fill
-                            sizes="200px"
-                            className="object-cover"
-                          />
-                        </div>
+                        <FragImage
+                          src={FRAGMENTS[s.n] ?? "/media/bts-set.jpg"}
+                          ready={!!ready[s.n]}
+                          onReady={() => markReady(s.n)}
+                        />
                       </div>
                     </div>
                   </div>
