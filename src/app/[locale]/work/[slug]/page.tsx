@@ -128,6 +128,12 @@ export default async function ProjectPage({
               </div>
             </dl>
           </InView>
+          {/* §07: the opening's material continues through its torn edge -
+              same overlay stack as the opening itself */}
+          <div className="dpj__openingtear" aria-hidden="true">
+            <div className="dao-grain--strong" />
+            <div className="dao-weave" />
+          </div>
         </header>
 
         <div className="dao-grain" aria-hidden="true" />
@@ -262,7 +268,7 @@ export default async function ProjectPage({
           <section className="dpj__credits" data-dao-scene="dark">
             <div className="dao-weave" aria-hidden="true" />
             <div
-              className="dao-cut"
+              className="dao-cut dao-cut--paper"
               style={{ background: "var(--dao-paper)" }}
               aria-hidden="true"
             />

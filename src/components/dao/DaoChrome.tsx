@@ -30,6 +30,11 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
   const [previewsReady, setPreviewsReady] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
+  // §02: opening the sheet moves focus to the first destination for the focus
+  // trap. That programmatic focus must NOT raise a preview - only a real
+  // keyboard move (Tab/Shift+Tab) arms focus-driven previews. Pointer hover is
+  // always user-initiated and never gated.
+  const keyboardNav = useRef(false);
 
   // v7 #3: curtain-up close - links exit masks first, sheet travels up with
   // its torn edge (~640ms total, phases overlap; CSS carries the phases).
@@ -37,6 +42,10 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     setClosing(true);
     setOpen(false);
     setWorkOpen(false);
+    // §02: the hovered-row preview is per-visit state. Left set, it would
+    // reappear the instant the sheet opens again, before the cursor has
+    // reached any row - the sheet must always open with no preview.
+    setPreview(null);
     window.setTimeout(() => setClosing(false), 660);
     burgerRef.current?.focus();
   }, []);
@@ -67,6 +76,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     // first destination link (WORK), not the numeral categories toggle -
     // same landing focus as before the toggle existed
     const first = nav?.querySelector<HTMLElement>(".dao-nav__link") ?? undefined;
+    keyboardNav.current = false;
     first?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -75,6 +85,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
         return;
       }
       if (e.key !== "Tab" || !nav) return;
+      // a real keyboard move - focus may raise previews from here on
+      keyboardNav.current = true;
       const focusables = Array.from(
         nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
       ).filter((el) => el.offsetParent !== null);
@@ -212,6 +224,16 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     const rect = e.currentTarget.getBoundingClientRect();
     setPreview({ key, top: rect.top + rect.height / 2, rot: index % 2 ? 1.5 : -1.5 });
   };
+  // §02: leaving a row retires its own preview. Moving to another row clears
+  // and sets in the same batch, so the crossfade between rows is unchanged.
+  const leavePreview = (key: string) => () => setPreview((p) => (p && p.key === key ? null : p));
+  // §02: focus only raises a preview once the visitor is actually navigating by
+  // keyboard - never on the programmatic focus that opening the sheet performs,
+  // which would otherwise show a preview before the cursor reaches any row.
+  const focusPreview = (key: string, index: number) => (e: React.SyntheticEvent<HTMLElement>) => {
+    if (!keyboardNav.current) return;
+    hoverPreview(key, index)(e);
+  };
 
   const previews: Record<string, string> = {
     work: "/media/aom-cover.jpg",
@@ -323,7 +345,9 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
                 href={href("/work")}
                 className="dao-nav__link"
                 onMouseEnter={hoverPreview("work", 0)}
-                onFocus={hoverPreview("work", 0)}
+                onFocus={focusPreview("work", 0)}
+                onMouseLeave={leavePreview("work")}
+                onBlur={leavePreview("work")}
                 onClick={close}
                 style={{ position: "relative" }}
               >
@@ -382,6 +406,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             style={stagger(1)}
             dim={workOpen}
             onHover={hoverPreview("services", 1)}
+            onFocusPreview={focusPreview("services", 1)}
+            onLeave={leavePreview("services")}
             onClick={close}
           />
           <NavRow
@@ -392,6 +418,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             style={stagger(2)}
             dim={workOpen}
             onHover={hoverPreview("studio", 2)}
+            onFocusPreview={focusPreview("studio", 2)}
+            onLeave={leavePreview("studio")}
             onClick={close}
           />
           <NavRow
@@ -403,6 +431,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             dim={workOpen}
             lab
             onHover={hoverPreview("lab", 3)}
+            onFocusPreview={focusPreview("lab", 3)}
+            onLeave={leavePreview("lab")}
             onClick={close}
           />
           <NavRow
@@ -413,6 +443,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             style={stagger(4)}
             dim={workOpen}
             onHover={hoverPreview("process", 4)}
+            onFocusPreview={focusPreview("process", 4)}
+            onLeave={leavePreview("process")}
             onClick={close}
           />
           <NavRow
@@ -424,6 +456,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             dim={workOpen}
             small
             onHover={hoverPreview("georgia", 5)}
+            onFocusPreview={focusPreview("georgia", 5)}
+            onLeave={leavePreview("georgia")}
             onClick={close}
           />
           <NavRow
@@ -434,6 +468,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             style={stagger(6)}
             dim={workOpen}
             onHover={hoverPreview("contact", 6)}
+            onFocusPreview={focusPreview("contact", 6)}
+            onLeave={leavePreview("contact")}
             onClick={close}
           />
           <NavRow
@@ -445,6 +481,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             dim={workOpen}
             small
             onHover={hoverPreview("start", 7)}
+            onFocusPreview={focusPreview("start", 7)}
+            onLeave={leavePreview("start")}
             onClick={close}
           />
         </nav>
@@ -503,6 +541,8 @@ function NavRow({
   lab,
   small,
   onHover,
+  onFocusPreview,
+  onLeave,
   onClick,
 }: {
   n: string;
@@ -514,6 +554,8 @@ function NavRow({
   lab?: boolean;
   small?: boolean;
   onHover?: (e: React.SyntheticEvent<HTMLElement>) => void;
+  onFocusPreview?: (e: React.SyntheticEvent<HTMLElement>) => void;
+  onLeave?: () => void;
   onClick?: () => void;
 }) {
   return (
@@ -532,7 +574,9 @@ function NavRow({
           href={href}
           className={cn("dao-nav__link", lab && "dao-nav__link--lab", small && "dao-nav__link--sm")}
           onMouseEnter={onHover}
-          onFocus={onHover}
+          onFocus={onFocusPreview}
+          onMouseLeave={onLeave}
+          onBlur={onLeave}
           onClick={onClick}
         >
           {label}

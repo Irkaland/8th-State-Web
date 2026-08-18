@@ -175,7 +175,7 @@ export function SelectedWork({
     >
       <div className="dao-weave" aria-hidden="true" />
       <div
-        className="dao-tear dao-tear--top"
+        className="dao-tear dao-tear--top dao-tear--paper"
         style={{ background: "var(--dao-paper)" }}
         aria-hidden="true"
       />
@@ -317,8 +317,10 @@ export function SelectedWork({
         {up(m.all)} <span aria-hidden="true">→</span>
       </Link>
 
+      {/* §07: the closing ink field is the same surface as the act above,
+          so it carries the act's weave - not the heavier paper grain */}
       <div className="dao-work__base" aria-hidden="true">
-        <div className="dao-grain" />
+        <div className="dao-weave" />
       </div>
     </section>
   );

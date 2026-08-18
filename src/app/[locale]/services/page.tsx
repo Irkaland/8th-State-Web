@@ -141,7 +141,11 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
         {/* II · PRODUCTION & SPATIAL DESIGN - made-world, full-frame */}
         <InView className="dsv__g2" threshold={0.08} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
-          <div className="dao-cut" style={{ background: "var(--dao-paper)" }} aria-hidden="true" />
+          <div
+            className="dao-cut dao-cut--paper"
+            style={{ background: "var(--dao-paper)" }}
+            aria-hidden="true"
+          />
           <div
             className="dsv__grouplabel"
             style={{ color: g2.colour, padding: "0 var(--dao-gutter)", position: "relative" }}
@@ -225,7 +229,11 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
 
         {/* IV · FINISHING - quiet completion layer */}
         <InView className="dsv__g4" threshold={0.1}>
-          <div className="dao-cut" style={{ background: "var(--dao-blue)" }} aria-hidden="true" />
+          <div
+            className="dao-cut dao-cut--grainstrong"
+            style={{ background: "var(--dao-blue)" }}
+            aria-hidden="true"
+          />
           <div
             className="dsv__grouplabel"
             style={{ color: g4.colour, padding: "0 var(--dao-gutter)" }}

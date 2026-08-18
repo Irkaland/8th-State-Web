@@ -230,6 +230,36 @@ test.describe("Global polish pass", () => {
     ).toBeVisible();
   });
 
+  test("the burger opens with no preview; WORK hover reveals and leaving hides it", async ({
+    page,
+  }) => {
+    await gotoRoute(page, "/");
+    await page.mouse.move(300, 400);
+    await page.getByRole("button", { name: /open menu/i }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    const preview = page.locator(".dao-nav__preview");
+    // the sheet must open with no preview on stage
+    await expect(preview).not.toHaveClass(/is-live/);
+    expect(await preview.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+
+    const work = page.locator('#dao-nav a[href="/work"]').first();
+    await work.hover();
+    await expect(preview).toHaveClass(/is-live/);
+    await expect.poll(() => preview.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+
+    // leaving WORK retires its preview
+    await page.mouse.move(1200, 800);
+    await expect(preview).not.toHaveClass(/is-live/);
+
+    // reopening must not restore the previous hover state
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#dao-nav")).toBeHidden();
+    await page.mouse.move(300, 400);
+    await page.getByRole("button", { name: /open menu/i }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(preview).not.toHaveClass(/is-live/);
+  });
+
   test("chrome red backing follows the idle choreography", async ({ page }) => {
     await gotoRoute(page, "/");
     await page.mouse.move(500, 500);

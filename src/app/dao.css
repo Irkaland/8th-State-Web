@@ -101,18 +101,45 @@ html {
 .dao-tear--flip {
   transform: scaleY(-1);
 }
-/* §05: a torn boundary is the previous section's material physically
-   overlapping the next - it carries the same grain as the sections it
-   joins, never a flat printed strip. The parent's torn mask clips the
-   grain with the silhouette. */
-.dao-tear::after {
+/* §05/§07: a torn boundary is the previous section's material physically
+   overlapping the next, so it must carry that section's EXACT overlay -
+   same asset, same tile size, same opacity, same blend - or the boundary
+   reads as a darker/stronger band inside one surface. The four material
+   vars below default to the canvas weave of the ink/colour chapter
+   grounds (.dao-weave); the --paper modifier switches to the paper grain
+   of the cream grounds (.dao-grain). Values are kept in lockstep with
+   the texture utilities directly below. */
+.dao-tear,
+.dao-cut {
+  --dao-edge-tex: url("/assets/textures/canvas-weave.webp");
+  --dao-edge-size: 512px;
+  --dao-edge-op: 0.14;
+  --dao-edge-blend: overlay;
+}
+.dao-tear--paper,
+.dao-cut--paper {
+  --dao-edge-tex: url("/assets/textures/paper-grain.webp");
+  --dao-edge-size: 352px;
+  --dao-edge-op: 0.4;
+  --dao-edge-blend: multiply;
+}
+/* for the grounds that carry the heavier .dao-grain--strong overlay */
+.dao-tear--grainstrong,
+.dao-cut--grainstrong {
+  --dao-edge-tex: url("/assets/textures/paper-grain-strong.webp");
+  --dao-edge-size: 352px;
+  --dao-edge-op: 0.5;
+  --dao-edge-blend: multiply;
+}
+.dao-tear::after,
+.dao-cut::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("/assets/textures/paper-grain-strong.webp");
-  background-size: 352px;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
+  background: var(--dao-edge-tex);
+  background-size: var(--dao-edge-size);
+  opacity: var(--dao-edge-op);
+  mix-blend-mode: var(--dao-edge-blend);
   pointer-events: none;
 }
 

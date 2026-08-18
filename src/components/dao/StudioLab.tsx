@@ -28,7 +28,7 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
       <div className="dao-weave" aria-hidden="true" />
       {/* paper torn boundary from Services */}
       <div
-        className="dao-tear dao-tear--top"
+        className="dao-tear dao-tear--top dao-tear--paper"
         style={{ background: "var(--dao-paper)" }}
         aria-hidden="true"
       />
