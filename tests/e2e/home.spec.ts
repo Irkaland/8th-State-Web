@@ -9,7 +9,19 @@ test.describe("Homepage - One Continuous Take", () => {
     await expect(page.locator(".dao-ident")).toContainText("8TH STATE");
     // v7 short form auto-advances (~1.8s) to the showreel beneath.
     await expect(page.locator(".dao-ident")).toBeHidden({ timeout: 8_000 });
-    await expect(page.getByRole("button", { name: /play reel/i })).toBeVisible();
+    // the reel is a moving hero now: it autoplays muted, no Play control
+    const reel = page.locator(".dao-reel__media video");
+    await expect(reel).toBeVisible();
+    await expect(page.locator(".dao-reel button")).toHaveCount(0);
+    await expect
+      .poll(
+        () =>
+          reel.evaluate(
+            (v) => !(v as HTMLVideoElement).paused && (v as HTMLVideoElement).currentTime > 0,
+          ),
+        { timeout: 8_000 },
+      )
+      .toBe(true);
     await page.waitForLoadState("load");
     expect(errors(), errors().join("\n")).toEqual([]);
   });
