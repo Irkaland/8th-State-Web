@@ -239,7 +239,12 @@ html:has(.dlb) {
   right: 0;
   bottom: calc(-1 * var(--dao-tear-h) + 2px);
   height: var(--dao-tear-h);
-  background: var(--dao-blue);
+  /* §05: the torn overhang keeps the plane's grain - the textured blue
+     itself tears over the black, no flat strip between the grounds */
+  background:
+    url("/assets/textures/paper-grain-strong.webp") 0 0 / 352px,
+    var(--dao-blue);
+  background-blend-mode: multiply, normal;
   -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   z-index: 1;
@@ -607,7 +612,12 @@ html:has(.dlb) {
   right: 0;
   bottom: calc(-1 * var(--dao-tear-h) + 2px);
   height: var(--dao-tear-h);
-  background: var(--dao-blue);
+  /* §05: keeps the opening's grain through the torn overhang - textured
+     material meets the next ground directly, no flat strip */
+  background:
+    url("/assets/textures/paper-grain-strong.webp") 0 0 / 352px,
+    var(--dao-blue);
+  background-blend-mode: multiply, normal;
   -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   z-index: 1;
@@ -1270,6 +1280,18 @@ html:has(.dlb) {
   height: 40px;
   -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+/* §05: the cut carries the previous section's grain - torn material
+   overlapping, never a flat printed strip (mask clips the grain). */
+.dao-cut::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
   pointer-events: none;
 }
 

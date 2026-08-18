@@ -11,7 +11,9 @@ import type { Messages } from "@/i18n";
  * first frames are actually rendering.
  */
 const REEL_SRC = "/media/showreel.mp4";
-const REEL_POSTER = "/media/hero-red.jpg";
+// §09: the poster is the reel's own first frame - the pre-play stage reads
+// as the real footage, never the legacy red placeholder composition.
+const REEL_POSTER = "/media/showreel-poster.jpg";
 
 export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: boolean }) {
   const m = messages.dao.reel;

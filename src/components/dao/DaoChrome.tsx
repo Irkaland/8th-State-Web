@@ -64,7 +64,9 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
   useEffect(() => {
     if (!open) return;
     const nav = navRef.current;
-    const first = nav?.querySelector<HTMLElement>("a, button");
+    // first destination link (WORK), not the numeral categories toggle -
+    // same landing focus as before the toggle existed
+    const first = nav?.querySelector<HTMLElement>(".dao-nav__link") ?? undefined;
     first?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -201,7 +203,9 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
   });
 
   // v7 #4: preview follows the hovered row (vertically centred on it) and
-  // alternates ±1.5° rotation per link.
+  // alternates ±1.5° rotation per link. Its top edge is clamped so the card
+  // always starts below the EN/KA + burger line with a deliberate gap.
+  const PREVIEW_MIN_TOP = 112;
   const hoverPreview = (key: string, index: number) => (e: React.SyntheticEvent<HTMLElement>) => {
     // covers the rare resize across 900px while the sheet is already open
     armPreviews();
@@ -300,20 +304,27 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
         <div className="dao-weave" aria-hidden="true" />
         <div className="dao-nav__serpent dao-mask" aria-hidden="true" />
         <nav className="dao-nav__list" aria-label={messages.nav.primary}>
-          {/* 01 WORK - expands the approved categories */}
+          {/* 01 WORK - the label itself opens the full archive (/work, ALL
+              active - never a remembered category). The numeral carries the
+              categories toggle so the approved sub-list stays reachable
+              without adding a visible control. */}
           <span className="dao-nav__mask">
             <span className="dao-nav__row" style={stagger(0)}>
-              <span className="dao-nav__num" aria-hidden="true">
-                01
-              </span>
               <button
                 type="button"
-                className="dao-nav__link"
+                className="dao-nav__num dao-nav__num--toggle"
                 aria-expanded={workOpen}
                 aria-label={m.expandWork}
                 onClick={() => setWorkOpen((v) => !v)}
+              >
+                01
+              </button>
+              <Link
+                href={href("/work")}
+                className="dao-nav__link"
                 onMouseEnter={hoverPreview("work", 0)}
                 onFocus={hoverPreview("work", 0)}
+                onClick={close}
                 style={{ position: "relative" }}
               >
                 {m.work}
@@ -322,7 +333,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
                   style={{ background: "var(--dao-blue)", bottom: "6px", height: "12px" }}
                   aria-hidden="true"
                 />
-              </button>
+              </Link>
               <span className="dao-nav__ka" aria-hidden="true">
                 {m.workKa}
               </span>
@@ -443,7 +454,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
           style={
             preview
               ? {
-                  ["--py" as string]: `${Math.round(preview.top - 95)}px`,
+                  ["--py" as string]: `${Math.max(Math.round(preview.top - 95), PREVIEW_MIN_TOP)}px`,
                   ["--pr" as string]: `${preview.rot}deg`,
                 }
               : undefined

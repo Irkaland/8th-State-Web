@@ -195,3 +195,55 @@ test.describe("Homepage - One Continuous Take", () => {
     await expectNoSeriousA11y(page, [".dao-reel", ".dao-chrome"]);
   });
 });
+
+test.describe("Global polish pass", () => {
+  test("the open burger sheet hides the contextual return tab", async ({ page }) => {
+    await gotoRoute(page, "/work");
+    await page.mouse.move(300, 400);
+    const tab = page.locator(".dao-returntab");
+    await expect(tab).toBeVisible();
+    await page.getByRole("button", { name: /open menu/i }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    // opacity 0 + pointer-events none while the sheet is open - no HOME
+    // control may float over the burger composition
+    await expect.poll(() => tab.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+    expect(await tab.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
+    await page.keyboard.press("Escape");
+    await expect.poll(() => tab.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+  });
+
+  test("burger WORK always opens the full archive with ALL active", async ({ page }) => {
+    await gotoRoute(page, "/work?category=photography");
+    await expect(page.locator('.dwk__filter[aria-current="true"]')).toContainText(/photography/i);
+    await page.mouse.move(300, 400);
+    await page.getByRole("button", { name: /open menu/i }).click();
+    // the WORK label itself is the archive link (first /work link in the sheet)
+    await page.locator('#dao-nav a[href="/work"]').first().click();
+    await expect(page).toHaveURL(/\/work$/);
+    await expect(page.locator('.dwk__filter[aria-current="true"]')).toContainText(/all/i);
+    // the categories toggle stays reachable on the numeral
+    await page.mouse.move(300, 400);
+    await page.getByRole("button", { name: /open menu/i }).click();
+    await page.getByRole("button", { name: /work categories/i }).click();
+    await expect(
+      page.getByRole("dialog").getByRole("link", { name: "Film & Video" }),
+    ).toBeVisible();
+  });
+
+  test("chrome red backing follows the idle choreography", async ({ page }) => {
+    await gotoRoute(page, "/");
+    await page.mouse.move(500, 500);
+    const beforeOpacity = () =>
+      page.evaluate(
+        () => getComputedStyle(document.querySelector(".dao-chrome")!, "::before").opacity,
+      );
+    expect(await beforeOpacity()).toBe("1");
+    await page.waitForTimeout(2_300);
+    await expect(page.locator("html")).toHaveAttribute("data-dao-idle", "");
+    await page.waitForTimeout(700); // 600ms fade-out completes
+    expect(await beforeOpacity()).toBe("0");
+    await page.mouse.move(520, 520);
+    await expect(page.locator("html")).not.toHaveAttribute("data-dao-idle", "");
+    await expect.poll(beforeOpacity).toBe("1");
+  });
+});

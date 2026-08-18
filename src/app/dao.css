@@ -101,6 +101,20 @@ html {
 .dao-tear--flip {
   transform: scaleY(-1);
 }
+/* §05: a torn boundary is the previous section's material physically
+   overlapping the next - it carries the same grain as the sections it
+   joins, never a flat printed strip. The parent's torn mask clips the
+   grain with the silhouette. */
+.dao-tear::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
 
 /* Texture overlays */
 .dao-grain,
@@ -292,6 +306,36 @@ button:focus-visible > .dao-strike {
 .dao-chrome > * {
   pointer-events: auto;
 }
+/* Faint translucent field of the official brand red (--dao-red, brand
+   system) behind the chrome so the mark / EN-KA / burger never print
+   directly over busy content. A material fade, not a navbar: no hard
+   edge, no blur, no fill - it dissolves well above content height and
+   follows the exact idle choreography of the chrome controls. */
+.dao-chrome::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 118px;
+  background: linear-gradient(
+    180deg,
+    rgba(208, 62, 38, 0.32) 0%,
+    rgba(208, 62, 38, 0.18) 46%,
+    rgba(208, 62, 38, 0) 100%
+  );
+  pointer-events: none;
+  transition: opacity 250ms ease;
+}
+html[data-dao-idle] .dao-chrome::before {
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+html[data-dao-idle] .dao-chrome:focus-within::before {
+  opacity: 1;
+}
+/* the open ink sheet is its own composition - no red field over it */
+html[data-dao-nav-open] .dao-chrome::before {
+  opacity: 0;
+}
 .dao-chrome--idle {
   opacity: 0;
 }
@@ -390,6 +434,13 @@ html[data-dao-idle] .dao-returntab:focus-within {
   .dao-returntab {
     display: none;
   }
+}
+/* While the fullscreen burger sheet is open the sheet carries the only
+   navigation - the contextual return tab (z-index above the sheet) must
+   never float over it as a second HOME control. */
+html[data-dao-nav-open] .dao-returntab {
+  opacity: 0;
+  pointer-events: none;
 }
 .dao-chrome__brand {
   display: flex;
@@ -614,6 +665,26 @@ html[data-dao-idle] .dao-returntab:focus-within {
   font-family: var(--dao-f-numeral);
   font-size: 15px;
   color: rgba(242, 237, 227, 0.4);
+}
+/* §04: the WORK numeral doubles as the categories toggle - visually the
+   same numeral, functionally a button. */
+.dao-nav__num--toggle {
+  background: none;
+  border: 0;
+  /* invisible hit-area expansion - keeps the 44px target without moving
+     the numeral visually */
+  padding: 16px;
+  margin: -16px;
+  cursor: pointer;
+  line-height: inherit;
+}
+.dao-nav__num--toggle:hover,
+.dao-nav__num--toggle[aria-expanded="true"] {
+  color: rgba(242, 237, 227, 0.85);
+}
+.dao-nav__num--toggle:focus-visible {
+  outline: 2px solid var(--dao-blue);
+  outline-offset: 3px;
 }
 .dao-nav__link {
   position: relative;
@@ -1639,7 +1710,10 @@ html[data-dao-idle] .dao-returntab:focus-within {
   right: 0;
   bottom: 0;
   height: 14px;
-  background: var(--dao-blue);
+  /* Selected Work resolves into black before the paper act - the blue
+     stays inside the chapter (sheets, badges, metadata), never as the
+     lower transition field. */
+  background: var(--dao-ink);
   overflow: hidden;
 }
 @media (max-width: 720px) {
