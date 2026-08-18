@@ -1,4 +1,6 @@
 // English messages - source of truth for the message shape (see ka.ts for Georgian).
+import { getNotFoundMessages } from "../not-found-messages";
+
 const en = {
   meta: {
     defaultTitle: "8th State Production - Visual Production Studio, Tbilisi",
@@ -586,14 +588,9 @@ const en = {
         "This document is being prepared. Its confirmed text will replace this notice before publication.",
       pendingHeading: "Document in preparation",
     },
-    notFound: {
-      line: "This frame is not in the reel.",
-      desc: "The page moved, or never existed. The bird got out of its frame - these routes are still available.",
-      home: "Home",
-      work: "Work",
-      contact: "Contact",
-      fr: "FR 0404 - MISSING",
-    },
+    // single source of truth lives in i18n/not-found-messages.ts - the 404
+    // route is a client component and must not import this full dictionary
+    notFound: getNotFoundMessages("en"),
   },
 };
 

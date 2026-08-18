@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages, format } from "@/i18n";
-import { t } from "@/content/types";
+import { t } from "@/content/localized";
 import { projectsSorted } from "@/content/projects";
 import { DAO_DISCIPLINES, disciplineOf, disciplineLabel, isDiscipline } from "@/content/dao-work";
 import { DaoShell } from "@/components/dao/DaoShell";

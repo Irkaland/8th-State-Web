@@ -1,24 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Space_Grotesk, Instrument_Sans, Space_Mono, Noto_Sans_Georgian } from "next/font/google";
+import { Noto_Sans_Georgian } from "next/font/google";
 import localFont from "next/font/local";
 import "../globals.css";
 import { LOCALES, type Locale, isLocale, LOCALE_HTML_LANG } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
 import { getSiteUrl, isNoindex } from "@/lib/site-url";
 
-const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--f-grotesk", display: "swap" });
-const instrument = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--f-instrument",
-  display: "swap",
-});
-const mono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--f-mono",
-  display: "swap",
-});
+// perf phase 2A: Space Grotesk, Instrument Sans and Space Mono are removed -
+// runtime FontFaceSet evidence showed none of their faces ever rendered a
+// glyph (their only consumers were the deleted legacy token layer and the
+// skip link, which now uses the system monospace stack). Noto Sans Georgian
+// stays: it is the live Georgian fallback behind Optika / ALK Sanet.
 const georgian = Noto_Sans_Georgian({
   subsets: ["georgian"],
   variable: "--f-georgian",
@@ -101,7 +94,7 @@ export default async function LocaleLayout({
     <html
       lang={LOCALE_HTML_LANG[locale]}
       data-scroll-behavior="smooth"
-      className={`${grotesk.variable} ${instrument.variable} ${mono.variable} ${georgian.variable} ${adevas.variable} ${optika.variable} ${glacier.variable} ${sanet.variable}`}
+      className={`${georgian.variable} ${adevas.variable} ${optika.variable} ${glacier.variable} ${sanet.variable}`}
     >
       <body>
         <a href="#main" className="skip-link">

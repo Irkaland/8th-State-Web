@@ -9,10 +9,9 @@ export function getMessages(locale: string): Messages {
   return DICTS[isLocale(locale) ? locale : DEFAULT_LOCALE];
 }
 
-/** Simple {name} interpolation. */
-export function format(template: string, vars: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? String(vars[k]) : `{${k}}`));
-}
+// format() moved to ./format (client-safe, dictionary-free); re-exported so
+// server-side callers keep their import path.
+export { format } from "./format";
 
 export type { Messages };
 export type { Locale };

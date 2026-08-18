@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { notFound } from "next/navigation";
 import { type Locale, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
-import { t } from "@/content/types";
+import { t } from "@/content/localized";
 import { featuredProjects } from "@/content/projects";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { Showreel } from "@/components/dao/Showreel";

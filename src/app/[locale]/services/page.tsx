@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
-import { t } from "@/content/types";
+import { t } from "@/content/localized";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";

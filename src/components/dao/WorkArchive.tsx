@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import type { Messages } from "@/i18n";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
-import { format } from "@/i18n";
+import { format } from "@/i18n/format";
 import { InView } from "./InView";
 import { up } from "@/lib/cn";
 

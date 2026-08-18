@@ -1,4 +1,5 @@
 import type { Messages } from "./en";
+import { getNotFoundMessages } from "../not-found-messages";
 
 // Georgian messages. Natural demo copy - reviewed for tone, not a machine mirror of the English.
 const ka: Messages = {
@@ -597,14 +598,8 @@ const ka: Messages = {
         "დოკუმენტი მზადდება. გამოქვეყნებამდე ამ შეტყობინებას დადასტურებული ტექსტი ჩაანაცვლებს.",
       pendingHeading: "დოკუმენტი მზადების პროცესშია",
     },
-    notFound: {
-      line: "ეს კადრი რგოლში არ არის.",
-      desc: "გვერდი გადავიდა ან არასდროს არსებობდა. ჩიტი კადრიდან გაფრინდა - ეს მარშრუტები კი ხელმისაწვდომია.",
-      home: "მთავარი",
-      work: "ნამუშევრები",
-      contact: "კონტაქტი",
-      fr: "FR 0404 - MISSING",
-    },
+    // single source of truth lives in i18n/not-found-messages.ts (see en.ts)
+    notFound: getNotFoundMessages("ka"),
   },
 };
 

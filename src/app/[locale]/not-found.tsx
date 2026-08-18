@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { localeFromPathname, localeHref } from "@/i18n/locales";
-import { getMessages } from "@/i18n";
+import { getNotFoundMessages } from "@/i18n/not-found-messages";
 import { up } from "@/lib/cn";
 
 /**
@@ -13,8 +13,9 @@ import { up } from "@/lib/cn";
 export default function NotFound() {
   const pathname = usePathname() || "/";
   const locale = localeFromPathname(pathname);
-  const m = getMessages(locale);
-  const R = m.daoRoutes.notFound;
+  // perf phase 2A: only the 404 strings - never the full dictionaries,
+  // which would enter the shared client graph of every route
+  const R = getNotFoundMessages(locale);
 
   return (
     <main id="main" className="dao d404">

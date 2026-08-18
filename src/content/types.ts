@@ -1,17 +1,16 @@
 import { z } from "zod";
-import type { Locale } from "@/i18n/locales";
+import type { LocalizedText } from "./localized";
 
-// ---- Localized text helpers -------------------------------------------------
+// ---- Localized text ----------------------------------------------------------
+// The LocalizedText type and the t() helper live in ./localized (schema-free)
+// so client components never pull the zod runtime into their bundle (perf
+// phase 2A). This schema stays aligned with the type via the z.ZodType bound.
 
-export const localizedTextSchema = z.object({
+export const localizedTextSchema: z.ZodType<LocalizedText> = z.object({
   en: z.string().min(1),
   ka: z.string().min(1),
 });
-export type LocalizedText = z.infer<typeof localizedTextSchema>;
-
-export function t(text: LocalizedText, locale: Locale): string {
-  return text[locale] ?? text.en;
-}
+export type { LocalizedText } from "./localized";
 
 // ---- Media ------------------------------------------------------------------
 

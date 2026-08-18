@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { Messages } from "@/i18n";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
-import { t } from "@/content/types";
+import { t } from "@/content/localized";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
 import { cn, up } from "@/lib/cn";
 import { useInViewOnce } from "./hooks";
