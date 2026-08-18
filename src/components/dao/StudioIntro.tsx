@@ -58,8 +58,17 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
       // §04: the central statement moves into focus (small travel + scale
       // development) as the orbit hands the scene over to it.
       section.style.setProperty("--tfoc", foc.toFixed(4));
-      if (running || Math.abs(targetRot - rot) > 0.01 || Math.abs(targetFoc - foc) > 0.005)
-        raf = requestAnimationFrame(tick);
+      // §Perf phase 2B convergence gate: keep scheduling frames only while
+      // the lerp is still visibly travelling, or while the O4 ambient drift
+      // owns the settled scene (progress > 0.96 - the sine keeps the target
+      // moving there, exactly as approved). Once converged below that
+      // threshold the loop goes idle; onScroll re-arms it on the next input.
+      // Thresholds are sub-visual: 0.01deg rotation, 0.001 scale, 0.005 focus.
+      const converged =
+        Math.abs(targetRot + ambient - rot) <= 0.01 &&
+        Math.abs(targetScale - scale) <= 0.001 &&
+        Math.abs(targetFoc - foc) <= 0.005;
+      if (running && (progress > 0.96 || !converged)) raf = requestAnimationFrame(tick);
       else raf = 0;
     };
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preload } from "react-dom";
 import { notFound } from "next/navigation";
 import { Noto_Sans_Georgian } from "next/font/google";
 import localFont from "next/font/local";
@@ -89,6 +90,16 @@ export default async function LocaleLayout({
   if (!isLocale(raw)) notFound();
   const locale = raw as Locale;
   const m = getMessages(locale);
+
+  // Perf phase 2B: the two brand textures that paint the biggest first-view
+  // surfaces are CSS background-images, so the preload scanner cannot see
+  // them - measured ~430ms discovery delay on /work, where the weave IS the
+  // LCP element. These hints (hoisted into <head> during SSR) start both
+  // fetches with the document instead of after stylesheet parsing. URLs
+  // match the CSS references in dao.css exactly, so the browser reuses the
+  // request - no double download. Visuals untouched.
+  preload("/assets/textures/canvas-weave.webp", { as: "image" });
+  preload("/assets/textures/paper-grain-strong.webp", { as: "image" });
 
   return (
     <html
