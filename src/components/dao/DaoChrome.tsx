@@ -453,7 +453,12 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
           <span className="dao-nav__previewinner">
             {/* optimized responsive sources at the preview's real display
                 size (max 300×190, dao.css) - same files, same cover crop,
-                same crossfade; DPR handled by the srcset (sizes=300px). */}
+                same crossfade; DPR handled by the srcset (sizes=300px).
+                Default (lazy/low-priority) loading is deliberate: the open
+                sheet puts them in-viewport so they still fetch immediately,
+                but at low network priority - router RSC fetches always win
+                the connection pool, so a click during the curtain can never
+                queue behind preview bytes. */}
             {previewsReady &&
               Object.entries(previews).map(([key, src]) => (
                 <Image
@@ -463,7 +468,6 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
                   width={600}
                   height={380}
                   sizes="300px"
-                  loading="eager"
                   className={preview?.key === key ? "is-on" : ""}
                 />
               ))}
