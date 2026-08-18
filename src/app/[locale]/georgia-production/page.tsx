@@ -123,7 +123,7 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
           <section className="dgp__plates" data-dao-scene="dark">
             <div className="dao-weave" aria-hidden="true" />
             <div
-              className="dao-cut"
+              className="dao-cut dao-cut--paper"
               style={{ background: "var(--dao-paper)" }}
               aria-hidden="true"
             />

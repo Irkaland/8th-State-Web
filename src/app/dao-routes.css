@@ -232,21 +232,21 @@ html:has(.dlb) {
   background: var(--dao-blue);
   padding: 104px var(--dao-gutter) 90px;
 }
-.dwk__plane::after {
-  content: "";
+/* §07: the plane's torn overhang is the plane's own material continuing
+   past its edge, so it is a real element carrying the identical overlay
+   children (.dao-grain--strong + .dao-weave) rather than a pseudo that
+   re-paints the texture at a different strength. The torn mask clips the
+   element and its overlays together. */
+.dwk__planetear {
   position: absolute;
   left: 0;
   right: 0;
   bottom: calc(-1 * var(--dao-tear-h) + 2px);
   height: var(--dao-tear-h);
-  /* §05: the torn overhang keeps the plane's grain - the textured blue
-     itself tears over the black, no flat strip between the grounds */
-  background:
-    url("/assets/textures/paper-grain-strong.webp") 0 0 / 352px,
-    var(--dao-blue);
-  background-blend-mode: multiply, normal;
+  background: var(--dao-blue);
   -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  pointer-events: none;
   z-index: 1;
 }
 .dwk__head {
@@ -605,21 +605,18 @@ html:has(.dlb) {
   padding: 150px var(--dao-gutter) 110px;
   color: var(--dao-paper);
 }
-.dpj__opening::after {
-  content: "";
+/* §07: same construction as .dwk__planetear - the opening's own material
+   continues through the tear via identical overlay children. */
+.dpj__openingtear {
   position: absolute;
   left: 0;
   right: 0;
   bottom: calc(-1 * var(--dao-tear-h) + 2px);
   height: var(--dao-tear-h);
-  /* §05: keeps the opening's grain through the torn overhang - textured
-     material meets the next ground directly, no flat strip */
-  background:
-    url("/assets/textures/paper-grain-strong.webp") 0 0 / 352px,
-    var(--dao-blue);
-  background-blend-mode: multiply, normal;
+  background: var(--dao-blue);
   -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  pointer-events: none;
   z-index: 1;
 }
 .dpj__openinggrid {
@@ -1282,18 +1279,8 @@ html:has(.dlb) {
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   pointer-events: none;
 }
-/* §05: the cut carries the previous section's grain - torn material
-   overlapping, never a flat printed strip (mask clips the grain). */
-.dao-cut::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("/assets/textures/paper-grain-strong.webp");
-  background-size: 352px;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
+/* §07: the cut's material overlay lives with .dao-tear in dao.css - one
+   shared rule so a boundary always matches the ground it belongs to. */
 
 /* ============================================================
    /studio - visual manifesto (4a)

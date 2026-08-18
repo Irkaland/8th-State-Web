@@ -145,7 +145,11 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
         {/* one institution - two rooms */}
         <InView className="dst__rooms" threshold={0.1} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
-          <div className="dao-cut" style={{ background: "var(--dao-paper)" }} aria-hidden="true" />
+          <div
+            className="dao-cut dao-cut--paper"
+            style={{ background: "var(--dao-paper)" }}
+            aria-hidden="true"
+          />
           <div className="dst__roomsbody">
             <span className="dao-kicker dao-fade" style={{ color: "var(--dao-blue)" }}>
               {up(R.oneInstitution)}

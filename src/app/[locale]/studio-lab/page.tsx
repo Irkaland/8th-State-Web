@@ -122,7 +122,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
           <InView threshold={0.08}>
             <section className="dlb__work">
               <div
-                className="dao-cut"
+                className="dao-cut dao-cut--paper"
                 style={{ background: "var(--dao-paper)" }}
                 aria-hidden="true"
               />

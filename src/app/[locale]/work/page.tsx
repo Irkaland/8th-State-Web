@@ -112,6 +112,12 @@ export default async function WorkPage({
               ))}
             </nav>
           </div>
+          {/* §07: the plane's material continues through its torn edge -
+              same overlay stack as the plane itself */}
+          <div className="dwk__planetear" aria-hidden="true">
+            <div className="dao-grain--strong" />
+            <div className="dao-weave" />
+          </div>
         </header>
 
         <WorkArchive locale={locale} messages={m} items={items} total={all.length} />
