@@ -1111,35 +1111,6 @@ html[data-dao-idle] .dao-returntab:focus-within {
   );
   pointer-events: none;
 }
-.dao-reel__play {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  background: none;
-  border: 0;
-  color: var(--dao-paper);
-  transition: transform 300ms var(--dao-ease-out);
-}
-.dao-reel__play:hover {
-  transform: translate(-50%, -50%) scale(1.05);
-}
-.dao-reel__rosette {
-  width: clamp(58px, 6.7vw, 96px);
-  aspect-ratio: 1;
-  background: rgba(242, 237, 227, 0.92);
-  --m: url("/assets/graphics/rosette.webp");
-}
-.dao-reel__playlabel {
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.4em;
-  padding-left: 0.4em;
-}
 .dao-reel__meta {
   position: absolute;
   bottom: 32px;

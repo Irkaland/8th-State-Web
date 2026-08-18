@@ -335,7 +335,7 @@ const en = {
       act: "Act 01 - Master Showreel",
       play: "Play reel",
       title: "Master Showreel - 2026",
-      duration: "02:14",
+      duration: "00:10",
       format: "16:9 · Colour",
       pending: "Showreel in production - final master pending",
     },
