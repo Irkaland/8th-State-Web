@@ -1860,6 +1860,18 @@ html[data-dao-idle] .dao-returntab:focus-within {
   position: relative;
   overflow: hidden;
   flex: none;
+  /* Invisible (paper shows through) until the image has decoded - mobile
+     Safari/Chrome otherwise paint the undecoded area as a white box. */
+  opacity: 0;
+  transition: opacity 200ms var(--dao-ease-out);
+}
+.dao-svc__frag.is-ready {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dao-svc__frag {
+    transition: none;
+  }
 }
 .dao-svc__frag img {
   position: absolute;
