@@ -307,8 +307,10 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         <Image
           src="/assets/brand/8th-state-logo-mark.png"
           alt="8th State Production mark"
+          // the mark is 3137x1595 - a declared square box made the browser
+          // reserve the wrong space and reflow once the real ratio landed
           width={312}
-          height={312}
+          height={159}
           className="dao-intro__logomark"
           style={{ height: "auto" }}
         />

@@ -25,7 +25,14 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        // The showreel is a muted inline autoplay hero. Headless Chrome
+        // still applies the gesture requirement to some media paths, so the
+        // reel specs would fail for reasons a real browser never hits.
+        launchOptions: { args: ["--autoplay-policy=no-user-gesture-required"] },
+      },
     },
   ],
   webServer: {

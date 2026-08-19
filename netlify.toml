@@ -23,3 +23,16 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+# Real-device fix: /_next/image negotiates its output format from the request
+# Accept header (WebP for modern clients, PNG/JPEG for the rest) and is served
+# publicly cacheable for a week. Without a standard `Vary: Accept` any shared
+# cache between us and the device - carrier/ISP proxies, corporate proxies, a
+# browser disk cache shared across profiles - may store one variant and hand it
+# to a client that cannot decode it, which renders as a broken image. Netlify's
+# own edge keys correctly on its internal Netlify-Image-Accept header; this
+# header makes the same contract explicit to every cache downstream of it.
+[[headers]]
+  for = "/_next/image*"
+  [headers.values]
+    Vary = "Accept"
