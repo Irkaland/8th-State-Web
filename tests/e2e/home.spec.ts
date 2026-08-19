@@ -214,29 +214,39 @@ test.describe("Studio Ident motion + copy", () => {
     await expect(lang.nth(1)).toHaveAttribute("href", "/ka");
   });
 
-  test("the serpent glides in as one stage and does not re-centre", async ({ page }) => {
+  test("the serpent slithers in from the right and settles dead centre", async ({ page }) => {
+    // sample both axes: X lives on the path wrapper, the wave + roll on the
+    // serpent itself
     await page.addInitScript(() => {
-      (window as unknown as { __s: { t: number; x: number }[] }).__s = [];
+      type Sample = { t: number; x: number; y: number; rot: number };
+      (window as unknown as { __s: Sample[] }).__s = [];
       const tick = () => {
-        const el = document.querySelector(".dao-ident__serpent");
-        const store = (window as unknown as { __s: { t: number; x: number }[] }).__s;
-        if (el) {
-          const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-          store.push({ t: Math.round(performance.now()), x: +m.m41.toFixed(3) });
+        const path = document.querySelector(".dao-ident__serpentpath");
+        const snake = document.querySelector(".dao-ident__serpent");
+        const store = (window as unknown as { __s: Sample[] }).__s;
+        if (path && snake) {
+          const mp = new DOMMatrixReadOnly(getComputedStyle(path).transform);
+          const ms = new DOMMatrixReadOnly(getComputedStyle(snake).transform);
+          store.push({
+            t: Math.round(performance.now()),
+            x: +mp.m41.toFixed(3),
+            y: +ms.m42.toFixed(3),
+            rot: +(Math.atan2(ms.m12, ms.m11) * (180 / Math.PI)).toFixed(3),
+          });
         }
-        if (store.length < 300) requestAnimationFrame(tick);
+        if (store.length < 320) requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
     });
     await page.goto("/");
     await expect(page.locator(".dao-ident")).toBeVisible();
-    await page.waitForTimeout(2_600); // the 1350ms glide plus settle
+    await page.waitForTimeout(2_900); // the 1600ms slither plus settle
     const s = await page.evaluate(
-      () => (window as unknown as { __s: { t: number; x: number }[] }).__s,
+      () => (window as unknown as { __s: { t: number; x: number; y: number; rot: number }[] }).__s,
     );
     expect(s.length).toBeGreaterThan(30);
 
-    // isolate the travelling window
+    // isolate the travelling window on X
     let a = 0;
     let b = s.length - 1;
     for (let i = 1; i < s.length; i++) {
@@ -252,22 +262,42 @@ test.describe("Studio Ident motion + copy", () => {
       }
     }
     const seg = s.slice(a, b + 1);
+
+    // it enters from BEYOND THE RIGHT edge and travels leftwards to centre
+    expect(seg[0].x).toBeGreaterThan(page.viewportSize()!.width * 0.5);
     const vel: number[] = [];
     for (let i = 1; i < seg.length; i++) vel.push(seg[i].x - seg[i - 1].x);
-
-    // always travelling forward - never backwards, never a mid-flight stop
-    expect(Math.min(...vel)).toBeGreaterThan(-0.05);
+    // strictly right-to-left: never reverses, never stalls mid-flight
+    expect(Math.max(...vel)).toBeLessThan(0.05);
     let plateaus = 0;
     for (let i = 3; i < vel.length - 4; i++) {
       if (Math.abs(vel[i]) < 0.35 && vel.slice(i + 1).some((v) => Math.abs(v) > 1)) plateaus++;
     }
-    expect(plateaus, "the glide must not stop and restart").toBe(0);
+    expect(plateaus, "the slither must not stop and restart").toBe(0);
 
-    // it settles exactly into its final transform - no post-animation shift
+    // the path undulates: Y crosses its baseline several times ...
+    const ys = seg.map((p) => p.y);
+    let crossings = 0;
+    for (let i = 1; i < ys.length; i++) {
+      if (Math.sign(ys[i]) !== Math.sign(ys[i - 1]) && ys[i] !== 0) crossings++;
+    }
+    expect(crossings, "the trajectory must oscillate").toBeGreaterThanOrEqual(4);
+
+    // ... and the wave decays towards the centre
+    const peak = (arr: number[]) => Math.max(...arr.map(Math.abs));
+    const firstHalf = peak(ys.slice(0, Math.floor(ys.length / 2)));
+    const lastQuarter = peak(ys.slice(Math.floor((ys.length * 3) / 4)));
+    expect(firstHalf).toBeGreaterThan(1);
+    expect(lastQuarter).toBeLessThan(firstHalf);
+
+    // it settles exactly into the approved resting transform
     const after = s.slice(b);
     const xs = after.map((p) => p.x);
     expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1);
-    expect(Math.abs(after[after.length - 1].x)).toBeLessThan(1);
+    const last = after[after.length - 1];
+    expect(Math.abs(last.x)).toBeLessThan(1);
+    expect(Math.abs(last.y)).toBeLessThan(1);
+    expect(Math.abs(last.rot)).toBeLessThan(0.1);
   });
 });
 
