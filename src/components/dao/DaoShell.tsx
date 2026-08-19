@@ -26,7 +26,7 @@ export function DaoShell({
 }) {
   return (
     <div className="dao">
-      <StudioIdent locale={locale} messages={messages} />
+      <StudioIdent messages={messages} />
       <PageVeil family={veil} />
       <DaoChrome locale={locale} messages={messages} />
       {returnTab && (

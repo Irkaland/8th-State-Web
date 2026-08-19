@@ -196,6 +196,81 @@ test.describe("Homepage - One Continuous Take", () => {
   });
 });
 
+test.describe("Studio Ident motion + copy", () => {
+  test("the ident carries no locale control and no city line", async ({ page }) => {
+    await page.goto("/");
+    const ident = page.locator(".dao-ident");
+    await expect(ident).toBeVisible();
+    // the composition keeps its act + sound corners and the wordmark
+    await expect(ident).toContainText("8TH STATE");
+    await expect(ident).not.toContainText(/TBILISI/i);
+    await expect(ident.locator(".dao-lang")).toHaveCount(0);
+    await expect(ident.locator("a")).toHaveCount(0);
+    // ... and the single global switcher still works after the ident leaves
+    await expect(ident).toBeHidden({ timeout: 8_000 });
+    await page.mouse.move(300, 400);
+    const lang = page.locator(".dao-chrome .dao-lang a");
+    await expect(lang).toHaveCount(2);
+    await expect(lang.nth(1)).toHaveAttribute("href", "/ka");
+  });
+
+  test("the serpent glides in as one stage and does not re-centre", async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __s: { t: number; x: number }[] }).__s = [];
+      const tick = () => {
+        const el = document.querySelector(".dao-ident__serpent");
+        const store = (window as unknown as { __s: { t: number; x: number }[] }).__s;
+        if (el) {
+          const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+          store.push({ t: Math.round(performance.now()), x: +m.m41.toFixed(3) });
+        }
+        if (store.length < 300) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    await page.goto("/");
+    await expect(page.locator(".dao-ident")).toBeVisible();
+    await page.waitForTimeout(2_600); // the 1350ms glide plus settle
+    const s = await page.evaluate(
+      () => (window as unknown as { __s: { t: number; x: number }[] }).__s,
+    );
+    expect(s.length).toBeGreaterThan(30);
+
+    // isolate the travelling window
+    let a = 0;
+    let b = s.length - 1;
+    for (let i = 1; i < s.length; i++) {
+      if (Math.abs(s[i].x - s[i - 1].x) > 0.05) {
+        a = i - 1;
+        break;
+      }
+    }
+    for (let i = s.length - 1; i > 0; i--) {
+      if (Math.abs(s[i].x - s[i - 1].x) > 0.05) {
+        b = i;
+        break;
+      }
+    }
+    const seg = s.slice(a, b + 1);
+    const vel: number[] = [];
+    for (let i = 1; i < seg.length; i++) vel.push(seg[i].x - seg[i - 1].x);
+
+    // always travelling forward - never backwards, never a mid-flight stop
+    expect(Math.min(...vel)).toBeGreaterThan(-0.05);
+    let plateaus = 0;
+    for (let i = 3; i < vel.length - 4; i++) {
+      if (Math.abs(vel[i]) < 0.35 && vel.slice(i + 1).some((v) => Math.abs(v) > 1)) plateaus++;
+    }
+    expect(plateaus, "the glide must not stop and restart").toBe(0);
+
+    // it settles exactly into its final transform - no post-animation shift
+    const after = s.slice(b);
+    const xs = after.map((p) => p.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1);
+    expect(Math.abs(after[after.length - 1].x)).toBeLessThan(1);
+  });
+});
+
 test.describe("Real-device mobile fixes", () => {
   // The Studio act mark broke on a real Android device (broken image + alt
   // text). Guard the whole chain: the element resolves a real derivative and

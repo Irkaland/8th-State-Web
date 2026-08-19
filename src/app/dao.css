@@ -41,6 +41,12 @@
   --dao-ease-scene: cubic-bezier(0.4, 0, 0.2, 1); /* 600-1400ms chapter/curtain/track */
   --dao-track-ease: cubic-bezier(0.32, 0, 0.12, 1); /* 5d carousel track */
   --dao-ease-exit: cubic-bezier(0.64, 0, 0.78, 0); /* outgoing layers */
+  /* long single-segment entrances (the ident serpent): a restrained
+     ease-out. EDITORIAL is tuned for 500-900ms travel and puts 55% of a
+     long glide into its first 200ms (peak ~4.5x average velocity), which
+     over 92vw reads as a dart followed by a creep; this settles at ~3x and
+     decelerates smoothly to zero with no overshoot. */
+  --dao-ease-glide: cubic-bezier(0.33, 1, 0.68, 1);
   /* legacy alias - existing entrances resolve to the EDITORIAL family */
   --dao-ease-out: var(--dao-ease-editorial);
 }
@@ -963,8 +969,13 @@ html[data-dao-nav-open] .dao-returntab {
   aspect-ratio: 2 / 1;
 }
 /* Ident choreography (§01): the serpent crawls in horizontally from
-   outside the frame - long deceleration, a mid-path undulation, no bounce.
-   Sun descends from above (offset timing), moon rises from below. */
+   outside the frame as ONE continuous glide - a single eased segment from
+   the offscreen start straight into its final transform, decelerating to
+   zero velocity, no bounce. The old mid-path waypoint at 55% split this
+   into two segments and, because a CSS animation applies its timing
+   function to EVERY segment, the ease-out zeroed the velocity at the
+   waypoint and then restarted it for the last 7vw - which read as
+   slide -> stop -> centring snap. Sun and moon are untouched.  */
 .dao-ident__serpent {
   position: absolute;
   inset: 0;
@@ -974,16 +985,13 @@ html[data-dao-nav-open] .dao-returntab {
   will-change: transform;
 }
 .dao-ident.is-drawn .dao-ident__serpent {
-  animation: dao-ident-snake 1350ms var(--dao-ease-editorial) both;
+  animation: dao-ident-snake 1350ms var(--dao-ease-glide) both;
 }
 @keyframes dao-ident-snake {
-  0% {
+  from {
     transform: translate3d(-92vw, 3vh, 0) rotate(-2.5deg);
   }
-  55% {
-    transform: translate3d(-7vw, 0.7vh, 0) rotate(-0.7deg);
-  }
-  100% {
+  to {
     transform: translate3d(0, 0, 0) rotate(0deg);
   }
 }
@@ -1033,12 +1041,10 @@ html[data-dao-nav-open] .dao-returntab {
     opacity 700ms ease,
     transform 700ms var(--dao-ease-editorial);
 }
-.dao-ident__corner--tl,
-.dao-ident__corner--bl {
+.dao-ident__corner--tl {
   transform: translate3d(-26px, 0, 0);
 }
-.dao-ident__corner--tr,
-.dao-ident__corner--br {
+.dao-ident__corner--tr {
   transform: translate3d(26px, 0, 0);
 }
 .dao-ident.is-drawn .dao-ident__corner {
@@ -1050,12 +1056,6 @@ html[data-dao-nav-open] .dao-returntab {
 }
 .dao-ident.is-drawn .dao-ident__corner--tr {
   transition-delay: 620ms;
-}
-.dao-ident.is-drawn .dao-ident__corner--bl {
-  transition-delay: 690ms;
-}
-.dao-ident.is-drawn .dao-ident__corner--br {
-  transition-delay: 760ms;
 }
 /* official logo on its printed paper label, bottom centre (§02) */
 .dao-ident__logolabel {
@@ -1124,16 +1124,6 @@ html[data-dao-nav-open] .dao-returntab {
   top: 28px;
   right: var(--dao-gutter);
 }
-.dao-ident__corner--bl {
-  bottom: 30px;
-  left: var(--dao-gutter);
-  color: rgba(19, 18, 16, 0.75);
-}
-.dao-ident__corner--br {
-  bottom: 30px;
-  right: var(--dao-gutter);
-  color: rgba(19, 18, 16, 0.75);
-}
 @media (prefers-reduced-motion: reduce) {
   .dao-ident {
     transition: opacity 300ms ease;
@@ -1156,8 +1146,6 @@ html[data-dao-nav-open] .dao-returntab {
   .dao-ident__moon,
   .dao-ident__corner--tl,
   .dao-ident__corner--tr,
-  .dao-ident__corner--bl,
-  .dao-ident__corner--br,
   .dao-ident__logolabel {
     transform: none !important;
   }
