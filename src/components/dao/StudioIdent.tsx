@@ -106,7 +106,11 @@ export function StudioIdent({ messages }: { messages: Messages }) {
 
       <div className="dao-ident__center">
         <div className="dao-ident__markwrap" aria-hidden="true">
-          <div className="dao-ident__serpent dao-mask" />
+          {/* the path element carries the horizontal travel, the serpent
+              itself carries the wave + roll (dao.css) */}
+          <div className="dao-ident__serpentpath">
+            <div className="dao-ident__serpent dao-mask" />
+          </div>
           <div className="dao-ident__sun dao-mask" />
           <div className="dao-ident__moon dao-mask" />
         </div>

@@ -47,6 +47,8 @@
      over 92vw reads as a dart followed by a creep; this settles at ~3x and
      decelerates smoothly to zero with no overshoot. */
   --dao-ease-glide: cubic-bezier(0.33, 1, 0.68, 1);
+  /* peak vertical travel of the ident serpent slither (decays to 0) */
+  --dao-serpent-wave: 42px;
   /* legacy alias - existing entrances resolve to the EDITORIAL family */
   --dao-ease-out: var(--dao-ease-editorial);
 }
@@ -176,6 +178,11 @@ html {
   mix-blend-mode: overlay;
 }
 @media (max-width: 560px) {
+  :root {
+    /* the composition is much shorter here - keep the slither readable
+       without pushing the mark out of its safe vertical band */
+    --dao-serpent-wave: 20px;
+  }
   .dao-grain,
   .dao-grain--strong {
     background-size: 280px;
@@ -968,30 +975,133 @@ html[data-dao-nav-open] .dao-returntab {
   width: clamp(250px, 39vw, 560px);
   aspect-ratio: 2 / 1;
 }
-/* Ident choreography (§01): the serpent crawls in horizontally from
-   outside the frame as ONE continuous glide - a single eased segment from
-   the offscreen start straight into its final transform, decelerating to
-   zero velocity, no bounce. The old mid-path waypoint at 55% split this
-   into two segments and, because a CSS animation applies its timing
-   function to EVERY segment, the ease-out zeroed the velocity at the
-   waypoint and then restarted it for the last 7vw - which read as
-   slide -> stop -> centring snap. Sun and moon are untouched.  */
+/* Ident choreography (§01): the serpent SLITHERS in from beyond the right
+   edge and settles into the locked composition. The two axes are split
+   across two elements on purpose:
+
+     .dao-ident__serpentpath  - horizontal travel, 96vw -> 0, ONE eased
+       segment, so X progression is monotonic and can never plateau.
+     .dao-ident__serpent      - the vertical wave + micro-rotation, driven
+       by a densely sampled decaying sine on a LINEAR timing function.
+       Linear is the point: a per-segment ease would zero the velocity at
+       every wave stop, which is what produced the old slide -> stop -> snap.
+
+   The artwork is a raster WebP alpha mask (360x116), not SVG, so there is
+   no safe body deformation to add - the trajectory and rotation carry the
+   slither. offset-path was rejected because path() takes absolute lengths
+   and cannot express the responsive vw travel this composition needs.
+
+   Both animations run the same duration and both land on identity, so the
+   final resting position is byte-identical to the approved one. Sun and
+   moon are untouched. */
+.dao-ident__serpentpath {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(96vw, 0, 0);
+  will-change: transform;
+}
+.dao-ident.is-drawn .dao-ident__serpentpath {
+  animation: dao-ident-serpent-travel 1600ms var(--dao-ease-glide) both;
+}
+@keyframes dao-ident-serpent-travel {
+  from {
+    transform: translate3d(96vw, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 .dao-ident__serpent {
   position: absolute;
   inset: 0;
   background: var(--dao-paper);
   --m: url("/assets/graphics/serpent-mark.webp");
-  transform: translate3d(-92vw, 3vh, 0) rotate(-2.5deg);
+  transform: translate3d(0, 0, 0) rotate(1.5deg);
   will-change: transform;
 }
 .dao-ident.is-drawn .dao-ident__serpent {
-  animation: dao-ident-snake 1350ms var(--dao-ease-glide) both;
+  animation: dao-ident-serpent-wave 1600ms linear both;
 }
-@keyframes dao-ident-snake {
-  from {
-    transform: translate3d(-92vw, 3vh, 0) rotate(-2.5deg);
+/* generated envelope: A(1-t)^1.3 * sin(2pi*3.25t) with a 1.5deg
+   (1-t)^1.4 * cos(2pi*3.25t) roll - ~3.5 broad oscillations, amplitude
+   1.00 -> 0.69 -> 0.41 -> 0.17 -> 0 across the travel */
+@keyframes dao-ident-serpent-wave {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(1.5deg);
   }
-  to {
+  4% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.6913), 0) rotate(0.97deg);
+  }
+  8% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.8955), 0) rotate(-0.084deg);
+  }
+  12% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.5398), 0) rotate(-0.966deg);
+  }
+  16% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.0999), 0) rotate(-1.166deg);
+  }
+  20% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.6053), 0) rotate(-0.645deg);
+  }
+  24% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.6875), 0) rotate(0.191deg);
+  }
+  28% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.3496), 0) rotate(0.8deg);
+  }
+  32% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.1506), 0) rotate(0.847deg);
+  }
+  36% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.4906), 0) rotate(0.387deg);
+  }
+  40% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.4896), 0) rotate(-0.227deg);
+  }
+  44% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.2004), 0) rotate(-0.603deg);
+  }
+  48% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.1573), 0) rotate(-0.558deg);
+  }
+  52% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.3581), 0) rotate(-0.198deg);
+  }
+  56% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.3112), 0) rotate(0.202deg);
+  }
+  60% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.0939), 0) rotate(0.396deg);
+  }
+  64% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.1276), 0) rotate(0.314deg);
+  }
+  68% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.2202), 0) rotate(0.076deg);
+  }
+  72% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.1614), 0) rotate(-0.135deg);
+  }
+  76% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.0293), 0) rotate(-0.2deg);
+  }
+  80% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.0725), 0) rotate(-0.127deg);
+  }
+  84% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.0916), 0) rotate(-0.014deg);
+  }
+  88% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.0489), 0) rotate(0.049deg);
+  }
+  92% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * -0.0024), 0) rotate(0.044deg);
+  }
+  96% {
+    transform: translate3d(0, calc(var(--dao-serpent-wave) * 0.0104), 0) rotate(0.012deg);
+  }
+  100% {
     transform: translate3d(0, 0, 0) rotate(0deg);
   }
 }
@@ -1132,7 +1242,16 @@ html[data-dao-nav-open] .dao-returntab {
     transform: none;
     opacity: 0;
   }
-  /* static composition: no crawl, no sun/moon travel - short fades only */
+  /* static composition: no slither, no sun/moon travel - short fades only.
+     Both serpent axes are neutralised, so the mark simply fades in at its
+     final resting position. */
+  .dao-ident__serpentpath {
+    transform: none;
+    animation: none;
+  }
+  .dao-ident.is-drawn .dao-ident__serpentpath {
+    animation: none;
+  }
   .dao-ident__serpent {
     transform: none;
     opacity: 0;
