@@ -100,6 +100,11 @@ export default async function LocaleLayout({
   // request - no double download. Visuals untouched.
   preload("/assets/textures/canvas-weave.webp", { as: "image" });
   preload("/assets/textures/paper-grain-strong.webp", { as: "image" });
+  // The Studio Ident reveals the serpent mark in place on the first frame,
+  // so a late mask decode would read as "the image took time to load"
+  // rather than choreography. It is an 11KB CSS mask image, invisible to
+  // the preload scanner for the same reason as the textures above.
+  preload("/assets/graphics/serpent-mark.webp", { as: "image" });
 
   return (
     <html
