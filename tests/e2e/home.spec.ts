@@ -196,6 +196,90 @@ test.describe("Homepage - One Continuous Take", () => {
   });
 });
 
+test.describe("Real-device mobile fixes", () => {
+  // The Studio act mark broke on a real Android device (broken image + alt
+  // text). Guard the whole chain: the element resolves a real derivative and
+  // decodes to non-zero intrinsic pixels.
+  test("the studio brand mark loads and decodes", async ({ page }) => {
+    const bad: string[] = [];
+    page.on("response", (r) => {
+      if (/logo-mark/.test(decodeURIComponent(r.url())) && r.status() >= 400) {
+        bad.push(r.status() + " " + r.url());
+      }
+    });
+    await gotoRoute(page, "/");
+    const mark = page.locator(".dao-intro__logomark");
+    await mark.scrollIntoViewIfNeeded();
+    await expect(mark).toBeVisible();
+    await expect
+      .poll(() => mark.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0), {
+        timeout: 15_000,
+      })
+      .toBe(true);
+    const info = await mark.evaluate((el: HTMLImageElement) => ({
+      w: el.naturalWidth,
+      h: el.naturalHeight,
+      src: el.currentSrc,
+    }));
+    expect(info.w).toBeGreaterThan(0);
+    expect(info.h).toBeGreaterThan(0);
+    expect(info.src).toContain("logo-mark");
+    expect(bad, bad.join(", ")).toEqual([]);
+  });
+
+  // iPhone Safari froze on the first frame because play() was gated behind
+  // canplay, which never fires under preload="metadata". Assert real,
+  // advancing playback rather than just a non-paused flag.
+  test("the showreel autoplays and advances after the ident", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".dao-ident")).toBeHidden({ timeout: 8_000 });
+    const reel = page.locator(".dao-reel__media video");
+    await expect(reel).toBeVisible();
+    await expect
+      .poll(() => reel.evaluate((v: HTMLVideoElement) => !v.paused), { timeout: 10_000 })
+      .toBe(true);
+    const t1 = await reel.evaluate((v: HTMLVideoElement) => v.currentTime);
+    await page.waitForTimeout(1_200);
+    const state = await reel.evaluate((v: HTMLVideoElement) => ({
+      t: v.currentTime,
+      paused: v.paused,
+      muted: v.muted,
+      loop: v.loop,
+      inline: v.playsInline,
+      controls: v.controls,
+      readyState: v.readyState,
+      networkState: v.networkState,
+      err: v.error ? v.error.code : null,
+    }));
+    expect(state.t).toBeGreaterThan(t1);
+    expect(state.paused).toBe(false);
+    expect(state.muted).toBe(true);
+    expect(state.loop).toBe(true);
+    expect(state.inline).toBe(true);
+    expect(state.controls).toBe(false);
+    expect(state.readyState).toBeGreaterThanOrEqual(2);
+    expect(state.err).toBeNull();
+    // the poster hands over only once playback is confirmed
+    await expect(page.locator(".dao-reel__media img")).toHaveCount(0);
+  });
+
+  test("reduced motion keeps the poster and never autoplays", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await gotoRoute(page, "/");
+    const reel = page.locator(".dao-reel__media video");
+    await expect(reel).toBeVisible();
+    await page.waitForTimeout(2_500);
+    const st = await reel.evaluate((v: HTMLVideoElement) => ({
+      paused: v.paused,
+      t: v.currentTime,
+    }));
+    expect(st.paused).toBe(true);
+    expect(st.t).toBe(0);
+    // the first-frame poster still carries the stage
+    await expect(page.locator(".dao-reel__media img")).toHaveCount(1);
+  });
+});
+
 test.describe("Global polish pass", () => {
   test("the open burger sheet hides the contextual return tab", async ({ page }) => {
     await gotoRoute(page, "/work");
