@@ -214,24 +214,25 @@ test.describe("Studio Ident motion + copy", () => {
     await expect(lang.nth(1)).toHaveAttribute("href", "/ka");
   });
 
-  test("the serpent slithers in from the right and settles dead centre", async ({ page }) => {
-    // sample both axes: X lives on the path wrapper, the wave + roll on the
-    // serpent itself
+  test("the serpent holds its final position and reveals in place", async ({ page }) => {
+    // Sample the mark's box and the reveal clip every frame. The artwork must
+    // never move; only the clip contour may progress.
     await page.addInitScript(() => {
-      type Sample = { t: number; x: number; y: number; rot: number };
-      (window as unknown as { __s: Sample[] }).__s = [];
+      type Sample = { t: number; l: number; tp: number; w: number; h: number; clip: string };
+      (window as unknown as { __r: Sample[] }).__r = [];
       const tick = () => {
-        const path = document.querySelector(".dao-ident__serpentpath");
+        const wrap = document.querySelector(".dao-ident__serpentreveal");
         const snake = document.querySelector(".dao-ident__serpent");
-        const store = (window as unknown as { __s: Sample[] }).__s;
-        if (path && snake) {
-          const mp = new DOMMatrixReadOnly(getComputedStyle(path).transform);
-          const ms = new DOMMatrixReadOnly(getComputedStyle(snake).transform);
+        const store = (window as unknown as { __r: Sample[] }).__r;
+        if (wrap && snake) {
+          const b = snake.getBoundingClientRect();
           store.push({
             t: Math.round(performance.now()),
-            x: +mp.m41.toFixed(3),
-            y: +ms.m42.toFixed(3),
-            rot: +(Math.atan2(ms.m12, ms.m11) * (180 / Math.PI)).toFixed(3),
+            l: +b.left.toFixed(2),
+            tp: +b.top.toFixed(2),
+            w: +b.width.toFixed(2),
+            h: +b.height.toFixed(2),
+            clip: getComputedStyle(wrap).clipPath,
           });
         }
         if (store.length < 320) requestAnimationFrame(tick);
@@ -240,64 +241,55 @@ test.describe("Studio Ident motion + copy", () => {
     });
     await page.goto("/");
     await expect(page.locator(".dao-ident")).toBeVisible();
-    await page.waitForTimeout(2_900); // the 1600ms slither plus settle
-    const s = await page.evaluate(
-      () => (window as unknown as { __s: { t: number; x: number; y: number; rot: number }[] }).__s,
+    await page.waitForTimeout(2_400); // the 1250ms reveal plus settle
+    const r = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __r: { t: number; l: number; tp: number; w: number; h: number; clip: string }[];
+          }
+        ).__r,
     );
-    expect(s.length).toBeGreaterThan(30);
+    expect(r.length).toBeGreaterThan(30);
 
-    // isolate the travelling window on X
-    let a = 0;
-    let b = s.length - 1;
-    for (let i = 1; i < s.length; i++) {
-      if (Math.abs(s[i].x - s[i - 1].x) > 0.05) {
-        a = i - 1;
-        break;
-      }
-    }
-    for (let i = s.length - 1; i > 0; i--) {
-      if (Math.abs(s[i].x - s[i - 1].x) > 0.05) {
-        b = i;
-        break;
-      }
-    }
-    const seg = s.slice(a, b + 1);
+    // 1. the mark NEVER translates or resizes - fixed from frame one
+    const ls = r.map((p) => p.l);
+    const ts = r.map((p) => p.tp);
+    const ws = r.map((p) => p.w);
+    expect(Math.max(...ls) - Math.min(...ls)).toBeLessThan(1);
+    expect(Math.max(...ts) - Math.min(...ts)).toBeLessThan(1);
+    expect(Math.max(...ws) - Math.min(...ws)).toBeLessThan(1);
 
-    // it enters from BEYOND THE RIGHT edge and travels leftwards to centre
-    expect(seg[0].x).toBeGreaterThan(page.viewportSize()!.width * 0.5);
-    const vel: number[] = [];
-    for (let i = 1; i < seg.length; i++) vel.push(seg[i].x - seg[i - 1].x);
-    // strictly right-to-left: never reverses, never stalls mid-flight
-    expect(Math.max(...vel)).toBeLessThan(0.05);
-    let plateaus = 0;
-    for (let i = 3; i < vel.length - 4; i++) {
-      if (Math.abs(vel[i]) < 0.35 && vel.slice(i + 1).some((v) => Math.abs(v) > 1)) plateaus++;
-    }
-    expect(plateaus, "the slither must not stop and restart").toBe(0);
+    // 2. it sits centred in the ident, not off to one side
+    const vw = page.viewportSize()!.width;
+    const centre = (r[0].l + r[0].w / 2) / vw;
+    expect(centre).toBeGreaterThan(0.35);
+    expect(centre).toBeLessThan(0.65);
 
-    // the path undulates: Y crosses its baseline several times ...
-    const ys = seg.map((p) => p.y);
-    let crossings = 0;
-    for (let i = 1; i < ys.length; i++) {
-      if (Math.sign(ys[i]) !== Math.sign(ys[i - 1]) && ys[i] !== 0) crossings++;
-    }
-    expect(crossings, "the trajectory must oscillate").toBeGreaterThanOrEqual(4);
+    // 3. the reveal actually progresses: the clip contour changes over time
+    const clips = [...new Set(r.map((p) => p.clip))];
+    expect(clips.length, "the clip contour must animate").toBeGreaterThan(5);
 
-    // ... and the wave decays towards the centre
-    const peak = (arr: number[]) => Math.max(...arr.map(Math.abs));
-    const firstHalf = peak(ys.slice(0, Math.floor(ys.length / 2)));
-    const lastQuarter = peak(ys.slice(Math.floor((ys.length * 3) / 4)));
-    expect(firstHalf).toBeGreaterThan(1);
-    expect(lastQuarter).toBeLessThan(firstHalf);
+    // 4. it is a torn contour, not a straight rectangular wipe
+    expect(r[0].clip).toContain("polygon");
+    const pts = (r[0].clip.match(/-?[\d.]+%\s+-?[\d.]+%/g) || []).length;
+    expect(pts, "the reveal edge is an irregular multi-point contour").toBeGreaterThan(6);
 
-    // it settles exactly into the approved resting transform
-    const after = s.slice(b);
-    const xs = after.map((p) => p.x);
-    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1);
-    const last = after[after.length - 1];
-    expect(Math.abs(last.x)).toBeLessThan(1);
-    expect(Math.abs(last.y)).toBeLessThan(1);
-    expect(Math.abs(last.rot)).toBeLessThan(0.1);
+    // 5. it starts hidden (edge parked right of the box) and ends fully open
+    const firstXs = (r[0].clip.match(/(-?[\d.]+)px|(-?[\d.]+)%/g) || []).length;
+    expect(firstXs).toBeGreaterThan(0);
+    const last = r[r.length - 1];
+    // the final contour must clear the left edge, so nothing stays clipped
+    const lastLefts = [...last.clip.matchAll(/(-?[\d.]+)px/g)].map((m) => parseFloat(m[1]));
+    if (lastLefts.length) expect(Math.min(...lastLefts)).toBeLessThanOrEqual(0);
+
+    // 6. and the mark is fully painted at the end
+    const shown = await page.locator(".dao-ident__serpent").evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { opacity: cs.opacity, transform: cs.transform };
+    });
+    expect(Number(shown.opacity)).toBeGreaterThan(0.9);
+    expect(["none", "matrix(1, 0, 0, 1, 0, 0)"]).toContain(shown.transform);
   });
 });
 

@@ -106,9 +106,9 @@ export function StudioIdent({ messages }: { messages: Messages }) {
 
       <div className="dao-ident__center">
         <div className="dao-ident__markwrap" aria-hidden="true">
-          {/* the path element carries the horizontal travel, the serpent
-              itself carries the wave + roll (dao.css) */}
-          <div className="dao-ident__serpentpath">
+          {/* the mark never moves - the wrapper carries the torn reveal
+              contour, the serpent itself is fixed at final size (dao.css) */}
+          <div className="dao-ident__serpentreveal">
             <div className="dao-ident__serpent dao-mask" />
           </div>
           <div className="dao-ident__sun dao-mask" />
