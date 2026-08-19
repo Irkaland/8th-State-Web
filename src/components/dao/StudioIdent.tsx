@@ -2,11 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import type { Messages } from "@/i18n";
-import type { Locale } from "@/i18n/locales";
-import { switchLocalePath } from "@/i18n/locales";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
 /**
@@ -27,9 +23,8 @@ let identPlayedThisLoad = false;
 const EXIT_MS = 1100;
 const HOLD_UNTIL_MS = 2450;
 
-export function StudioIdent({ locale, messages }: { locale: Locale; messages: Messages }) {
+export function StudioIdent({ messages }: { messages: Messages }) {
   const m = messages.dao.ident;
-  const pathname = usePathname() || "/";
   // Lazy initial state: on internal client-side navigation the ident mounts
   // already "gone" - it must never paint, not even for one frame (§01).
   // On a real document load the module flag is fresh and the ident holds.
@@ -144,24 +139,6 @@ export function StudioIdent({ locale, messages }: { locale: Locale; messages: Me
           quality={90}
           priority
         />
-      </div>
-
-      <div className="dao-label dao-ident__corner dao-ident__corner--bl">{m.city}</div>
-      <div className="dao-ident__corner dao-ident__corner--br">
-        <span className="dao-lang">
-          <Link
-            href={switchLocalePath(pathname, "en")}
-            aria-current={locale === "en" ? "true" : undefined}
-          >
-            EN
-          </Link>
-          <Link
-            href={switchLocalePath(pathname, "ka")}
-            aria-current={locale === "ka" ? "true" : undefined}
-          >
-            KA
-          </Link>
-        </span>
       </div>
     </div>
   );
