@@ -41,11 +41,9 @@ test.describe("Homepage - One Continuous Take", () => {
     await page.goto("/");
     const ident = page.locator(".dao-ident");
     await expect(ident).toBeVisible();
-    // official logo label prints in as part of the sequence (§02)
-    await expect(page.locator(".dao-ident__logolabel img")).toHaveAttribute(
-      "src",
-      /8th-state-logo\.png/,
-    );
+    // brand pass §02: nothing prints in below PRODUCTION any more - the
+    // composition is the brand mark and the wordmark, nothing else
+    await expect(page.locator(".dao-ident__logolabel")).toHaveCount(0);
     // still holding at 2.0s with no input
     await page.waitForTimeout(2_000);
     await expect(ident).toBeVisible();
@@ -201,7 +199,8 @@ test.describe("Studio Ident motion + copy", () => {
     await page.goto("/");
     const ident = page.locator(".dao-ident");
     await expect(ident).toBeVisible();
-    // the composition keeps its act + sound corners and the wordmark
+    // the composition is the brand mark plus the wordmark - brand pass §11
+    // also retired the ACT 00 / SOUND OFF corners (see brand.spec.ts)
     await expect(ident).toContainText("8TH STATE");
     await expect(ident).not.toContainText(/TBILISI/i);
     await expect(ident.locator(".dao-lang")).toHaveCount(0);
@@ -214,83 +213,11 @@ test.describe("Studio Ident motion + copy", () => {
     await expect(lang.nth(1)).toHaveAttribute("href", "/ka");
   });
 
-  test("the serpent holds its final position and reveals in place", async ({ page }) => {
-    // Sample the mark's box and the reveal clip every frame. The artwork must
-    // never move; only the clip contour may progress.
-    await page.addInitScript(() => {
-      type Sample = { t: number; l: number; tp: number; w: number; h: number; clip: string };
-      (window as unknown as { __r: Sample[] }).__r = [];
-      const tick = () => {
-        const wrap = document.querySelector(".dao-ident__serpentreveal");
-        const snake = document.querySelector(".dao-ident__serpent");
-        const store = (window as unknown as { __r: Sample[] }).__r;
-        if (wrap && snake) {
-          const b = snake.getBoundingClientRect();
-          store.push({
-            t: Math.round(performance.now()),
-            l: +b.left.toFixed(2),
-            tp: +b.top.toFixed(2),
-            w: +b.width.toFixed(2),
-            h: +b.height.toFixed(2),
-            clip: getComputedStyle(wrap).clipPath,
-          });
-        }
-        if (store.length < 320) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    });
-    await page.goto("/");
-    await expect(page.locator(".dao-ident")).toBeVisible();
-    await page.waitForTimeout(2_400); // the 1250ms reveal plus settle
-    const r = await page.evaluate(
-      () =>
-        (
-          window as unknown as {
-            __r: { t: number; l: number; tp: number; w: number; h: number; clip: string }[];
-          }
-        ).__r,
-    );
-    expect(r.length).toBeGreaterThan(30);
-
-    // 1. the mark NEVER translates or resizes - fixed from frame one
-    const ls = r.map((p) => p.l);
-    const ts = r.map((p) => p.tp);
-    const ws = r.map((p) => p.w);
-    expect(Math.max(...ls) - Math.min(...ls)).toBeLessThan(1);
-    expect(Math.max(...ts) - Math.min(...ts)).toBeLessThan(1);
-    expect(Math.max(...ws) - Math.min(...ws)).toBeLessThan(1);
-
-    // 2. it sits centred in the ident, not off to one side
-    const vw = page.viewportSize()!.width;
-    const centre = (r[0].l + r[0].w / 2) / vw;
-    expect(centre).toBeGreaterThan(0.35);
-    expect(centre).toBeLessThan(0.65);
-
-    // 3. the reveal actually progresses: the clip contour changes over time
-    const clips = [...new Set(r.map((p) => p.clip))];
-    expect(clips.length, "the clip contour must animate").toBeGreaterThan(5);
-
-    // 4. it is a torn contour, not a straight rectangular wipe
-    expect(r[0].clip).toContain("polygon");
-    const pts = (r[0].clip.match(/-?[\d.]+%\s+-?[\d.]+%/g) || []).length;
-    expect(pts, "the reveal edge is an irregular multi-point contour").toBeGreaterThan(6);
-
-    // 5. it starts hidden (edge parked right of the box) and ends fully open
-    const firstXs = (r[0].clip.match(/(-?[\d.]+)px|(-?[\d.]+)%/g) || []).length;
-    expect(firstXs).toBeGreaterThan(0);
-    const last = r[r.length - 1];
-    // the final contour must clear the left edge, so nothing stays clipped
-    const lastLefts = [...last.clip.matchAll(/(-?[\d.]+)px/g)].map((m) => parseFloat(m[1]));
-    if (lastLefts.length) expect(Math.min(...lastLefts)).toBeLessThanOrEqual(0);
-
-    // 6. and the mark is fully painted at the end
-    const shown = await page.locator(".dao-ident__serpent").evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return { opacity: cs.opacity, transform: cs.transform };
-    });
-    expect(Number(shown.opacity)).toBeGreaterThan(0.9);
-    expect(["none", "matrix(1, 0, 0, 1, 0, 0)"]).toContain(shown.transform);
-  });
+  // The serpent reveal contract moved with the brand pass: the mark now
+  // unfolds out of its OWN CENTRE rather than sweeping in from the right,
+  // and the composition gained a white and a black celestial sun. The full
+  // frame-by-frame contract (artwork pinned, centre-out band, sun travel,
+  // no residue after settling) lives in brand.spec.ts.
 });
 
 test.describe("Real-device mobile fixes", () => {

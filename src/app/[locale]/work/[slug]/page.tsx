@@ -128,12 +128,6 @@ export default async function ProjectPage({
               </div>
             </dl>
           </InView>
-          {/* §07: the opening's material continues through its torn edge -
-              same overlay stack as the opening itself */}
-          <div className="dpj__openingtear" aria-hidden="true">
-            <div className="dao-grain--strong" />
-            <div className="dao-weave" />
-          </div>
         </header>
 
         <div className="dao-grain" aria-hidden="true" />
@@ -267,11 +261,6 @@ export default async function ProjectPage({
         {project.credits.length > 0 && (
           <section className="dpj__credits" data-dao-scene="dark">
             <div className="dao-weave" aria-hidden="true" />
-            <div
-              className="dao-cut dao-cut--paper"
-              style={{ background: "var(--dao-paper)" }}
-              aria-hidden="true"
-            />
             {/* v7 5g: one-colour silkscreen mark closes the credits */}
             <span
               className="dao-mask"
@@ -310,7 +299,6 @@ export default async function ProjectPage({
         {/* next project tear */}
         <Link href={localeHref(locale, `/work/${next.slug}`)} className="dpj__next">
           <div className="dao-grain--strong" aria-hidden="true" />
-          <div className="dao-cut" style={{ background: "var(--dao-ink)" }} aria-hidden="true" />
           <span
             className="dao-label"
             style={{

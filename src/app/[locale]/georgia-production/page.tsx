@@ -122,11 +122,6 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
         <InView threshold={0.06}>
           <section className="dgp__plates" data-dao-scene="dark">
             <div className="dao-weave" aria-hidden="true" />
-            <div
-              className="dao-cut dao-cut--paper"
-              style={{ background: "var(--dao-paper)" }}
-              aria-hidden="true"
-            />
             <h2
               className="dlb__notestitle"
               style={{
@@ -181,7 +176,6 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
 
         {/* production support index */}
         <InView className="dgp__support" threshold={0.1}>
-          <div className="dao-cut" style={{ background: "var(--dao-ink)" }} aria-hidden="true" />
           <h2
             className="dlb__notestitle"
             style={{ color: "var(--dao-ink)", fontSize: "clamp(28px,3vw,44px)" }}

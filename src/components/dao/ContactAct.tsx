@@ -29,12 +29,6 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
       aria-label={m.act}
     >
       <div className="dao-weave" aria-hidden="true" />
-      {/* green torn boundary from the Lab */}
-      <div
-        className="dao-tear dao-tear--top"
-        style={{ background: "var(--dao-green)" }}
-        aria-hidden="true"
-      />
       <span className="dao-contact__sun dao-mask" aria-hidden="true" />
 
       <div className="dao-label dao-contact__label">{m.act}</div>

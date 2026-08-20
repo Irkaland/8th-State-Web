@@ -100,11 +100,15 @@ export default async function LocaleLayout({
   // request - no double download. Visuals untouched.
   preload("/assets/textures/canvas-weave.webp", { as: "image" });
   preload("/assets/textures/paper-grain-strong.webp", { as: "image" });
-  // The Studio Ident reveals the serpent mark in place on the first frame,
-  // so a late mask decode would read as "the image took time to load"
-  // rather than choreography. It is an 11KB CSS mask image, invisible to
-  // the preload scanner for the same reason as the textures above.
-  preload("/assets/graphics/serpent-mark.webp", { as: "image" });
+  // The Studio Ident unfolds the official serpent mark in place on the first
+  // frame, so a late decode would read as "the image took time to load"
+  // rather than choreography. Both files are CSS background/mask images,
+  // invisible to the preload scanner for the same reason as the textures
+  // above. The celestial sun is also the global navigation mark, so the one
+  // hint covers the ident's two suns and the chrome chip together.
+  preload("/assets/brand/serpent-infinity.webp", { as: "image" });
+  preload("/assets/brand/celestial-sun.webp", { as: "image" });
+  preload("/assets/graphics/sun.webp", { as: "image" });
 
   return (
     <html

@@ -98,11 +98,6 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
           <InView threshold={0.08}>
             <section id="field-notes" className="dlb__notes" data-dao-scene="light">
               <div className="dao-grain" aria-hidden="true" />
-              <div
-                className="dao-cut"
-                style={{ background: "var(--dao-green)" }}
-                aria-hidden="true"
-              />
               <div className="dlb__noteshead" style={{ position: "relative" }}>
                 <h2 className="dlb__notestitle">{up(R.fieldNotes)}</h2>
                 <span className="dao-label" style={{ color: "var(--dao-brown)" }}>
@@ -121,11 +116,6 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
           {/* lab work + collaboration */}
           <InView threshold={0.08}>
             <section className="dlb__work">
-              <div
-                className="dao-cut dao-cut--paper"
-                style={{ background: "var(--dao-paper)" }}
-                aria-hidden="true"
-              />
               <h2
                 className="dlb__notestitle"
                 style={{ color: "var(--dao-ink)", position: "relative" }}

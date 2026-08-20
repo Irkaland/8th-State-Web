@@ -327,7 +327,6 @@ const ka: Messages = {
   dao: {
     ident: {
       act: "აქტი 00 - სტუდიის იდენტი",
-      sound: "ხმა გამორთულია",
       city: "თბილისი, საქართველო",
       title: "8TH STATE",
       sub: "PRODUCTION",

@@ -9,7 +9,7 @@ import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/l
 import { cn } from "@/lib/cn";
 
 /**
- * Persistent chrome (serpent chip + EN/KA + burger paper chip) and the
+ * Persistent chrome (celestial-sun chip + EN/KA + burger paper chip) and the
  * fullscreen ink-sheet navigation (handoff 1b / 2c / 2d).
  * Open 450ms, close 320ms; links rise from masks with 60ms stagger;
  * WORK expands its approved categories; focus is trapped while open.
@@ -126,15 +126,13 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
       const sections = document.querySelectorAll<HTMLElement>("[data-dao-scene]");
       let scene = "dark";
       const probeY = 56;
-      // Every section boundary carries a torn edge (up to 58px) painted in
-      // the PREVIOUS ground. A section only owns the chrome once the tear's
-      // midpoint has passed the chrome line, so the controls never flip to
-      // the wrong variant while a boundary is still under them mid-scroll.
-      // (A section resting at top: 0 still owns it - 0 <= 56 - 29.)
-      const tearHalf = 29;
+      // Brand pass §15-§18: section boundaries no longer carry a torn edge
+      // painted in the previous ground, so the probe no longer has to wait
+      // for a tear's midpoint to clear the chrome line - the section that
+      // actually covers the chrome line owns the chrome, exactly.
       sections.forEach((s) => {
         const r = s.getBoundingClientRect();
-        if (r.top <= probeY - tearHalf && r.bottom >= probeY) {
+        if (r.top <= probeY && r.bottom >= probeY) {
           scene = s.getAttribute("data-dao-scene") ?? scene;
         }
       });

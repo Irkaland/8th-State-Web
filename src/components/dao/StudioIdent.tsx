@@ -1,17 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import type { Messages } from "@/i18n";
 import { cn } from "@/lib/cn";
 
 /**
- * Studio Ident - locked composition; refined choreography (motion pass §01):
- * the serpent crawls in from the side (0s), the sun descends from above
- * (~0.2s), the moon rises from below (~0.35s), typography reveals
- * directionally (~0.55s) and the official logo label prints in (~0.85s).
- * The composition settles by ~1.5s and HOLDS - total visible experience is
- * ≥2.4s - then the sheet leaves the stage over ~1050ms.
+ * Studio Ident - the official 8th State brand mark, assembled on screen.
+ *
+ * Composition (brand pass §02-§04): the approved serpent/infinity lockup on
+ * the approved intro green (#126149), carrying the same paper material as
+ * before - grain, weave and ink splash are untouched, only the ground colour
+ * changed. Three layers, all derived from the official artwork
+ * (public/assets/brand/8th-state-logo-mark.png, see
+ * scripts/extract-brand-mark.mjs): the RED serpent, the WHITE celestial sun
+ * in its left loop and the BLACK celestial sun in its right loop. Nothing
+ * sits below PRODUCTION and the ident carries no corner metadata.
+ *
+ * Choreography (§05-§09), one coordinated ident rather than three animations:
+ * the serpent is spatially centred from frame one and UNFOLDS OUT OF ITS OWN
+ * CENTRE (0-1200ms, an irregular torn contour expanding left and right - it
+ * never travels); while that expansion is underway the white sun descends
+ * from above (260-1310ms) and the black sun rises from below (380-1460ms);
+ * typography reveals directionally (~0.55s). The mark is complete by ~1.46s
+ * and the finished composition holds until ~2.45s - the same timeline the
+ * red ident ran - then the sheet leaves the stage over ~1050ms.
  *
  * Playback (v7 contract #6, deterministic): plays on every real hard load /
  * refresh on any route (module-scope flag = one browser page load), never
@@ -101,18 +113,20 @@ export function StudioIdent({ messages }: { messages: Messages }) {
       <div className="dao-weave" aria-hidden="true" />
       <div className="dao-ident__splash dao-mask" aria-hidden="true" />
 
-      <div className="dao-label dao-ident__corner dao-ident__corner--tl">{m.act}</div>
-      <div className="dao-label dao-ident__corner dao-ident__corner--tr">{m.sound}</div>
-
       <div className="dao-ident__center">
         <div className="dao-ident__markwrap" aria-hidden="true">
-          {/* the mark never moves - the wrapper carries the torn reveal
-              contour, the serpent itself is fixed at final size (dao.css) */}
+          {/* The artwork never moves. The wrapper carries the reveal only -
+              a torn contour that expands out of the centre of the mark in
+              both directions - and the serpent itself sits at its final
+              position and size from the first frame (dao.css). */}
           <div className="dao-ident__serpentreveal">
-            <div className="dao-ident__serpent dao-mask" />
+            <div className="dao-ident__serpent" />
           </div>
-          <div className="dao-ident__sun dao-mask" />
-          <div className="dao-ident__moon dao-mask" />
+          {/* the two celestial suns land inside their own serpent loops:
+              white descends from above on the left, black rises from below
+              on the right - exactly the official lockup's relationship */}
+          <div className="dao-ident__sun dao-ident__sun--white dao-mask" />
+          <div className="dao-ident__sun dao-ident__sun--black dao-mask" />
         </div>
         <div className="dao-ident__words">
           <span className="dao-rise">
@@ -126,23 +140,6 @@ export function StudioIdent({ messages }: { messages: Messages }) {
             </span>
           </span>
         </div>
-      </div>
-
-      {/* official full logo on its printed paper label (§02) - the approved
-          treatment for the black wordmark on saturated grounds. Delivered
-          through the image pipeline at its rendered size (clamp 64-92px,
-          dao.css) with DPR-aware srcset - same artwork, same alpha, same
-          proportions; priority keeps the label print-in on schedule. */}
-      <div className="dao-ident__logolabel" aria-hidden="true">
-        <Image
-          src="/assets/brand/8th-state-logo.png"
-          alt=""
-          width={92}
-          height={92}
-          sizes="92px"
-          quality={90}
-          priority
-        />
       </div>
     </div>
   );

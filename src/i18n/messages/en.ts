@@ -325,7 +325,6 @@ const en = {
   dao: {
     ident: {
       act: "Act 00 - Studio Ident",
-      sound: "Sound off",
       city: "Tbilisi, Georgia",
       title: "8TH STATE",
       sub: "PRODUCTION",

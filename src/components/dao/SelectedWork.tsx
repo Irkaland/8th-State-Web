@@ -174,11 +174,6 @@ export function SelectedWork({
       onBlur={() => setPaused(false)}
     >
       <div className="dao-weave" aria-hidden="true" />
-      <div
-        className="dao-tear dao-tear--top dao-tear--paper"
-        style={{ background: "var(--dao-paper)" }}
-        aria-hidden="true"
-      />
       <div className="dao-work__serpent dao-mask" aria-hidden="true" />
 
       <div className="dao-work__head">

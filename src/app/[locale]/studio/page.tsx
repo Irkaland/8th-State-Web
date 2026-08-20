@@ -145,11 +145,6 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
         {/* one institution - two rooms */}
         <InView className="dst__rooms" threshold={0.1} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
-          <div
-            className="dao-cut dao-cut--paper"
-            style={{ background: "var(--dao-paper)" }}
-            aria-hidden="true"
-          />
           <div className="dst__roomsbody">
             <span className="dao-kicker dao-fade" style={{ color: "var(--dao-blue)" }}>
               {up(R.oneInstitution)}
@@ -226,16 +221,6 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
         {/* contact handoff */}
         <InView className="dst__handoff" threshold={0.2} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
-          <div
-            className="dao-cut"
-            style={{
-              background: "var(--dao-ink)",
-              transform: "scaleY(-1)",
-              top: "auto",
-              bottom: "100%",
-            }}
-            aria-hidden="true"
-          />
           <span className="dst__handoffsun dao-mask" aria-hidden="true" />
           <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 14 }}>
             <h2 className="dst__make dao-rise">

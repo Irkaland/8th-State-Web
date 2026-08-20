@@ -26,12 +26,6 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
       aria-label={m.act}
     >
       <div className="dao-weave" aria-hidden="true" />
-      {/* paper torn boundary from Services */}
-      <div
-        className="dao-tear dao-tear--top dao-tear--paper"
-        style={{ background: "var(--dao-paper)" }}
-        aria-hidden="true"
-      />
 
       {/* botanicals - enter staggered after the green sheet rises */}
       <span

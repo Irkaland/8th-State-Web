@@ -91,11 +91,6 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
         {/* in practice */}
         <InView className="dpr__practice" threshold={0.15} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
-          <div
-            className="dao-cut dao-cut--paper"
-            style={{ background: "var(--dao-paper)" }}
-            aria-hidden="true"
-          />
           <div className="dpr__practicegrid" style={{ position: "relative" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <span className="dao-kicker dao-fade" style={{ color: "var(--dao-orange)" }}>

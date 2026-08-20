@@ -16,6 +16,9 @@
      brought to WCAG AA (the same treatment the neutral greys received). */
   --dao-green-ink: #56622e;
   --dao-mint: #7ad4c9;
+  /* §03: the approved Studio Ident ground - the intro direction's green.
+     A fixed brand hex like the rest of this block, not a derived tint. */
+  --dao-ident-green: #126149;
   --dao-yellow: #fff9ab;
   --dao-orange: #e16912;
   --dao-gold: #f0ab11;
@@ -30,7 +33,10 @@
 
   /* Act gutters: 32px desktop · 24px @900 · 18px @390 (handoff 2a/2b) */
   --dao-gutter: 32px;
-  --dao-tear-h: 58px; /* act boundary height, scales with viewport */
+  /* torn edge height for the MOVING sheets that still tear away - the
+     Studio Ident exit, the navigation curtain, the route veils. Section
+     boundaries no longer carry one (§15-§18). Scales with viewport. */
+  --dao-tear-h: 58px;
 
   /* v7 unified motion timing system (5h) - the five families replace all
      per-component timings where they conflict. Never linear for object
@@ -85,63 +91,15 @@ html {
   mask: var(--m) center / cover no-repeat;
 }
 
-/* Torn-edge act boundary (pre-masked layer, translate-only motion). */
-.dao-tear {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: var(--dao-tear-h);
-  pointer-events: none;
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-}
-.dao-tear--top {
-  top: 0;
-}
-.dao-tear--flip {
-  transform: scaleY(-1);
-}
-/* §05/§07: a torn boundary is the previous section's material physically
-   overlapping the next, so it must carry that section's EXACT overlay -
-   same asset, same tile size, same opacity, same blend - or the boundary
-   reads as a darker/stronger band inside one surface. The four material
-   vars below default to the canvas weave of the ink/colour chapter
-   grounds (.dao-weave); the --paper modifier switches to the paper grain
-   of the cream grounds (.dao-grain). Values are kept in lockstep with
-   the texture utilities directly below. */
-.dao-tear,
-.dao-cut {
-  --dao-edge-tex: url("/assets/textures/canvas-weave.webp");
-  --dao-edge-size: 512px;
-  --dao-edge-op: 0.14;
-  --dao-edge-blend: overlay;
-}
-.dao-tear--paper,
-.dao-cut--paper {
-  --dao-edge-tex: url("/assets/textures/paper-grain.webp");
-  --dao-edge-size: 352px;
-  --dao-edge-op: 0.4;
-  --dao-edge-blend: multiply;
-}
-/* for the grounds that carry the heavier .dao-grain--strong overlay */
-.dao-tear--grainstrong,
-.dao-cut--grainstrong {
-  --dao-edge-tex: url("/assets/textures/paper-grain-strong.webp");
-  --dao-edge-size: 352px;
-  --dao-edge-op: 0.5;
-  --dao-edge-blend: multiply;
-}
-.dao-tear::after,
-.dao-cut::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--dao-edge-tex);
-  background-size: var(--dao-edge-size);
-  opacity: var(--dao-edge-op);
-  mix-blend-mode: var(--dao-edge-blend);
-  pointer-events: none;
-}
+/* Brand pass §15-§18: the torn/jagged act-boundary system (.dao-tear,
+   .dao-cut and their material modifiers) is retired. Major sections now
+   simply meet each other - each one ends in its own material and the next
+   begins immediately in its own, with nothing drawn on the seam: no torn
+   silhouette, no waveform, no strip, no border, no gradient, no shadow.
+   The paper MATERIAL itself is untouched - only the boundary SHAPE is
+   gone, so the overlays below are unchanged. --dao-tear-h survives because
+   the moving sheets that are not section boundaries (the Studio Ident
+   exit, the navigation curtain, the route veils) still tear away on it. */
 
 /* Texture overlays */
 .dao-grain,
@@ -478,11 +436,17 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-chrome__brand:hover {
   color: var(--dao-paper);
 }
+/* §13: the global brand mark is the official CELESTIAL sun symbol
+   (assets/graphics/sun.webp - the sun of the brand-book symbol collection),
+   not the serpent. Square footprint at the serpent chip's exact height, so
+   the 12px gap to 8TH STATE and the chrome's vertical rhythm are unchanged.
+   §14: colour still resolves from background-color, so the mark keeps the
+   adaptive light/dark chrome theming below with no new rules. */
 .dao-chrome__mark {
-  width: 54px;
+  width: 28px;
   height: 28px;
   background: var(--dao-paper);
-  --m: url("/assets/graphics/serpent-mark.webp");
+  --m: url("/assets/graphics/sun.webp");
   transition: background-color 250ms ease;
 }
 .dao-chrome__word {
@@ -907,14 +871,19 @@ html[data-dao-nav-open] .dao-returntab {
 }
 
 /* ============================================================
-   Act 00 - Studio Ident (locked)
+   Act 00 - Studio Ident (official brand mark)
    ============================================================ */
 
 .dao-ident {
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: var(--dao-red);
+  /* §03: the approved intro green. The ground colour is the ONLY thing that
+     changed - the paper material above it (.dao-grain--strong multiply,
+     .dao-weave overlay, the ink paint splash) is the same stack the red
+     ident carried, so the sheet stays a printed surface rather than a flat
+     colour field. */
+  background: var(--dao-ident-green);
   overflow: hidden;
   /* exit (§01F): the ident leaves the stage as a physical layer - slow
      start, accelerating lift, ~1050ms. No abrupt cut. */
@@ -932,7 +901,7 @@ html[data-dao-nav-open] .dao-returntab {
   right: 0;
   bottom: calc(-1 * var(--dao-tear-h) + 1px);
   height: var(--dao-tear-h);
-  background: var(--dao-red);
+  background: var(--dao-ident-green);
   -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
   transform: scaleY(-1);
@@ -957,193 +926,164 @@ html[data-dao-nav-open] .dao-returntab {
   align-items: center;
   gap: 34px;
 }
+/* the wrapper IS the serpent bounding box, so both suns can be placed on
+   the exact percentages measured off the official artwork
+   (scripts/extract-brand-mark.mjs) */
 .dao-ident__markwrap {
   position: relative;
   width: clamp(250px, 39vw, 560px);
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 3015 / 1464;
 }
-/* Ident choreography (§01): the serpent does NOT travel. It occupies its
-   final approved position from the very first frame and is REVEALED there -
-   an editorial, printed-into-existence reveal rather than an object flying
-   in. Two elements, one job each:
 
-     .dao-ident__serpentreveal - carries the reveal only: a clip-path whose
-       leading edge is an irregular torn contour sweeping right -> left.
-       Because every polygon point shares the same horizontal delta the edge
-       is a pure translation, so a TWO-stop animation interpolates it
-       exactly - one continuous easing curve, and no per-segment velocity
-       reset of the kind that caused the old slide -> stop -> snap.
-     .dao-ident__serpent - the artwork itself: fixed, untransformed, at its
-       final geometry from frame one. Its own mask still cuts the serpent
-       shape; the wrapper clip only gates how much of it is painted.
+/* Serpent reveal (§05/§06): the mark does NOT travel, scale, fade or slide.
+   It occupies its final approved geometry from the very first frame and
+   UNFOLDS OUT OF ITS OWN CENTRE. Two elements, one job each:
 
-   The artwork is a raster WebP alpha mask (360x116), not SVG, so an SVG
-   stroke-draw is not available; a torn clip contour over the fixed mark is
-   the cleanest reveal the real asset supports and it reuses the existing
-   torn-paper material language. Sun and moon are untouched. */
+     .dao-ident__serpentreveal - the reveal only. An 18-point clip-path
+       whose two edges are irregular torn contours: the right edge sweeps
+       centre -> right, the left edge centre -> left, so the visible area
+       expands away from the middle of the infinity in both directions at
+       once. Every point on an edge carries a constant jitter offset and a
+       constant delta, so the edge is a pure translation and a TWO-stop
+       animation interpolates it exactly - one continuous curve, no
+       per-segment velocity reset, no snap at the end.
+     .dao-ident__serpent - the authentic artwork: fixed, untransformed, at
+       its final position and size from frame one. Only how much of it is
+       painted changes.
+
+   Frame one leaves a ~3% sliver open at the centre, which is exactly where
+   the serpent body crosses itself - a small initial visible portion of the
+   real form, and the two loops then unfold outward from it. */
 .dao-ident__serpentreveal {
   position: absolute;
   inset: 0;
-  /* frame one: the torn edge sits past the right edge - nothing painted */
   clip-path: polygon(
-    101% 0%,
-    103.2% 9%,
-    99.6% 18%,
-    102.8% 27%,
-    98.6% 36%,
-    101.9% 45%,
-    103.6% 55%,
-    99.9% 64%,
-    102.5% 73%,
-    99% 82%,
-    102.2% 91%,
-    100.4% 100%,
-    100% 100%,
-    100% 0%
+    51.5% 0%,
+    53.4% 12.5%,
+    50.4% 25%,
+    53.9% 37.5%,
+    50.9% 50%,
+    52.9% 62.5%,
+    49.9% 75%,
+    53.6% 87.5%,
+    51.9% 100%,
+    48% 100%,
+    46.3% 87.5%,
+    49.4% 75%,
+    46.8% 62.5%,
+    49.8% 50%,
+    46% 37.5%,
+    48.9% 25%,
+    47.4% 12.5%,
+    46.7% 0%
   );
 }
 .dao-ident.is-drawn .dao-ident__serpentreveal {
-  animation: dao-ident-serpent-reveal 1250ms var(--dao-ease-scene) both;
+  animation: dao-ident-serpent-unfold 1200ms var(--dao-ease-scene) both;
 }
-@keyframes dao-ident-serpent-reveal {
+@keyframes dao-ident-serpent-unfold {
   from {
     clip-path: polygon(
-      101% 0%,
-      103.2% 9%,
-      99.6% 18%,
-      102.8% 27%,
-      98.6% 36%,
-      101.9% 45%,
-      103.6% 55%,
-      99.9% 64%,
-      102.5% 73%,
-      99% 82%,
-      102.2% 91%,
-      100.4% 100%,
-      100% 100%,
-      100% 0%
+      51.5% 0%,
+      53.4% 12.5%,
+      50.4% 25%,
+      53.9% 37.5%,
+      50.9% 50%,
+      52.9% 62.5%,
+      49.9% 75%,
+      53.6% 87.5%,
+      51.9% 100%,
+      48% 100%,
+      46.3% 87.5%,
+      49.4% 75%,
+      46.8% 62.5%,
+      49.8% 50%,
+      46% 37.5%,
+      48.9% 25%,
+      47.4% 12.5%,
+      46.7% 0%
     );
   }
   to {
     clip-path: polygon(
-      -13% 0%,
-      -10.8% 9%,
-      -14.4% 18%,
-      -11.2% 27%,
-      -15.4% 36%,
-      -12.1% 45%,
-      -10.4% 55%,
-      -14.1% 64%,
-      -11.5% 73%,
-      -15% 82%,
-      -11.8% 91%,
-      -13.6% 100%,
-      100% 100%,
-      100% 0%
+      108% 0%,
+      109.9% 12.5%,
+      106.9% 25%,
+      110.4% 37.5%,
+      107.4% 50%,
+      109.4% 62.5%,
+      106.4% 75%,
+      110.1% 87.5%,
+      108.4% 100%,
+      -8.5% 100%,
+      -10.2% 87.5%,
+      -7.1% 75%,
+      -9.7% 62.5%,
+      -6.7% 50%,
+      -10.5% 37.5%,
+      -7.6% 25%,
+      -9.1% 12.5%,
+      -9.8% 0%
     );
   }
 }
+/* §04/§19: the official RED serpent, lifted straight out of the approved
+   lockup - full-colour artwork, so the printed red, its paper mottle and
+   the eye are the real thing rather than a recolour of a silhouette. */
 .dao-ident__serpent {
   position: absolute;
   inset: 0;
-  background: var(--dao-paper);
-  --m: url("/assets/graphics/serpent-mark.webp");
+  background: url("/assets/brand/serpent-infinity.webp") center / contain no-repeat;
 }
-.dao-ident__sun,
-.dao-ident__moon {
+
+/* The two celestial suns (§07/§08). Both are the official sun silhouette
+   painted with the brand tokens - WHITE (paper) in the left loop, BLACK
+   (ink) in the right - and both sit on the centre percentages measured off
+   the official artwork, so the resolved composition IS the approved lockup.
+   --fall/--rise carry the travel, so the centring translate and the motion
+   never fight over one property. */
+.dao-ident__sun {
   position: absolute;
+  width: 17.446%;
+  aspect-ratio: 526 / 579;
   opacity: 0;
+  --m: url("/assets/brand/celestial-sun.webp");
   will-change: transform;
 }
-.dao-ident__sun {
-  left: 17%;
-  top: 42%;
-  width: 9.3%;
-  aspect-ratio: 1;
+.dao-ident__sun--white {
+  left: 25.622%;
+  top: 48.497%;
+  background: var(--dao-paper);
+  --fall: 52vh;
+  transform: translate(-50%, -50%) translate3d(0, calc(-1 * var(--fall)), 0);
+}
+.dao-ident.is-drawn .dao-ident__sun--white {
+  opacity: 1;
+  transform: translate(-50%, -50%) translate3d(0, 0, 0);
+  transition:
+    transform 1050ms cubic-bezier(0.24, 0.74, 0.18, 1) 260ms,
+    opacity 260ms ease 260ms;
+}
+.dao-ident__sun--black {
+  left: 74.312%;
+  top: 51.503%;
   background: var(--dao-ink);
-  --m: url("/assets/graphics/sun.webp");
-  transform: translate3d(0, -58vh, 0);
+  --rise: 48vh;
+  transform: translate(-50%, -50%) translate3d(0, var(--rise), 0);
 }
-.dao-ident.is-drawn .dao-ident__sun {
+.dao-ident.is-drawn .dao-ident__sun--black {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate(-50%, -50%) translate3d(0, 0, 0);
   transition:
-    transform 1150ms cubic-bezier(0.3, 0.9, 0.25, 1) 200ms,
-    opacity 300ms ease 200ms;
-}
-.dao-ident__moon {
-  right: 21.5%;
-  top: 34%;
-  width: 7.9%;
-  aspect-ratio: 1;
-  background: var(--dao-paper);
-  --m: url("/assets/graphics/moon.webp");
-  transform: translate3d(0, 55vh, 0);
-}
-.dao-ident.is-drawn .dao-ident__moon {
-  opacity: 0.9;
-  transform: translate3d(0, 0, 0);
-  transition:
-    transform 1200ms var(--dao-ease-editorial) 350ms,
-    opacity 300ms ease 350ms;
-}
-/* typography reveals directionally (§01D): left text from the left,
-   right text from the right - short travel, editorial pace */
-.dao-ident__corner {
-  opacity: 0;
-  transition:
-    opacity 700ms ease,
-    transform 700ms var(--dao-ease-editorial);
-}
-.dao-ident__corner--tl {
-  transform: translate3d(-26px, 0, 0);
-}
-.dao-ident__corner--tr {
-  transform: translate3d(26px, 0, 0);
-}
-.dao-ident.is-drawn .dao-ident__corner {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
-.dao-ident.is-drawn .dao-ident__corner--tl {
-  transition-delay: 550ms;
-}
-.dao-ident.is-drawn .dao-ident__corner--tr {
-  transition-delay: 620ms;
-}
-/* official logo on its printed paper label, bottom centre (§02) */
-.dao-ident__logolabel {
-  position: absolute;
-  left: 50%;
-  bottom: 76px;
-  transform: translate3d(-50%, 14px, 0) rotate(-1deg);
-  background: var(--dao-paper);
-  padding: 9px 14px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transition:
-    opacity 700ms ease 850ms,
-    transform 700ms var(--dao-ease-editorial) 850ms;
-}
-.dao-ident.is-drawn .dao-ident__logolabel {
-  opacity: 1;
-  transform: translate3d(-50%, 0, 0) rotate(-1deg);
-}
-.dao-ident__logolabel img {
-  display: block;
-  width: clamp(64px, 6.5vw, 92px);
-  height: auto;
-  mix-blend-mode: multiply;
+    transform 1080ms cubic-bezier(0.28, 0.7, 0.2, 1) 380ms,
+    opacity 260ms ease 380ms;
 }
 @media (max-width: 560px) {
-  .dao-ident__logolabel {
-    bottom: 64px;
+  .dao-ident__sun--white {
+    --fall: 38vh;
   }
-  .dao-ident__sun {
-    transform: translate3d(0, -40vh, 0);
-  }
-  .dao-ident__moon {
-    transform: translate3d(0, 38vh, 0);
+  .dao-ident__sun--black {
+    --rise: 36vh;
   }
 }
 .dao-ident__words {
@@ -1159,24 +1099,17 @@ html[data-dao-nav-open] .dao-returntab {
   color: var(--dao-paper);
   letter-spacing: 0.04em;
 }
+/* §10: PRODUCTION read too thin under the wordmark. Optika ships a real
+   SemiBold face (loaded in layout.tsx), so the extra weight is an actual
+   font weight - no synthetic stroke. Typeface, tracking, case, alignment
+   and scale are unchanged, and 600 still sits well below the Adevas
+   display weight of 8TH STATE. */
 .dao-ident__sub {
-  font-weight: 500;
+  font-weight: 600;
   font-size: clamp(10px, 1vw, 15px);
   letter-spacing: 0.62em;
   color: var(--dao-ink);
   padding-left: 0.62em;
-}
-.dao-ident__corner {
-  position: absolute;
-  color: rgba(255, 249, 171, 0.85);
-}
-.dao-ident__corner--tl {
-  top: 28px;
-  left: var(--dao-gutter);
-}
-.dao-ident__corner--tr {
-  top: 28px;
-  right: var(--dao-gutter);
 }
 @media (prefers-reduced-motion: reduce) {
   .dao-ident {
@@ -1186,42 +1119,28 @@ html[data-dao-nav-open] .dao-returntab {
     transform: none;
     opacity: 0;
   }
-  /* static composition: no slither, no sun/moon travel - short fades only.
-     Both serpent axes are neutralised, so the mark simply fades in at its
-     final resting position. */
-  .dao-ident__serpentreveal {
+  /* §23: the finished composition is identical, it simply arrives through
+     short fades - no centre-out unfold, no sun travel. The brand mark is
+     never withheld from reduced-motion visitors. */
+  .dao-ident__serpentreveal,
+  .dao-ident.is-drawn .dao-ident__serpentreveal {
     clip-path: none;
     animation: none;
   }
-  .dao-ident.is-drawn .dao-ident__serpentreveal {
-    animation: none;
-  }
   .dao-ident__serpent {
-    transform: none;
     opacity: 0;
     transition: opacity 250ms ease;
   }
   .dao-ident.is-drawn .dao-ident__serpent {
-    animation: none;
     opacity: 1;
   }
-  .dao-ident__sun,
-  .dao-ident__moon,
-  .dao-ident__corner--tl,
-  .dao-ident__corner--tr,
-  .dao-ident__logolabel {
-    transform: none !important;
+  .dao-ident__sun {
+    transform: translate(-50%, -50%) !important;
   }
-  .dao-ident.is-drawn .dao-ident__sun,
-  .dao-ident.is-drawn .dao-ident__moon,
-  .dao-ident.is-drawn .dao-ident__corner,
-  .dao-ident.is-drawn .dao-ident__logolabel {
+  .dao-ident.is-drawn .dao-ident__sun {
     transition:
       opacity 250ms ease,
       transform 0s;
-  }
-  .dao-ident__logolabel {
-    transform: translateX(-50%) !important;
   }
 }
 

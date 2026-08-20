@@ -232,23 +232,6 @@ html:has(.dlb) {
   background: var(--dao-blue);
   padding: 104px var(--dao-gutter) 90px;
 }
-/* §07: the plane's torn overhang is the plane's own material continuing
-   past its edge, so it is a real element carrying the identical overlay
-   children (.dao-grain--strong + .dao-weave) rather than a pseudo that
-   re-paints the texture at a different strength. The torn mask clips the
-   element and its overlays together. */
-.dwk__planetear {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(-1 * var(--dao-tear-h) + 2px);
-  height: var(--dao-tear-h);
-  background: var(--dao-blue);
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  pointer-events: none;
-  z-index: 1;
-}
 .dwk__head {
   display: flex;
   justify-content: space-between;
@@ -604,20 +587,6 @@ html:has(.dlb) {
   background: var(--dao-blue);
   padding: 150px var(--dao-gutter) 110px;
   color: var(--dao-paper);
-}
-/* §07: same construction as .dwk__planetear - the opening's own material
-   continues through the tear via identical overlay children. */
-.dpj__openingtear {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(-1 * var(--dao-tear-h) + 2px);
-  height: var(--dao-tear-h);
-  background: var(--dao-blue);
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  pointer-events: none;
-  z-index: 1;
 }
 .dpj__openinggrid {
   display: grid;
@@ -1267,20 +1236,6 @@ html:has(.dlb) {
     top: 0;
   }
 }
-
-/* torn boundary helper for stacked sections */
-.dao-cut {
-  position: absolute;
-  top: -2px;
-  left: 0;
-  right: 0;
-  height: 40px;
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  pointer-events: none;
-}
-/* §07: the cut's material overlay lives with .dao-tear in dao.css - one
-   shared rule so a boundary always matches the ground it belongs to. */
 
 /* ============================================================
    /studio - visual manifesto (4a)

@@ -90,13 +90,6 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
       aria-label={m.act}
     >
       <div className="dao-grain" aria-hidden="true" />
-      {/* ink torn boundary - Selected Work resolves into black before the
-          paper act begins (the blue never bridges the two grounds) */}
-      <div
-        className="dao-tear dao-tear--top"
-        style={{ background: "var(--dao-ink)", height: "calc(var(--dao-tear-h) * 1.4)" }}
-        aria-hidden="true"
-      />
 
       <div
         style={{
