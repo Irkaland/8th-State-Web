@@ -284,7 +284,6 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Messa
           style={{ color: "var(--dao-paper)", fontSize: 10.5 }}
         >
           {up(m.contactStudio)} <span aria-hidden="true">→</span>
-          <span className="dao-strike" aria-hidden="true" />
         </Link>
       </div>
     </form>

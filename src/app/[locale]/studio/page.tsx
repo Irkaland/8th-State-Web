@@ -162,11 +162,6 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 style={{ color: "var(--dao-paper)", fontSize: 10 }}
               >
                 {up(R.capabilities)} <span aria-hidden="true">→</span>
-                <span
-                  className="dao-strike"
-                  style={{ background: "var(--dao-blue)" }}
-                  aria-hidden="true"
-                />
               </Link>
               <Link
                 href={localeHref(locale, "/process")}
@@ -174,11 +169,6 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 style={{ color: "var(--dao-paper)", fontSize: 10 }}
               >
                 {up(R.howWeWork)} <span aria-hidden="true">→</span>
-                <span
-                  className="dao-strike"
-                  style={{ background: "var(--dao-orange)" }}
-                  aria-hidden="true"
-                />
               </Link>
             </div>
           </div>
@@ -207,11 +197,6 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 style={{ color: "var(--dao-ink)", fontSize: 10, marginTop: 10 }}
               >
                 {up(R.enterLab)} <span aria-hidden="true">→</span>
-                <span
-                  className="dao-strike"
-                  style={{ background: "var(--dao-yellow)" }}
-                  aria-hidden="true"
-                />
               </Link>
             </div>
           </div>

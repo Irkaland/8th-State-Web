@@ -31,8 +31,6 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
       <div className="dao-weave" aria-hidden="true" />
       <span className="dao-contact__sun dao-mask" aria-hidden="true" />
 
-      <div className="dao-label dao-contact__label">{m.act}</div>
-
       <div className="dao-contact__grid">
         <div className="dao-contact__left">
           <h2 className="dao-contact__invite">

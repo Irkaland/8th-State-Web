@@ -44,8 +44,6 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
         aria-hidden="true"
       />
 
-      <div className="dao-label dao-lab__label">{m.act}</div>
-
       <div className="dao-lab__body">
         <h2 className="dao-lab__title">
           {m.title.split(" ").map((word, i) => (
@@ -66,7 +64,6 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
             aria-label={m.cta}
           >
             {up(m.cta)}
-            <span className="dao-strike" aria-hidden="true" />
           </Link>
           <span className="dao-lab__wreath dao-mask" aria-hidden="true" />
         </div>

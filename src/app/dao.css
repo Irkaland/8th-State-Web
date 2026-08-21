@@ -19,6 +19,10 @@
   /* §03: the approved Studio Ident ground - the intro direction's green.
      A fixed brand hex like the rest of this block, not a derived tint. */
   --dao-ident-green: #126149;
+  /* §06/§08: media frame colour. Blue is the site-wide frame; the Home
+     Selected Work act overrides it to black. */
+  --dao-frame: var(--dao-blue);
+  --dao-frame-work: #000000;
   /* §07: the Studio Introduction ground - the approved yellow #f0ab11 laid
      over the paper stock at 60%. A wash, not a parent opacity. */
   --dao-intro-wash: rgba(240, 171, 17, 0.6);
@@ -29,10 +33,42 @@
   --dao-ink: #131210;
   --dao-paper: #f2ede3;
 
+  /* ---------- typography roles (brand book hierarchy) ----------
+   Four semantic roles, each with a Latin and a Georgian resolution. Nothing
+   should declare a raw font stack outside this block; components pick a ROLE
+   and keep their own responsive size.
+
+     display   major headings, page + section titles
+     editorial medium statements and body paragraphs
+     copy      small labels, metadata, supporting text
+     nav       the burger navigation, which has its own rule
+
+   LATIN                       GEORGIAN
+     display   Adevas Regular    AGROTESK Normal      <- font file MISSING
+     editorial Optika SemiBold   ALK Sanet Regular
+     copy      Optika Medium     MCh Neobau           <- font file MISSING
+     nav       Glacier Regular   ALK Sanet Regular
+
+   The two Georgian faces marked MISSING are not in the repository and have
+   never been committed (audited across all history). Rather than substitute
+   an unrelated system font, their tokens resolve to the approved Georgian
+   stack already in use (ALK Sanet -> Noto Sans Georgian). When the real files
+   land, add a localFont declaration in layout.tsx and point the token at it -
+   nothing else has to change. */
   --dao-f-display: var(--f-adevas), var(--f-sanet), serif;
   --dao-f-ui: var(--f-optika), var(--f-georgian), sans-serif;
   --dao-f-numeral: var(--f-glacier), sans-serif;
   --dao-f-ka: var(--f-sanet), var(--f-georgian), sans-serif;
+  /* the burger navigation: Glacier in Latin, ALK Sanet in Georgian */
+  --dao-f-nav: var(--f-glacier), sans-serif;
+  /* Georgian role tokens - the two awaiting their real font files fall back
+     to the approved Georgian stack, never to a system serif/sans */
+  --dao-f-ka-display: var(--f-sanet), var(--f-georgian), sans-serif;
+  --dao-f-ka-editorial: var(--f-sanet), var(--f-georgian), sans-serif;
+  --dao-f-ka-copy: var(--f-sanet), var(--f-georgian), sans-serif;
+  /* the real weights the Optika files provide - no synthetic weights */
+  --dao-w-editorial: 600;
+  --dao-w-copy: 500;
 
   /* Act gutters: 32px desktop · 24px @900 · 18px @390 (handoff 2a/2b) */
   --dao-gutter: 32px;
@@ -49,6 +85,18 @@
   /* legacy alias - existing entrances resolve to the EDITORIAL family */
   --dao-ease-out: var(--dao-ease-editorial);
 }
+
+/* §03: a Georgian document resolves the role tokens to the Georgian faces, so
+   every component that consumes a role switches with the language and no
+   component needs a per-locale branch. Numerals stay on Glacier - they are
+   Latin digits either way. Mixed content (a Georgian companion span inside an
+   English page) is handled by the .dao-t-*:lang(ka) utilities. */
+html[lang="ka"] {
+  --dao-f-display: var(--dao-f-ka-display);
+  --dao-f-ui: var(--dao-f-ka-editorial);
+  --dao-f-nav: var(--dao-f-ka);
+}
+
 html {
   /* v7 §26: no blank overscroll exposure on any shell */
   overscroll-behavior: none;
@@ -75,6 +123,128 @@ html {
 .dao ::selection {
   background: var(--dao-red);
   color: var(--dao-paper);
+}
+
+/* ---------- typography role utilities ----------
+   Semantic classes so components never hardcode a family. Each switches to
+   its Georgian resolution on Georgian content - :lang() matches both the
+   whole document (html lang="ka") and individual lang="ka" companion spans,
+   so a Georgian label inside an English page still resolves correctly.
+   Size is deliberately NOT set here: responsive scale stays with the
+   component that owns it. */
+.dao-t-display {
+  font-family: var(--dao-f-display);
+}
+.dao-t-display:lang(ka) {
+  font-family: var(--dao-f-ka-display);
+}
+.dao-t-editorial {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+}
+.dao-t-editorial:lang(ka) {
+  font-family: var(--dao-f-ka-editorial);
+}
+.dao-t-copy {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+}
+.dao-t-copy:lang(ka) {
+  font-family: var(--dao-f-ka-copy);
+}
+.dao-t-nav {
+  font-family: var(--dao-f-nav);
+}
+.dao-t-nav:lang(ka) {
+  font-family: var(--dao-f-ka);
+}
+
+/* ---------- decorative text-link stroke (§09/§10) ----------
+   Text-only navigational CTAs carry the brand's hand-drawn horizontal rule
+   under the label. The asset is the official pencil rule already used by
+   .dao-rule-h - a real organic stroke, not a browser underline - masked over
+   currentColor so it inherits the link's colour on every ground.
+
+   The reveal is a clip, not a scale: scaling would squash the texture and
+   change its character, while clip-path exposes the stroke at its true width
+   from the left. Absolutely positioned, so there is no layout shift and the
+   click target is untouched.
+
+   Applied through a shared class list - never copy-pasted per page. Excluded
+   by design from filled buttons, chips, cards, image links, burger rows, form
+   controls and the EN/KA switcher (§11). */
+.dao-textlink,
+.dao-cta,
+.dao-work__all,
+.dao-intro__cta,
+.dao-svc__all,
+.dao-lab__cta {
+  position: relative;
+}
+.dao-textlink::after,
+.dao-cta::after,
+.dao-work__all::after,
+.dao-intro__cta::after,
+.dao-svc__all::after,
+.dao-lab__cta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.62em;
+  height: 5px;
+  background: currentColor;
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 340ms var(--dao-ease-editorial);
+  pointer-events: none;
+}
+.dao-textlink:hover::after,
+.dao-textlink:focus-visible::after,
+.dao-cta:hover::after,
+.dao-cta:focus-visible::after,
+.dao-work__all:hover::after,
+.dao-work__all:focus-visible::after,
+.dao-intro__cta:hover::after,
+.dao-intro__cta:focus-visible::after,
+.dao-svc__all:hover::after,
+.dao-svc__all:focus-visible::after,
+.dao-lab__cta:hover::after,
+.dao-lab__cta:focus-visible::after {
+  clip-path: inset(0 0 0 0);
+}
+/* Touch devices never hover, so the stroke would be dead weight: hide it and
+   leave the CTA a clean, fully tappable text link (§12). Keyboard focus still
+   gets it, because focus-visible works on every device. */
+@media (hover: none) {
+  .dao-textlink::after,
+  .dao-cta::after,
+  .dao-work__all::after,
+  .dao-intro__cta::after,
+  .dao-svc__all::after,
+  .dao-lab__cta::after {
+    display: none;
+  }
+  .dao-textlink:focus-visible::after,
+  .dao-cta:focus-visible::after,
+  .dao-work__all:focus-visible::after,
+  .dao-intro__cta:focus-visible::after,
+  .dao-svc__all:focus-visible::after,
+  .dao-lab__cta:focus-visible::after {
+    display: block;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dao-textlink::after,
+  .dao-cta::after,
+  .dao-work__all::after,
+  .dao-intro__cta::after,
+  .dao-svc__all::after,
+  .dao-lab__cta::after {
+    transition: none;
+  }
 }
 
 /* Masked brand glyph: colour comes from background-color, shape from --m. */
@@ -137,9 +307,10 @@ html {
 }
 
 /* Corner act metadata */
+/* small labels + metadata: the COPY role, at a real Optika weight */
 .dao-label {
   font-family: var(--dao-f-ui);
-  font-weight: 500;
+  font-weight: var(--dao-w-copy);
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -665,9 +836,13 @@ html[data-dao-nav-open] .dao-returntab {
   outline: 2px solid var(--dao-blue);
   outline-offset: 3px;
 }
+/* §04: the burger navigation has its own rule - Glacier in Latin, ALK Sanet
+   for the Georgian companions (.dao-nav__ka, below). Deliberately NOT Adevas:
+   the sheet is its own typographic system. Numbering, structure, hover
+   preview, routing and colours are untouched. */
 .dao-nav__link {
   position: relative;
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-nav);
   /* eight destinations: type scales with viewport HEIGHT (v7 #2) */
   font-size: clamp(26px, 5.4vh, 64px);
   line-height: 1.1;
@@ -1278,8 +1453,11 @@ html[data-dao-nav-open] .dao-returntab {
   mix-blend-mode: multiply;
   opacity: 0.94;
 }
+/* the studio positioning statement: medium editorial copy, so strong
+   Optika rather than the display face (§02) */
 .dao-intro__statement {
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(24px, 2.9vw, 42px);
   line-height: 1.28;
   color: var(--dao-ink);
@@ -1305,14 +1483,6 @@ html[data-dao-nav-open] .dao-returntab {
 }
 .dao-intro__cta:hover {
   color: var(--dao-red);
-}
-.dao-intro__corner {
-  position: absolute;
-  color: var(--dao-brown);
-}
-.dao-intro__corner--tl {
-  top: 36px;
-  left: var(--dao-gutter);
 }
 
 /* 390 - orbit becomes a constellation (2b) */
@@ -1383,9 +1553,13 @@ html[data-dao-nav-open] .dao-returntab {
    Act 03 - Selected Work (blue chapter system)
    ============================================================ */
 
+/* §07: the Selected Work act is a red paper field. The colour is the base,
+   and the section's own grain + weave overlays sit on top of it, so the red
+   reads as printed stock rather than a flat digital fill or a transparent
+   strip laid over something else. One continuous material for the whole act. */
 .dao-work {
   position: relative;
-  background: var(--dao-ink);
+  background: var(--dao-red);
   overflow: hidden;
   padding: 88px 0 120px;
 }
@@ -1405,8 +1579,9 @@ html[data-dao-nav-open] .dao-returntab {
   gap: 18px;
   padding: 0 var(--dao-gutter);
 }
+/* SELECTED WORK - a major branded section title, so the DISPLAY role */
 .dao-work__title {
-  font-family: var(--dao-f-numeral);
+  font-family: var(--dao-f-display);
   font-size: clamp(30px, 4.4vw, 64px);
   line-height: 1;
   color: var(--dao-paper);
@@ -1467,32 +1642,25 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-work__item.is-dragging {
   transition: opacity 480ms ease;
 }
-/* the blue chapter sheet is parented to the active frame (physical paper) */
+/* §06/§08: the frame behind the active project. Black here rather than the
+   blue used elsewhere (§08), clean straight geometry on all four sides - the
+   torn lower termination is gone (§06) - and a little thinner than before
+   (28/26/24 -> 18/16/16) so it still reads as an intentional graphic frame
+   without the earlier weight. */
 .dao-work__sheet {
   position: absolute;
-  left: -28px;
-  right: -28px;
-  top: -26px;
-  bottom: -24px;
+  left: -18px;
+  right: -18px;
+  top: -16px;
+  bottom: -16px;
   transform: rotate(-1.6deg);
-  background: var(--dao-blue);
+  background: var(--dao-frame-work);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
   opacity: 0;
   transition: opacity 360ms ease;
 }
 .dao-work__item.is-active .dao-work__sheet {
   opacity: 1;
-}
-.dao-work__sheet::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -16px;
-  height: 28px;
-  background: var(--dao-blue);
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
 }
 .dao-work__frame {
   position: absolute;
@@ -1669,18 +1837,6 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-work__all:hover {
   color: var(--dao-paper);
 }
-.dao-work__base {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 14px;
-  /* Selected Work resolves into black before the paper act - the blue
-     stays inside the chapter (sheets, badges, metadata), never as the
-     lower transition field. */
-  background: var(--dao-ink);
-  overflow: hidden;
-}
 @media (max-width: 720px) {
   .dao-work {
     padding-bottom: 100px;
@@ -1721,9 +1877,6 @@ html[data-dao-nav-open] .dao-returntab {
     font-size: 8.5px;
     letter-spacing: 0.18em;
   }
-  .dao-work__base {
-    height: 10px;
-  }
 }
 
 /* ============================================================
@@ -1737,8 +1890,9 @@ html[data-dao-nav-open] .dao-returntab {
   overflow: hidden;
   padding: 96px var(--dao-gutter) 110px;
 }
+/* WHAT WE MAKE - major section title, DISPLAY role */
 .dao-svc__title {
-  font-family: var(--dao-f-numeral);
+  font-family: var(--dao-f-display);
   font-size: clamp(30px, 4.4vw, 64px);
   line-height: 1;
   color: var(--dao-ink);
@@ -1982,12 +2136,6 @@ html[data-dao-nav-open] .dao-returntab {
   --m: url("/assets/graphics/bloom.webp");
   transform: rotate(-8deg);
 }
-.dao-lab__label {
-  position: absolute;
-  top: 110px;
-  left: var(--dao-gutter);
-  color: rgba(19, 18, 16, 0.75);
-}
 .dao-lab__body {
   display: flex;
   flex-direction: column;
@@ -2129,12 +2277,6 @@ html[data-dao-nav-open] .dao-returntab {
   .dao-contact__sun {
     animation: dao-sun-turn 40s linear infinite alternate;
   }
-}
-.dao-contact__label {
-  position: absolute;
-  top: 104px;
-  left: var(--dao-gutter);
-  color: rgba(242, 237, 227, 0.55);
 }
 .dao-contact__grid {
   position: relative;

@@ -115,11 +115,6 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
                   style={{ color: "var(--dao-paper)", fontSize: 10.5 }}
                 >
                   {up(R.caseStudies)} <span aria-hidden="true">→</span>
-                  <span
-                    className="dao-strike"
-                    style={{ background: "var(--dao-blue)" }}
-                    aria-hidden="true"
-                  />
                 </Link>
                 <Link
                   href={localeHref(locale, "/start-a-project")}

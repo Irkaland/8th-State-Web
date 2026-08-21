@@ -149,11 +149,6 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                   style={{ color: "var(--dao-ink)" }}
                 >
                   {up(R.allLabWork)} <span aria-hidden="true">→</span>
-                  <span
-                    className="dao-strike"
-                    style={{ background: "var(--dao-yellow)" }}
-                    aria-hidden="true"
-                  />
                 </Link>
               </div>
               <div className="dlb__collab">

@@ -311,12 +311,6 @@ export function SelectedWork({
       <Link href={localeHref(locale, "/work")} className="dao-work__all">
         {up(m.all)} <span aria-hidden="true">→</span>
       </Link>
-
-      {/* §07: the closing ink field is the same surface as the act above,
-          so it carries the act's weave - not the heavier paper grain */}
-      <div className="dao-work__base" aria-hidden="true">
-        <div className="dao-weave" />
-      </div>
     </section>
   );
 }

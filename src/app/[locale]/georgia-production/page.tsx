@@ -224,11 +224,6 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
               style={{ color: "var(--dao-ink)" }}
             >
               {up(R.startProject)} <span aria-hidden="true">→</span>
-              <span
-                className="dao-strike"
-                style={{ background: "var(--dao-blue)" }}
-                aria-hidden="true"
-              />
             </Link>
           </div>
         </InView>

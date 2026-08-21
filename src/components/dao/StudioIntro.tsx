@@ -119,7 +119,6 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
       aria-label={m.act}
     >
       <div className="dao-grain" aria-hidden="true" />
-      <div className="dao-label dao-intro__corner dao-intro__corner--tl">{m.act}</div>
 
       {/* hand-drawn ink orbit path + fragment ring (desktop / tablet) */}
       <div className="dao-intro__ring dao-mask" aria-hidden="true" />

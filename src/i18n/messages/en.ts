@@ -324,14 +324,14 @@ const en = {
   // "One Continuous Take" - approved Digital Art Object homepage (Direction 01).
   dao: {
     ident: {
-      act: "Act 00 - Studio Ident",
+      act: "Studio Ident",
       city: "Tbilisi, Georgia",
       title: "8TH STATE",
       sub: "PRODUCTION",
       skip: "Skip intro",
     },
     reel: {
-      act: "Act 01 - Master Showreel",
+      act: "Master Showreel",
       play: "Play reel",
       title: "Master Showreel - 2026",
       duration: "00:10",
@@ -339,7 +339,7 @@ const en = {
       pending: "Showreel in production - final master pending",
     },
     intro: {
-      act: "Act 02 - The Studio",
+      act: "The Studio",
       statement:
         "A multidisciplinary production company and creative studio dedicated to visual storytelling, art direction, design, education and experimental artistic practice.",
       cta: "The Studio",
@@ -348,7 +348,7 @@ const en = {
       chipFilm: "Film & Video",
     },
     work: {
-      act: "Act 03 - Selected Work",
+      act: "Selected Work",
       title: "Selected Work",
       caseStudy: "Case Study",
       role: "Role",
@@ -361,7 +361,7 @@ const en = {
       goTo: "Go to project",
     },
     services: {
-      act: "Act 04 - What We Make",
+      act: "What We Make",
       title: "What We Make",
       intro:
         "Nine capabilities, four kinds of work. Groups describe kinds of work, not a required order - scope is determined per project.",
@@ -369,14 +369,14 @@ const en = {
       note: "Each row reveals a plain-language explanation and related work on open.",
     },
     lab: {
-      act: "Act 05 - Another Room in the Same House",
+      act: "Another Room in the Same House",
       title: "STUDIO LAB",
       copy: "Education, research, workshops and artistic development - the experimental branch of 8th State, where process is the subject.",
       cta: "Enter the Lab",
       ticker: ["Research", "Workshops", "Experiments", "Education", "Field Notes", "Archive"],
     },
     contact: {
-      act: "Act 06 - Final Scene",
+      act: "Final Scene",
       title1: "START A",
       title2: "PRODUCTION",
       note: "Tell us what you are making. We respond within a stated timeframe with a first conversation, not a quote.",

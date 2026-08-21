@@ -115,7 +115,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                 style={{ color: "var(--dao-ink)" }}
               >
                 {up(R.relatedWork)} <span aria-hidden="true">→</span>
-                <span className="dao-strike" style={{ background: g1.colour }} aria-hidden="true" />
               </Link>
             </div>
             {/* E2: right-positioned fragment mirrors the direction */}
@@ -247,11 +246,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                   style={{ color: "var(--dao-ink)" }}
                 >
                   {up(R.relatedWork)} <span aria-hidden="true">→</span>
-                  <span
-                    className="dao-strike"
-                    style={{ background: g4.colour }}
-                    aria-hidden="true"
-                  />
                 </Link>
                 <span
                   className="dao-mask"
@@ -292,11 +286,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
               style={{ color: "var(--dao-ink)" }}
             >
               {up(m.daoRoutes.work.startProduction)} <span aria-hidden="true">→</span>
-              <span
-                className="dao-strike"
-                style={{ background: "var(--dao-red)" }}
-                aria-hidden="true"
-              />
             </Link>
           </div>
         </InView>
