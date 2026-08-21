@@ -910,105 +910,68 @@ html[data-dao-nav-open] .dao-returntab {
   aspect-ratio: 3015 / 1464;
 }
 
-/* Serpent reveal (§05/§06): the mark does NOT travel, scale, fade or slide.
-   It occupies its final approved geometry from the very first frame and
-   UNFOLDS OUT OF ITS OWN CENTRE. Two elements, one job each:
+/* Serpent reveal (§02-§08): the mark does NOT travel, scale, fade or slide.
+   It occupies its final approved geometry from the very first frame and is
+   DRAWN ALONG ITS OWN BODY - tail first, head last.
 
-     .dao-ident__serpentreveal - the reveal only. An 18-point clip-path
-       whose two edges are irregular torn contours: the right edge sweeps
-       centre -> right, the left edge centre -> left, so the visible area
-       expands away from the middle of the infinity in both directions at
-       once. Every point on an edge carries a constant jitter offset and a
-       constant delta, so the edge is a pure translation and a TWO-stop
-       animation interpolates it exactly - one continuous curve, no
-       per-segment velocity reset, no snap at the end.
-     .dao-ident__serpent - the authentic artwork: fixed, untransformed, at
-       its final position and size from frame one. Only how much of it is
-       painted changes.
+   The official mark is a raster with no vector path, so the body centreline
+   is recovered from the artwork's own alpha (geodesic distance inside the
+   silhouette, seeded at the snout) by scripts/make-serpent-draw-path.mjs and
+   emitted as serpent-draw-path.ts, ordered TAIL -> HEAD. The ident strokes
+   that path inside an SVG <mask> over an <image> of the authentic artwork and
+   animates stroke-dashoffset, so the reveal front travels along the real
+   curves and loops instead of wiping across a box. Nothing about the artwork
+   itself changes - only how much of it the mask lets through.
 
-   Frame one leaves a ~3% sliver open at the centre, which is exactly where
-   the serpent body crosses itself - a small initial visible portion of the
-   real form, and the two loops then unfold outward from it. */
-.dao-ident__serpentreveal {
+   The stroke is 162 viewBox units wide, which is wider than the thickest part
+   of the body (the head, ~122 units). At full reveal the mask exposes
+   100.000% of the artwork's pixels - verified against the raster - so the
+   finished mark is pixel-identical to the static one with the mask still in
+   place. Overspill beyond the silhouette falls on transparent artwork and
+   paints nothing.
+
+   .dao-ident__serpentdraw - the SVG box, pinned to the mark's final geometry
+   .dao-ident__serpentink  - the mask stroke; the only thing that animates
+   .dao-ident__serpent     - the authentic artwork, fixed and untransformed */
+.dao-ident__serpentdraw {
   position: absolute;
   inset: 0;
-  clip-path: polygon(
-    51.5% 0%,
-    53.4% 12.5%,
-    50.4% 25%,
-    53.9% 37.5%,
-    50.9% 50%,
-    52.9% 62.5%,
-    49.9% 75%,
-    53.6% 87.5%,
-    51.9% 100%,
-    48% 100%,
-    46.3% 87.5%,
-    49.4% 75%,
-    46.8% 62.5%,
-    49.8% 50%,
-    46% 37.5%,
-    48.9% 25%,
-    47.4% 12.5%,
-    46.7% 0%
-  );
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-.dao-ident.is-drawn .dao-ident__serpentreveal {
-  animation: dao-ident-serpent-unfold 1200ms var(--dao-ease-scene) both;
+.dao-ident__serpentink {
+  /* parked before the tail: the dash and its round cap are both off the path,
+     so frame one paints nothing at all */
+  stroke-dasharray: var(--dao-serpent-dash);
+  stroke-dashoffset: var(--dao-serpent-hidden);
 }
-@keyframes dao-ident-serpent-unfold {
+.dao-ident.is-drawn .dao-ident__serpentink {
+  /* §11/§12: ONE continuous progress over 1600ms. The curve is deliberately
+     close to linear - a confident start (initial speed 0.75x), an even
+     readable drawing speed through the body, and a gentle deceleration into
+     the head. A conventional ease-out was rejected: it reaches 97% of the
+     path by 80% of the time, which leaves the head crawling. With this curve
+     the last 15% of the time draws the last 8% of the path - the neck, head
+     and face - so the head still completes last and deliberately (§08).
+     One curve for the whole reveal: no per-section easing, no velocity reset,
+     no mid-animation stop. */
+  animation: dao-ident-serpent-draw 1600ms cubic-bezier(0.3, 0.22, 0.6, 0.86) both;
+}
+@keyframes dao-ident-serpent-draw {
   from {
-    clip-path: polygon(
-      51.5% 0%,
-      53.4% 12.5%,
-      50.4% 25%,
-      53.9% 37.5%,
-      50.9% 50%,
-      52.9% 62.5%,
-      49.9% 75%,
-      53.6% 87.5%,
-      51.9% 100%,
-      48% 100%,
-      46.3% 87.5%,
-      49.4% 75%,
-      46.8% 62.5%,
-      49.8% 50%,
-      46% 37.5%,
-      48.9% 25%,
-      47.4% 12.5%,
-      46.7% 0%
-    );
+    stroke-dashoffset: var(--dao-serpent-hidden);
   }
   to {
-    clip-path: polygon(
-      108% 0%,
-      109.9% 12.5%,
-      106.9% 25%,
-      110.4% 37.5%,
-      107.4% 50%,
-      109.4% 62.5%,
-      106.4% 75%,
-      110.1% 87.5%,
-      108.4% 100%,
-      -8.5% 100%,
-      -10.2% 87.5%,
-      -7.1% 75%,
-      -9.7% 62.5%,
-      -6.7% 50%,
-      -10.5% 37.5%,
-      -7.6% 25%,
-      -9.1% 12.5%,
-      -9.8% 0%
-    );
+    stroke-dashoffset: 0;
   }
 }
 /* §04/§19: the official RED serpent, lifted straight out of the approved
    lockup - full-colour artwork, so the printed red, its paper mottle and
    the eye are the real thing rather than a recolour of a silhouette. */
 .dao-ident__serpent {
-  position: absolute;
-  inset: 0;
-  background: url("/assets/brand/serpent-infinity.webp") center / contain no-repeat;
+  /* the <image> inside the SVG - it never moves, scales or fades */
+  transform: none;
 }
 
 /* The two celestial suns (§07/§08). Both are the official sun silhouette
@@ -1094,19 +1057,20 @@ html[data-dao-nav-open] .dao-returntab {
     transform: none;
     opacity: 0;
   }
-  /* §23: the finished composition is identical, it simply arrives through
-     short fades - no centre-out unfold, no sun travel. The brand mark is
-     never withheld from reduced-motion visitors. */
-  .dao-ident__serpentreveal,
-  .dao-ident.is-drawn .dao-ident__serpentreveal {
-    clip-path: none;
+  /* §21: the finished composition is identical, it simply arrives through
+     short fades - no tail-to-head draw, no sun travel. The brand mark is
+     never withheld from reduced-motion visitors, so the mask is held fully
+     open and the artwork fades in as one piece. */
+  .dao-ident__serpentink,
+  .dao-ident.is-drawn .dao-ident__serpentink {
     animation: none;
+    stroke-dashoffset: 0;
   }
-  .dao-ident__serpent {
+  .dao-ident__serpentdraw {
     opacity: 0;
     transition: opacity 250ms ease;
   }
-  .dao-ident.is-drawn .dao-ident__serpent {
+  .dao-ident.is-drawn .dao-ident__serpentdraw {
     opacity: 1;
   }
   .dao-ident__sun {
