@@ -6,7 +6,8 @@ import { gotoRoute } from "./helpers";
  * the global removal of torn section boundaries.
  *
  *  §02-§04  the ident is the official lockup on the approved intro green
- *  §05-§09  centre-out serpent unfold + white sun descends + black sun rises
+ *  §05-§09  the serpent is DRAWN along its own body, tail to head, while the
+ *           white sun descends and the black sun rises into their loops
  *  §10-§11  stronger PRODUCTION, no corner metadata, no lower square logo
  *  §13-§14  the celestial sun replaces the serpent in the chrome and keeps
  *           the adaptive light/dark theming
@@ -82,11 +83,12 @@ test.describe("Studio Ident - official brand mark", () => {
 
     const parts = await page.evaluate(() => {
       const q = (s: string) => document.querySelector(s) as HTMLElement;
-      const serpent = getComputedStyle(q(".dao-ident__serpent"));
       const white = getComputedStyle(q(".dao-ident__sun--white"));
       const black = getComputedStyle(q(".dao-ident__sun--black"));
       return {
-        serpentArt: serpent.backgroundImage,
+        // the serpent is an SVG <image> of the authentic artwork, revealed
+        // through the generated draw mask
+        serpentArt: document.querySelector(".dao-ident__serpent")!.getAttribute("href") ?? "",
         whiteMask: white.maskImage || white.webkitMaskImage,
         whiteFill: white.backgroundColor,
         blackMask: black.maskImage || black.webkitMaskImage,
@@ -124,93 +126,184 @@ test.describe("Studio Ident - official brand mark", () => {
     expect(parseFloat(type.spacing) / size).toBeCloseTo(0.62, 2);
   });
 
-  test("the serpent unfolds out of its own centre and never travels", async ({ page }) => {
-    // Sample the artwork box and the reveal contour every frame: the artwork
-    // must be pinned, and the visible band must grow away from the centre in
-    // BOTH directions - never sweep in from one side. Sampling stops at 2.1s,
-    // before the ident's exit lift would move the whole sheet.
+  test("the serpent is drawn along its own body from the tail to the head", async ({ page }) => {
+    // The reveal is a stroke-dashoffset animation over a mask path that runs
+    // along the serpent's own centreline. That makes the contract directly
+    // measurable: getPointAtLength on the mask path tells us exactly where the
+    // reveal front is, in artwork coordinates, at any moment.
     await holdIdent(page);
     await page.addInitScript(() => {
-      type S = { t: number; l: number; tp: number; w: number; clip: string };
-      (window as unknown as { __s: S[] }).__s = [];
+      type S = { t: number; off: number; front: [number, number]; box: number[] };
+      const store: S[] = [];
+      (window as unknown as { __d: S[] }).__d = store;
+      (window as unknown as { __done: boolean }).__done = false;
+      let still = 0;
+      let moved = false;
       const tick = () => {
-        const wrap = document.querySelector(".dao-ident__serpentreveal");
-        const art = document.querySelector(".dao-ident__serpent");
-        const store = (window as unknown as { __s: S[] }).__s;
-        if (wrap && art) {
-          const b = art.getBoundingClientRect();
+        const ink = document.querySelector(".dao-ident__serpentink") as SVGPathElement | null;
+        const svg = document.querySelector(".dao-ident__serpentdraw");
+        if (ink && svg) {
+          const len = ink.getTotalLength();
+          const off = parseFloat(getComputedStyle(ink).strokeDashoffset) || 0;
+          const drawn = Math.max(0, Math.min(len, len - off));
+          const p = ink.getPointAtLength(drawn);
+          const r = svg.getBoundingClientRect();
+          const prev = store[store.length - 1];
+          if (prev && Math.abs(prev.off - off) > 0.5) moved = true;
+          still = prev && Math.abs(prev.off - off) < 0.01 ? still + 1 : 0;
           store.push({
             t: Math.round(performance.now()),
-            l: +b.left.toFixed(2),
-            tp: +b.top.toFixed(2),
-            w: +b.width.toFixed(2),
-            clip: getComputedStyle(wrap).clipPath,
+            off,
+            front: [+p.x.toFixed(1), +p.y.toFixed(1)],
+            box: [r.x, r.y, r.width, r.height].map((n) => +n.toFixed(2)),
           });
         }
-        if (performance.now() < 2100) requestAnimationFrame(tick);
+        if (!(moved && still >= 10) && performance.now() < 8000) requestAnimationFrame(tick);
+        else (window as unknown as { __done: boolean }).__done = true;
       };
       requestAnimationFrame(tick);
     });
     await page.goto("/");
     await expect(page.locator(".dao-ident")).toBeVisible();
-    await page.waitForTimeout(2_300); // the 1200ms unfold plus settle
-
+    await page.waitForFunction(() => (window as unknown as { __done: boolean }).__done, undefined, {
+      timeout: 12_000,
+    });
     const s = await page.evaluate(
       () =>
         (
           window as unknown as {
-            __s: { t: number; l: number; tp: number; w: number; clip: string }[];
+            __d: { t: number; off: number; front: [number, number]; box: number[] }[];
           }
-        ).__s,
+        ).__d,
     );
     expect(s.length).toBeGreaterThan(30);
 
-    // 1. the artwork never translates or resizes - fixed from frame one
-    for (const key of ["l", "tp", "w"] as const) {
-      const vs = s.map((p) => p[key]);
-      expect(Math.max(...vs) - Math.min(...vs), `${key} must not change`).toBeLessThan(1);
+    // 1. it starts hidden: the dash is parked off the path, nothing painted
+    expect(s[0].off, "frame one must be fully masked").toBeGreaterThan(0);
+    const len = await page
+      .locator(".dao-ident__serpentink")
+      .evaluate((el) => (el as unknown as SVGPathElement).getTotalLength());
+    expect(s[0].off).toBeGreaterThanOrEqual(len - 1);
+
+    // 2. ONE direction only: the offset never rises, so the reveal front never
+    //    retreats and never restarts
+    for (let i = 1; i < s.length; i += 1) {
+      expect(s[i].off, `offset must only fall (frame ${i})`).toBeLessThanOrEqual(
+        s[i - 1].off + 0.01,
+      );
     }
 
-    // 2. it is spatially centred, not off to one side
-    const vw = page.viewportSize()!.width;
-    const centre = (s[0].l + s[0].w / 2) / vw;
-    expect(centre).toBeGreaterThan(0.4);
-    expect(centre).toBeLessThan(0.6);
+    // 3. it ends fully open - no mask left over the finished mark
+    expect(s.at(-1)!.off).toBe(0);
 
-    // 3. the reveal is an irregular two-edge contour, not a straight wipe
-    expect(s[0].clip).toContain("polygon");
-    const pts = (n: string) => (n.match(/-?[\d.]+%\s+-?[\d.]+%/g) || []).length;
-    expect(pts(s[0].clip), "an irregular torn contour, many points").toBeGreaterThan(12);
-
-    // 4. it progresses continuously
-    expect(new Set(s.map((p) => p.clip)).size).toBeGreaterThan(5);
-
-    // 5. CENTRE-OUT: read the horizontal extent of the clip band per frame.
-    //    The left edge must move left and the right edge right, both starting
-    //    near the middle - so the band is centred on ~50% throughout and only
-    //    ever widens.
-    const band = s.map((p) => {
-      const xs = [...p.clip.matchAll(/(-?[\d.]+)%\s+-?[\d.]+%/g)].map((m) => parseFloat(m[1]));
-      return { lo: Math.min(...xs), hi: Math.max(...xs) };
-    });
-    const first = band[0];
-    const last = band[band.length - 1];
-    // frame one: a small sliver at the centre of the mark
-    expect(first.lo).toBeGreaterThan(40);
-    expect(first.hi).toBeLessThan(60);
-    expect(first.hi - first.lo).toBeLessThan(12);
-    // final: cleared on both sides, so nothing stays clipped
-    expect(last.lo).toBeLessThan(0);
-    expect(last.hi).toBeGreaterThan(100);
-    // monotonic outward growth on both edges, and always centred
-    for (let i = 1; i < band.length; i += 1) {
-      expect(band[i].lo).toBeLessThanOrEqual(band[i - 1].lo + 0.01);
-      expect(band[i].hi).toBeGreaterThanOrEqual(band[i - 1].hi - 0.01);
-      const mid = (band[i].lo + band[i].hi) / 2;
-      expect(Math.abs(mid - 50), "the band stays centred on the mark").toBeLessThan(6);
+    // 4. the artwork NEVER moves: same box on every sampled frame
+    for (const key of [0, 1, 2, 3]) {
+      const vs = s.map((f) => f.box[key]);
+      expect(Math.max(...vs) - Math.min(...vs), "the mark must not move or resize").toBeLessThan(
+        0.5,
+      );
     }
+
+    // 5. the reveal front walks the body TAIL -> HEAD, in artwork
+    //    coordinates (viewBox 1120x544). Regions rather than points, because
+    //    the mask path deliberately overshoots each tip by half a stroke so
+    //    the butt-capped dash still closes the tail point and the snout.
+    //      tail  x 540-820, y 320-544   lower middle-right, with the scratches
+    //      head  x 380-560, y 30-220    the snout, upper middle-left
+    const inTail = (f: [number, number]) => f[0] > 540 && f[0] < 820 && f[1] > 320 && f[1] <= 544;
+    const inHead = (f: [number, number]) => f[0] > 380 && f[0] < 560 && f[1] > 30 && f[1] < 220;
+    expect(inTail(s[0].front), `starts at the tail, got ${s[0].front}`).toBe(true);
+    expect(inHead(s.at(-1)!.front), `ends at the snout, got ${s.at(-1)!.front}`).toBe(true);
+
+    // 6. the head is LAST: the front only enters the head region in the final
+    //    stretch of the animation, never early
+    const firstHead = s.findIndex((f) => inHead(f.front));
+    expect(firstHead, "the front must reach the head").toBeGreaterThan(-1);
+    expect(firstHead / s.length, "the head must not appear early").toBeGreaterThan(0.6);
+    // ... and nothing in the head region is drawn before that
+    expect(s.slice(0, firstHead).some((f) => inHead(f.front))).toBe(false);
+
+    // 7. and it is a body-following draw, not a wipe: the front's x coordinate
+    //    is NOT monotonic (it travels right, then left across the crossing,
+    //    then right again as it rounds the loops), while its arc progress is
+    const xs = s.map((f) => f.front[0]);
+    const monotoneX =
+      xs.every((v, i) => i === 0 || v >= xs[i - 1]) ||
+      xs.every((v, i) => i === 0 || v <= xs[i - 1]);
+    expect(monotoneX, "a horizontal wipe would move the front in one x direction").toBe(false);
   });
 
+  test("the finished mark is the approved static composition", async ({ page }) => {
+    await holdIdent(page);
+    await page.goto("/");
+    await expect(page.locator(".dao-ident")).toBeVisible();
+    await page.waitForTimeout(2_000); // past the 1600ms draw
+
+    const s = await page.evaluate(() => {
+      const svg = document.querySelector(".dao-ident__serpentdraw")!;
+      const ink = document.querySelector(".dao-ident__serpentink")!;
+      const img = document.querySelector(".dao-ident__serpent")!;
+      const wrap = document.querySelector(".dao-ident__markwrap")!;
+      const box = (el: Element) => {
+        const r = el.getBoundingClientRect();
+        return [r.x, r.y, r.width, r.height].map((n) => +n.toFixed(2));
+      };
+      return {
+        offset: getComputedStyle(ink).strokeDashoffset,
+        imgTransform: getComputedStyle(img).transform,
+        svgTransform: getComputedStyle(svg).transform,
+        svgOpacity: getComputedStyle(svg).opacity,
+        imgOpacity: getComputedStyle(img).opacity,
+        clip: getComputedStyle(svg).clipPath,
+        href: img.getAttribute("href"),
+        maskAttr: img.getAttribute("mask"),
+        svgBox: box(svg),
+        wrapBox: box(wrap),
+      };
+    });
+    // the mask is fully open, so the silhouette is the artwork's own
+    expect(s.offset).toBe("0px");
+    // no residue of any kind
+    expect(["none", "matrix(1, 0, 0, 1, 0, 0)"]).toContain(s.imgTransform);
+    expect(["none", "matrix(1, 0, 0, 1, 0, 0)"]).toContain(s.svgTransform);
+    expect(s.svgOpacity).toBe("1");
+    expect(s.imgOpacity).toBe("1");
+    expect(s.clip).toBe("none");
+    // still the authentic artwork, still masked by the generated path
+    expect(s.href).toContain("serpent-infinity.webp");
+    expect(s.maskAttr).toContain("dao-ident-serpent-draw");
+    // and it fills the approved mark box exactly
+    expect(s.svgBox).toEqual(s.wrapBox);
+
+    // nothing shifts afterwards
+    await page.waitForTimeout(450);
+    const again = await page.evaluate(() => {
+      const r = document.querySelector(".dao-ident__serpentdraw")!.getBoundingClientRect();
+      return [r.x, r.y, r.width, r.height].map((n) => +n.toFixed(2));
+    });
+    expect(again).toEqual(s.svgBox);
+  });
+
+  test("the reveal stroke itself is never visible", async ({ page }) => {
+    await holdIdent(page);
+    await page.goto("/");
+    await expect(page.locator(".dao-ident")).toBeVisible();
+    const guide = await page.evaluate(() => {
+      const ink = document.querySelector(".dao-ident__serpentink")!;
+      return {
+        insideMask: ink.closest("mask") !== null,
+        // a stroke inside a <mask> contributes alpha, never paint
+        strokeColour: getComputedStyle(ink).stroke,
+        fill: getComputedStyle(ink).fill,
+        // no stray copy of the path outside the mask
+        pathsOutsideMask: [...document.querySelectorAll(".dao-ident svg path")].filter(
+          (p) => p.closest("mask") === null,
+        ).length,
+      };
+    });
+    expect(guide.insideMask, "the draw path must live inside a <mask>").toBe(true);
+    expect(guide.pathsOutsideMask, "no guide path may be rendered").toBe(0);
+  });
   test("the white sun descends and the black sun rises into their loops", async ({ page }) => {
     await page.addInitScript(() => {
       type S = { t: number; wy: number; by: number };
@@ -354,15 +447,22 @@ test.describe("Studio Ident - official brand mark", () => {
           y: +(((b.top + b.height / 2 - wrap.top) / wrap.height) * 100).toFixed(1),
         };
       };
+      const ink = document.querySelector(".dao-ident__serpentink")!;
       return {
-        clip: getComputedStyle(document.querySelector(".dao-ident__serpentreveal")!).clipPath,
+        // §21: the tail-to-head draw is skipped entirely and the mask is held
+        // wide open, so the whole mark simply fades in
+        drawAnimation: getComputedStyle(ink).animationName,
+        dashoffset: getComputedStyle(ink).strokeDashoffset,
+        drawOpacity: getComputedStyle(document.querySelector(".dao-ident__serpentdraw")!).opacity,
         artOpacity: getComputedStyle(document.querySelector(".dao-ident__serpent")!).opacity,
         white: box(".dao-ident__sun--white"),
         black: box(".dao-ident__sun--black"),
       };
     });
-    // the mark is never withheld: fully painted, unclipped, suns in place
-    expect(state.clip).toBe("none");
+    // the mark is never withheld: fully painted, unmasked, suns in place
+    expect(state.drawAnimation).toBe("none");
+    expect(state.dashoffset).toBe("0px");
+    expect(Number(state.drawOpacity)).toBeGreaterThan(0.9);
     expect(Number(state.artOpacity)).toBeGreaterThan(0.9);
     expect(state.white.x).toBeCloseTo(25.6, 0);
     expect(state.black.x).toBeCloseTo(74.3, 0);
