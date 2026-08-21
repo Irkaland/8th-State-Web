@@ -11,12 +11,16 @@ import { useInViewOnce, usePrefersReducedMotion } from "./hooks";
 
 /**
  * Act 02 - Studio Introduction, v7 orbit v2 (contract #7, states O1-O4).
- * The orbital population is brandbook-only (§05): service names on paper
- * chips, production codes in Glacier and brand glyphs (moon, sun, swallow,
- * curled serpent mark, spiral, star, rosette) - no project imagery here.
+ * The orbital population is brandbook-only (§05): service names, a
+ * production code in Glacier and brand glyphs (moon, sun, swallow, curled
+ * serpent mark, spiral, star, rosette) - no project imagery here. Since the
+ * yellow pass the whole ring is one minimal BLACK system on the yellow
+ * stock: every glyph is painted with the ink token, the labels are plain
+ * text with no chip behind them, and the orbit path is a single hand-drawn
+ * ink ring (dao.css) instead of a dashed circle.
  * Scroll maps to rotation (-20°..+20°) AND scale (1.4 -> 1.0) with 0.08
  * lerp; fragments counter-rotate to stay legible; past 70% they recede to
- * 45% opacity and drift 20px outward while the central statement takes
+ * 66% opacity and drift 20px outward while the central statement takes
  * focus. Settled scene keeps only an ambient 0.2°/s drift. Scroll is never
  * hijacked. Mobile keeps the 2b constellation band. Reduced motion:
  * static ring at scale 1, statement fades.
@@ -117,8 +121,8 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
       <div className="dao-grain" aria-hidden="true" />
       <div className="dao-label dao-intro__corner dao-intro__corner--tl">{m.act}</div>
 
-      {/* dashed orbit path + fragment ring (desktop / tablet) */}
-      <div className="dao-intro__ring" aria-hidden="true" />
+      {/* hand-drawn ink orbit path + fragment ring (desktop / tablet) */}
+      <div className="dao-intro__ring dao-mask" aria-hidden="true" />
       <div
         className="dao-intro__orbit"
         ref={orbitRef}
@@ -136,12 +140,8 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
               width: 46,
               height: 46,
               background: "var(--dao-ink)",
-              opacity: 0.85,
             }}
           />
-        </Sat>
-        <Sat a={36}>
-          <span className="dao-intro__code">PRJ-01 · 24 FPS</span>
         </Sat>
         <Sat a={64}>
           <span
@@ -150,17 +150,12 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
               ["--m" as string]: "url(/assets/graphics/sun.webp)",
               width: 52,
               height: 52,
-              background: "var(--dao-gold)",
+              background: "var(--dao-ink)",
             }}
           />
         </Sat>
         <Sat a={96}>
-          <span
-            className="dao-intro__chip"
-            style={{ background: "var(--dao-yellow)", color: "var(--dao-ink)" }}
-          >
-            {up(m.chipPhotography)}
-          </span>
+          <span className="dao-intro__chip">{up(m.chipPhotography)}</span>
         </Sat>
         <Sat a={134}>
           <span
@@ -169,15 +164,13 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
               ["--m" as string]: "url(/assets/graphics/swallow.webp)",
               width: 66,
               height: 66,
-              background: "var(--dao-blue)",
+              background: "var(--dao-ink)",
             }}
           />
         </Sat>
-        {/* §08: the official curled serpent brand mark (the asset behind the
-            global snake + 8TH STATE chip) replaces the former white paper
-            scrap between the swallow and the Studio Lab chip - ink on the
-            cream ground (the approved light-ground treatment), quiet, with
-            the same orbit motion as its neighbours */}
+        {/* §08: the official curled serpent brand mark sits between the
+            swallow and the Studio Lab label - ink on the light ground,
+            quiet, with the same orbit motion as its neighbours */}
         <Sat a={166}>
           <span className="dao-intro__serpent dao-mask" />
         </Sat>
@@ -188,17 +181,12 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
               ["--m" as string]: "url(/assets/graphics/spiral.webp)",
               width: 38,
               height: 38,
-              background: "var(--dao-brown)",
+              background: "var(--dao-ink)",
             }}
           />
         </Sat>
         <Sat a={216}>
-          <span
-            className="dao-intro__chip"
-            style={{ background: "var(--dao-green)", color: "var(--dao-ink)" }}
-          >
-            {up(m.chipLab)}
-          </span>
+          <span className="dao-intro__chip">{up(m.chipLab)}</span>
         </Sat>
         <Sat a={244}>
           <span className="dao-intro__code">2026</span>
@@ -210,8 +198,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
               ["--m" as string]: "url(/assets/graphics/rosette.webp)",
               width: 56,
               height: 56,
-              background: "var(--dao-red)",
-              opacity: 0.9,
+              background: "var(--dao-ink)",
             }}
           />
         </Sat>
@@ -222,32 +209,25 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
               ["--m" as string]: "url(/assets/graphics/star.webp)",
               width: 42,
               height: 42,
-              background: "var(--dao-red)",
+              background: "var(--dao-ink)",
             }}
           />
         </Sat>
         <Sat a={326}>
-          <span
-            className="dao-intro__chip"
-            style={{ background: "#d3cdc5", color: "var(--dao-ink)" }}
-          >
-            {up(m.chipFilm)}
-          </span>
+          <span className="dao-intro__chip">{up(m.chipFilm)}</span>
         </Sat>
       </div>
 
       {/* 390 - constellation band (2b) kept: ±12px scroll drift */}
       <div className="dao-intro__constellation" aria-hidden="true">
-        <div className="dao-intro__ring--m" />
-        <div className="dao-intro__ring--m dao-intro__ring--m2" />
+        <div className="dao-intro__ring--m dao-mask" />
+        <div className="dao-intro__ring--m dao-intro__ring--m2 dao-mask" />
         <span
           className="dao-intro__chip"
           style={{
             position: "absolute",
             left: 24,
             top: 92,
-            background: "var(--dao-yellow)",
-            color: "var(--dao-ink)",
             transform: "translateY(var(--drift, 0px))",
           }}
         >
@@ -261,7 +241,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
             top: 66,
             width: 44,
             height: 44,
-            background: "var(--dao-blue)",
+            background: "var(--dao-ink)",
             transform: "translateY(calc(var(--drift, 0px) * -1))",
           }}
         />
@@ -273,7 +253,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
             top: 150,
             width: 28,
             height: 28,
-            background: "var(--dao-gold)",
+            background: "var(--dao-ink)",
             transform: "translateY(var(--drift, 0px))",
           }}
         />
@@ -285,21 +265,10 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
             bottom: 120,
             width: 22,
             height: 22,
-            background: "var(--dao-red)",
+            background: "var(--dao-ink)",
             transform: "translateY(calc(var(--drift, 0px) * -1))",
           }}
         />
-        <span
-          className="dao-intro__code"
-          style={{
-            position: "absolute",
-            right: 24,
-            bottom: 86,
-            transform: "translateY(var(--drift, 0px))",
-          }}
-        >
-          PRJ-01 · 24 FPS
-        </span>
       </div>
 
       {/* central statement - printed logo mark (locked placement) + masked rise */}

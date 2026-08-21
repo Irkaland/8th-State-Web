@@ -183,27 +183,19 @@ html:has(.dlb) {
 .dao-veil--paper {
   background: var(--dao-paper);
 }
-.dao-veil::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(-1 * var(--dao-tear-h) + 1px);
-  height: var(--dao-tear-h);
-  background: inherit;
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  transform: scaleY(-1);
-}
+/* The sheet is a plain rectangle: it used to carry a torn silhouette on its
+   lower edge (a masked band hanging below the panel), which was the last
+   survivor of the retired section-edge system and read as inconsistent once
+   every section boundary became a straight meet. The panel now lifts on a
+   clean horizontal edge - nothing is drawn on it, so there is no border, no
+   divider and no gap; direction, 820ms SCENE timing, colour, opacity and the
+   route choreography are untouched. */
 .dao-veil.is-lifting {
   transition: transform 820ms var(--dao-ease-scene);
   transform: translate3d(0, -115%, 0);
 }
 .dao-veil--fade {
   background: var(--dao-paper);
-}
-.dao-veil--fade::after {
-  display: none;
 }
 .dao-veil--fade.is-lifting {
   transition: opacity 200ms ease;

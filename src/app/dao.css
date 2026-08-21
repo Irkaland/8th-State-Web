@@ -19,6 +19,9 @@
   /* §03: the approved Studio Ident ground - the intro direction's green.
      A fixed brand hex like the rest of this block, not a derived tint. */
   --dao-ident-green: #126149;
+  /* §07: the Studio Introduction ground - the approved yellow #f0ab11 laid
+     over the paper stock at 60%. A wash, not a parent opacity. */
+  --dao-intro-wash: rgba(240, 171, 17, 0.6);
   --dao-yellow: #fff9ab;
   --dao-orange: #e16912;
   --dao-gold: #f0ab11;
@@ -33,10 +36,6 @@
 
   /* Act gutters: 32px desktop · 24px @900 · 18px @390 (handoff 2a/2b) */
   --dao-gutter: 32px;
-  /* torn edge height for the MOVING sheets that still tear away - the
-     Studio Ident exit, the navigation curtain, the route veils. Section
-     boundaries no longer carry one (§15-§18). Scales with viewport. */
-  --dao-tear-h: 58px;
 
   /* v7 unified motion timing system (5h) - the five families replace all
      per-component timings where they conflict. Never linear for object
@@ -57,13 +56,11 @@ html {
 @media (max-width: 960px) {
   :root {
     --dao-gutter: 24px;
-    --dao-tear-h: 44px;
   }
 }
 @media (max-width: 560px) {
   :root {
     --dao-gutter: 18px;
-    --dao-tear-h: 32px;
   }
 }
 
@@ -97,9 +94,11 @@ html {
    begins immediately in its own, with nothing drawn on the seam: no torn
    silhouette, no waveform, no strip, no border, no gradient, no shadow.
    The paper MATERIAL itself is untouched - only the boundary SHAPE is
-   gone, so the overlays below are unchanged. --dao-tear-h survives because
-   the moving sheets that are not section boundaries (the Studio Ident
-   exit, the navigation curtain, the route veils) still tear away on it. */
+   gone, so the overlays below are unchanged. The MOVING sheets (Studio
+   Ident exit, navigation curtain, route veils) later lost their torn
+   lower edge too, so nothing is left that needs a tear height - the only
+   torn masks remaining anywhere are the physical paper CARDS, which are
+   photograph treatments rather than edges between things. */
 
 /* Texture overlays */
 .dao-grain,
@@ -291,11 +290,13 @@ button:focus-visible > .dao-strike {
 .dao-chrome > * {
   pointer-events: auto;
 }
-/* Faint translucent field of the official brand red (--dao-red, brand
-   system) behind the chrome so the mark / EN-KA / burger never print
-   directly over busy content. A material fade, not a navbar: no hard
-   edge, no blur, no fill - it dissolves well above content height and
-   follows the exact idle choreography of the chrome controls. */
+/* Faint translucent field behind the chrome so the mark / EN-KA / burger
+   never print directly over busy content. A material fade, not a navbar:
+   no hard edge, no blur, no fill - it dissolves well above content height
+   and follows the exact idle choreography of the chrome controls.
+   The field is the current brand green (--dao-ident-green, #126149); it was
+   the brand red. Nothing but the hue changed - identical 118px height,
+   identical 0.32 / 0.18 / 0 stops, identical transition. */
 .dao-chrome::before {
   content: "";
   position: absolute;
@@ -303,9 +304,9 @@ button:focus-visible > .dao-strike {
   height: 118px;
   background: linear-gradient(
     180deg,
-    rgba(208, 62, 38, 0.32) 0%,
-    rgba(208, 62, 38, 0.18) 46%,
-    rgba(208, 62, 38, 0) 100%
+    rgba(18, 97, 73, 0.32) 0%,
+    rgba(18, 97, 73, 0.18) 46%,
+    rgba(18, 97, 73, 0) 100%
   );
   pointer-events: none;
   transition: opacity 250ms ease;
@@ -317,7 +318,7 @@ html[data-dao-idle] .dao-chrome::before {
 html[data-dao-idle] .dao-chrome:focus-within::before {
   opacity: 1;
 }
-/* the open ink sheet is its own composition - no red field over it */
+/* the open ink sheet is its own composition - no green field over it */
 html[data-dao-nav-open] .dao-chrome::before {
   opacity: 0;
 }
@@ -612,19 +613,6 @@ html[data-dao-nav-open] .dao-returntab {
     transform 160ms var(--dao-ease-ui),
     opacity 160ms ease;
 }
-/* torn leading edge on the dropping sheet */
-.dao-nav::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(-1 * var(--dao-tear-h) + 1px);
-  height: var(--dao-tear-h);
-  background: var(--dao-ink);
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  transform: scaleY(-1);
-}
 .dao-nav__serpent {
   position: absolute;
   right: -220px;
@@ -892,19 +880,6 @@ html[data-dao-nav-open] .dao-returntab {
 }
 .dao-ident.is-leaving {
   transform: translate3d(0, -112%, 0);
-}
-/* torn trailing edge as the sheet tears away upward */
-.dao-ident::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(-1 * var(--dao-tear-h) + 1px);
-  height: var(--dao-tear-h);
-  background: var(--dao-ident-green);
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  transform: scaleY(-1);
 }
 .dao-ident__splash {
   position: absolute;
@@ -1200,11 +1175,16 @@ html[data-dao-nav-open] .dao-returntab {
    Act 02 - Studio Introduction (orbital)
    ============================================================ */
 
+/* §07/§08: the ground is the approved yellow at 60% - a translucent wash
+   LAYER over the paper stock, not a parent opacity, so the statement, the
+   ink ring and every symbol stay fully opaque. The section keeps its
+   .dao-grain paper overlay on top (multiply), so the result reads as dyed
+   printed stock rather than flat digital yellow. */
 .dao-intro {
   position: relative;
   min-height: 72vw;
   max-height: 1200px;
-  background: var(--dao-paper);
+  background: linear-gradient(var(--dao-intro-wash), var(--dao-intro-wash)), var(--dao-paper);
   color: var(--dao-ink);
   overflow: hidden;
   display: flex;
@@ -1212,6 +1192,15 @@ html[data-dao-nav-open] .dao-returntab {
   justify-content: center;
   padding: 140px var(--dao-gutter);
 }
+/* §09/§10: the dashed orbit path is gone. In its place a single black ink
+   gesture - a generated vector ring with an out-of-round contour, brush
+   weight that loads and runs dry around the sweep and four dry-brush
+   breaks (scripts/make-ink-ring.mjs, 8KB SVG). Delivered as a CSS mask so
+   the colour is the ink token, and as a vector so it stays crisp at every
+   viewport with no raster weight. The ring is a static sibling of the
+   orbit - it never rotated and still does not (§16); the satellites keep
+   their own motion. Its box matches the satellite radius exactly, so the
+   symbols still sit on the line. */
 .dao-intro__ring {
   position: absolute;
   left: 50%;
@@ -1219,8 +1208,8 @@ html[data-dao-nav-open] .dao-returntab {
   width: min(840px, 58vw);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
-  border: 1px dashed rgba(108, 62, 19, 0.35);
-  border-radius: 50%;
+  background: var(--dao-ink);
+  --m: url("/assets/graphics/ink-ring.svg");
   pointer-events: none;
 }
 .dao-intro__orbit {
@@ -1253,12 +1242,16 @@ html[data-dao-nav-open] .dao-returntab {
   height: 100%;
   object-fit: cover;
 }
+/* §13: the orbit labels (FILM & VIDEO / PHOTOGRAPHY / STUDIO LAB) are
+   plain text now - no paper chip, no coloured fill, no padding box, no
+   shadow. Black on the yellow stock, at a real Optika SemiBold 600 (was
+   500) so they read confidently at the same size and tracking. */
 .dao-intro__chip {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.26em;
-  padding: 7px 12px;
-  box-shadow: 0 4px 12px rgba(19, 18, 16, 0.15);
+  color: var(--dao-ink);
+  background: none;
   white-space: nowrap;
 }
 /* v7 orbit v2 population - production codes + brand glyphs */
@@ -1266,7 +1259,7 @@ html[data-dao-nav-open] .dao-returntab {
   font-family: var(--dao-f-numeral);
   font-size: 13px;
   letter-spacing: 0.14em;
-  color: var(--dao-brown);
+  color: var(--dao-ink);
   white-space: nowrap;
 }
 /* §08: official curled serpent mark (serpent-mark.webp, the snake of the
@@ -1276,19 +1269,22 @@ html[data-dao-nav-open] .dao-returntab {
   width: 58px;
   height: 30px;
   background: var(--dao-ink);
-  opacity: 0.82;
   --m: url("/assets/graphics/serpent-mark.webp");
   transform: rotate(-6deg);
 }
 /* O3: past 70% scroll the fragments recede and drift outward while the
-   statement takes focus */
+   statement takes focus. The recede is unchanged as a gesture, but it now
+   settles at 0.66 rather than 0.45: on the yellow stock 0.45 turned the ink
+   glyphs and labels a washed olive, and this section is meant to read as a
+   minimal BLACK system (§11-§13). The statement still clearly dominates -
+   it is full-opacity display type against receded 10-13px marks. */
 .dao-intro__sat > * {
   transition:
     opacity 600ms var(--dao-ease-editorial),
     margin-top 600ms var(--dao-ease-editorial);
 }
 .dao-intro.is-focused .dao-intro__sat > * {
-  opacity: 0.45;
+  opacity: 0.66;
   margin-top: -20px;
 }
 .dao-intro__center {
@@ -1391,22 +1387,30 @@ html[data-dao-nav-open] .dao-returntab {
   .dao-intro__constellation .dao-mask {
     position: absolute;
   }
+  /* The constellation band carries the same ink gesture at its two
+     existing sizes, still bleeding off opposite edges. Both moved into the
+     empty bands above and below the centred block (the section pads 240px
+     top / 220px bottom on mobile): the old positions were tuned for a 1px
+     dashed line at 35% brown, which the statement could sit on top of
+     invisibly. A solid black stroke through the copy is not readable
+     (§17), so the arcs now frame the statement instead of crossing it -
+     same motif, same sizes, same drift, corrected placement. */
   .dao-intro__ring--m {
     display: block;
     position: absolute;
-    border: 1px dashed rgba(108, 62, 19, 0.35);
-    border-radius: 50%;
+    background: var(--dao-ink);
+    --m: url("/assets/graphics/ink-ring.svg");
     width: 340px;
     aspect-ratio: 1;
     transform: none;
-    left: -70px;
-    top: 40px;
+    left: -80px;
+    top: -110px;
   }
   .dao-intro__ring--m2 {
     left: auto;
-    right: -60px;
+    right: -70px;
     top: auto;
-    bottom: 90px;
+    bottom: -120px;
     width: 300px;
   }
 }

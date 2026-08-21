@@ -127,33 +127,49 @@ test.describe("Studio Ident - official brand mark", () => {
   test("the serpent unfolds out of its own centre and never travels", async ({ page }) => {
     // Sample the artwork box and the reveal contour every frame: the artwork
     // must be pinned, and the visible band must grow away from the centre in
-    // BOTH directions - never sweep in from one side. Sampling stops at 2.1s,
-    // before the ident's exit lift would move the whole sheet.
+    // BOTH directions - never sweep in from one side.
+    //
+    // The sampler is anchored to the ANIMATION, not to a wall clock: it stops
+    // once the clip contour has held still for 10 straight frames, having
+    // actually moved first. A fixed cutoff would, on a loaded machine where
+    // hydration is slow, stop sampling mid-unfold and compare a half-open
+    // contour against the start. The ident is frozen here, so there is no
+    // exit lift to contaminate the tail.
     await holdIdent(page);
     await page.addInitScript(() => {
       type S = { t: number; l: number; tp: number; w: number; clip: string };
-      (window as unknown as { __s: S[] }).__s = [];
+      const store: S[] = [];
+      (window as unknown as { __s: S[] }).__s = store;
+      (window as unknown as { __done: boolean }).__done = false;
+      let still = 0;
+      let moved = false;
       const tick = () => {
         const wrap = document.querySelector(".dao-ident__serpentreveal");
         const art = document.querySelector(".dao-ident__serpent");
-        const store = (window as unknown as { __s: S[] }).__s;
         if (wrap && art) {
           const b = art.getBoundingClientRect();
+          const clip = getComputedStyle(wrap).clipPath;
+          const prev = store[store.length - 1];
+          if (store.length && clip !== store[0].clip) moved = true;
+          still = prev && prev.clip === clip ? still + 1 : 0;
           store.push({
             t: Math.round(performance.now()),
             l: +b.left.toFixed(2),
             tp: +b.top.toFixed(2),
             w: +b.width.toFixed(2),
-            clip: getComputedStyle(wrap).clipPath,
+            clip,
           });
         }
-        if (performance.now() < 2100) requestAnimationFrame(tick);
+        if (!(moved && still >= 10) && performance.now() < 8000) requestAnimationFrame(tick);
+        else (window as unknown as { __done: boolean }).__done = true;
       };
       requestAnimationFrame(tick);
     });
     await page.goto("/");
     await expect(page.locator(".dao-ident")).toBeVisible();
-    await page.waitForTimeout(2_300); // the 1200ms unfold plus settle
+    await page.waitForFunction(() => (window as unknown as { __done: boolean }).__done, undefined, {
+      timeout: 12_000,
+    });
 
     const s = await page.evaluate(
       () =>
@@ -212,28 +228,44 @@ test.describe("Studio Ident - official brand mark", () => {
   });
 
   test("the white sun descends and the black sun rises into their loops", async ({ page }) => {
+    // The sampler is anchored to the ANIMATION, not to a wall clock: it runs
+    // until both suns have held still for 10 straight frames. Under parallel
+    // load hydration can be slow enough that a fixed cutoff stops sampling
+    // while a sun is still travelling, which would compare a mid-flight
+    // position against the start. The ident is frozen for this test, so there
+    // is no exit lift to contaminate the tail.
     await page.addInitScript(() => {
       type S = { t: number; wy: number; by: number };
-      (window as unknown as { __t: S[] }).__t = [];
+      const store: S[] = [];
+      (window as unknown as { __t: S[]; __done: boolean }).__t = store;
+      (window as unknown as { __done: boolean }).__done = false;
+      let still = 0;
+      let moved = false;
       const tick = () => {
         const w = document.querySelector(".dao-ident__sun--white");
         const b = document.querySelector(".dao-ident__sun--black");
-        const store = (window as unknown as { __t: S[] }).__t;
         if (w && b) {
-          store.push({
-            t: Math.round(performance.now()),
-            wy: +w.getBoundingClientRect().top.toFixed(2),
-            by: +b.getBoundingClientRect().top.toFixed(2),
-          });
+          const wy = +w.getBoundingClientRect().top.toFixed(2);
+          const by = +b.getBoundingClientRect().top.toFixed(2);
+          const prev = store[store.length - 1];
+          // both suns sit parked at their start until is-drawn lands, so
+          // stillness only counts as "settled" once travel has been observed
+          if (store.length && Math.abs(store[0].wy - wy) > 5) moved = true;
+          still =
+            prev && Math.abs(prev.wy - wy) < 0.05 && Math.abs(prev.by - by) < 0.05 ? still + 1 : 0;
+          store.push({ t: Math.round(performance.now()), wy, by });
         }
-        if (performance.now() < 2100) requestAnimationFrame(tick);
+        if (!(moved && still >= 10) && performance.now() < 8000) requestAnimationFrame(tick);
+        else (window as unknown as { __done: boolean }).__done = true;
       };
       requestAnimationFrame(tick);
     });
     await holdIdent(page);
     await page.goto("/");
     await expect(page.locator(".dao-ident")).toBeVisible();
-    await page.waitForTimeout(2_200);
+    await page.waitForFunction(() => (window as unknown as { __done: boolean }).__done, undefined, {
+      timeout: 12_000,
+    });
 
     const s = await page.evaluate(
       () => (window as unknown as { __t: { t: number; wy: number; by: number }[] }).__t,
