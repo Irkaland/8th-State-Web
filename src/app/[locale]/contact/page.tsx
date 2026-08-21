@@ -143,6 +143,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 alt="8th State Production"
                 width={256}
                 height={256}
+                unoptimized
               />
             </span>
             <span className="dao-credits__id">

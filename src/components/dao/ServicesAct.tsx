@@ -48,6 +48,7 @@ function FragImage({ src, ready, onReady }: { src: string; ready: boolean; onRea
         alt=""
         fill
         sizes="200px"
+        unoptimized={src === "/media/aom-cover.jpg"}
         className="object-cover"
         // Cached images can finish before hydration attaches onLoad.
         ref={(img) => {

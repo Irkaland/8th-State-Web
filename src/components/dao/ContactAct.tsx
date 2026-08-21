@@ -112,6 +112,7 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
               alt="8th State Production"
               width={256}
               height={256}
+              unoptimized
             />
           </span>
           <span className="dao-credits__id">

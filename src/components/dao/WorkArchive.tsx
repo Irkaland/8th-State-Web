@@ -199,6 +199,7 @@ function Frame({
         fill
         sizes={big ? "100vw" : "(max-width: 720px) 100vw, 60vw"}
         priority={priority}
+        unoptimized={p.cover === "/media/aom-cover.jpg"}
         className="object-cover"
       />
       {badge ? (
