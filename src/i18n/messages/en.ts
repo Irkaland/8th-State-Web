@@ -333,9 +333,9 @@ const en = {
     reel: {
       act: "Master Showreel",
       play: "Play reel",
+      // §16: the meta strip carries studio authorship, not technical specs
+      authored: "An 8th State Production",
       title: "Master Showreel - 2026",
-      duration: "00:10",
-      format: "16:9 · Colour",
       pending: "Showreel in production - final master pending",
     },
     intro: {

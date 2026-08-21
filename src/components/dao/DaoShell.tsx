@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/locales";
 import { DaoChrome } from "./DaoChrome";
 import { PageVeil, type VeilFamily } from "./PageVeil";
 import { ReturnTab } from "./ReturnTab";
+import { SessionResume } from "./SessionResume";
 import { StudioIdent } from "./StudioIdent";
 
 /**
@@ -26,6 +27,8 @@ export function DaoShell({
 }) {
   return (
     <div className="dao">
+      {/* §15: a long absence re-enters the site from the ident */}
+      <SessionResume home={locale === "en" ? "/" : `/${locale}`} />
       <StudioIdent messages={messages} />
       <PageVeil family={veil} />
       <DaoChrome locale={locale} messages={messages} />

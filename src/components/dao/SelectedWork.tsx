@@ -173,6 +173,11 @@ export function SelectedWork({
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
+      {/* §19: the red field carried the canvas weave but no paper grain, so
+          it read as flat printed colour. The grain goes in underneath the
+          weave - fibre first, then the canvas bite over it - which is the same
+          material stack the ident and the chapter sheets already use. */}
+      <div className="dao-grain--strong" aria-hidden="true" />
       <div className="dao-weave" aria-hidden="true" />
       <div className="dao-work__serpent dao-mask" aria-hidden="true" />
 

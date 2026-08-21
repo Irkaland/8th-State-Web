@@ -63,10 +63,11 @@ function FragImage({ src, ready, onReady }: { src: string; ready: boolean; onRea
 }
 
 /**
- * Act 04 - Services. Editorial typographic index: group rail (four coloured
- * layers) + nine Adevas rows. A row opens to a plain-language explanation
- * and a worked-example fragment; hover indents with the group-coloured
- * paint-stroke underline (handoff 2g).
+ * Act 04 - Services. Editorial typographic index on the brand-blue ground
+ * (§05): group rail (four coloured layers) + nine capability rows set in the
+ * strong editorial face (§06). A row opens to a plain-language explanation and
+ * a worked-example fragment; hover indents with a pencil-weight hand-drawn
+ * underline in that capability's own palette colour (§07/§08).
  */
 export function ServicesAct({ locale, messages }: { locale: Locale; messages: Messages }) {
   const m = messages.dao.services;
@@ -86,11 +87,14 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
     <section
       ref={sectionRef}
       className="dao-svc"
-      data-dao-scene="light"
+      /* §05: the blue ground is a DARK scene - the global chrome reads its
+         paper treatment from this, so it has to flip with the background */
+      data-dao-scene="dark"
       id="services"
       aria-label={m.act}
     >
-      <div className="dao-grain" aria-hidden="true" />
+      <div className="dao-grain--strong" aria-hidden="true" />
+      <div className="dao-weave" aria-hidden="true" />
 
       <div
         style={{
@@ -119,7 +123,7 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
               className="dao-svc__group dao-fade"
               style={{ ["--d" as string]: `${i * 90}ms` }}
             >
-              <span className="dao-svc__groupname" style={{ color: g.colour }}>
+              <span className="dao-svc__groupname" style={{ color: g.onBlue }}>
                 {up(t(g.name, locale))}
               </span>
               <span className="dao-svc__groupdesc">{t(g.layer, locale)}</span>
@@ -143,7 +147,7 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
                 {showGroupHead && (
                   <div
                     className="dao-svc__grouphead dao-svc__grouphead--inline"
-                    style={{ color: g.colour }}
+                    style={{ color: g.onBlue }}
                     aria-hidden="true"
                   >
                     {up(t(g.name, locale))} - {up(t(g.layer, locale))}
@@ -151,7 +155,11 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
                 )}
                 <div
                   className={cn("dao-svc__row", isOpen && "is-open")}
-                  style={{ ["--g" as string]: g.colour, ["--tint" as string]: g.tint }}
+                  style={{
+                    ["--g" as string]: s.accent,
+                    ["--n" as string]: g.onBlue,
+                    ["--tint" as string]: g.tint,
+                  }}
                 >
                   <button
                     type="button"
@@ -164,11 +172,7 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
                     </span>
                     <span className="dao-svc__name">
                       {t(s.name, locale)}
-                      <span
-                        className="dao-strike"
-                        style={{ background: g.colour }}
-                        aria-hidden="true"
-                      />
+                      <span className="dao-strike" aria-hidden="true" />
                     </span>
                   </button>
                   <div className="dao-svc__body">
@@ -191,7 +195,7 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
       </div>
 
       <div className="dao-svc__foot">
-        <span className="dao-label dao-fade" style={{ color: "rgba(108,62,19,.7)" }}>
+        <span className="dao-label dao-fade" style={{ color: "rgba(242,237,227,.72)" }}>
           {m.note}
         </span>
         <Link href={localeHref(locale, "/services")} className="dao-svc__all">

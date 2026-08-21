@@ -325,12 +325,35 @@ test.describe("Decorative text-link stroke", () => {
     };
     expect((await insets()).right).toBe("100%");
 
+    // Sampled INSIDE the page on rAF rather than over 14 CDP round-trips. The
+    // transition is 340ms and under parallel load the round-trips alone can
+    // outlast it, so an out-of-page sampler reads an already-finished animation
+    // and "it animates rather than snapping" fails for a reason that has
+    // nothing to do with the CSS. The recorder is armed FIRST and left running
+    // (CSS :hover only responds to a real pointer, so the hover has to be the
+    // genuine one), then the samples are collected afterwards.
+    await cta.evaluate((el) => {
+      const w = window as unknown as { __clipSamples?: { right: string; left: string }[] };
+      w.__clipSamples = [];
+      const t0 = performance.now();
+      const tick = () => {
+        const raw = getComputedStyle(el, "::after").clipPath;
+        const m = raw.match(/inset\(([^)]*)\)/);
+        const parts = (m ? m[1] : "").trim().split(/\s+/);
+        w.__clipSamples!.push({
+          right: parts.length >= 2 ? parts[1]! : "0px",
+          left: parts.length >= 4 ? parts[3]! : "0px",
+        });
+        if (performance.now() - t0 < 1200) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
     await cta.hover();
-    const samples: { right: string; left: string }[] = [];
-    for (let i = 0; i < 14; i += 1) {
-      samples.push(await insets());
-      await page.waitForTimeout(40);
-    }
+    await page.waitForTimeout(1300);
+    const samples = await page.evaluate(
+      () =>
+        (window as unknown as { __clipSamples: { right: string; left: string }[] }).__clipSamples,
+    );
     // it ends fully revealed
     await expect.poll(async () => (await insets()).right, { timeout: 3000 }).toBe("0px");
     // the left edge never moves - it is never revealed from the right

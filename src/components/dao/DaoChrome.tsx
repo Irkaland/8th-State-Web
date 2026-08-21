@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/locales";
 import { cn } from "@/lib/cn";
+import { NAV_OPEN_KEY, safeSession } from "@/lib/session-lifecycle";
 
 /**
  * Persistent chrome (celestial-sun chip + EN/KA + burger paper chip) and the
@@ -17,6 +18,11 @@ import { cn } from "@/lib/cn";
 export function DaoChrome({ locale, messages }: { locale: Locale; messages: Messages }) {
   const m = messages.dao.nav;
   const pathname = usePathname() || "/";
+  // §14: a locale switch crosses the [locale] layout segment, so this
+  // component remounts and React state is lost. The intent is handed over
+  // through sessionStorage instead: set on the way out, consumed once on the
+  // way in, so the sheet is already open when the Georgian page paints and the
+  // visitor never has to reopen it.
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [workOpen, setWorkOpen] = useState(false);
@@ -48,6 +54,35 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     setPreview(null);
     window.setTimeout(() => setClosing(false), 660);
     burgerRef.current?.focus();
+  }, []);
+
+  // §14: reopen the sheet after a locale switch that happened while it was
+  // open. Consumed exactly once - a later ordinary navigation must not
+  // resurrect it.
+  //
+  // This reads an external store (sessionStorage) that cannot be touched
+  // during render: the server renders the sheet closed, so a lazy useState
+  // initialiser reading it on the client would hydrate a different tree.
+  // Syncing it in on mount is the correct place, which is exactly the
+  // "subscribe to an external system" case the rule is written around; it runs
+  // once, on one navigation in the whole session.
+  useEffect(() => {
+    const store = safeSession();
+    if (!store) return;
+    let handoff = false;
+    try {
+      handoff = store.getItem(NAV_OPEN_KEY) === "1";
+      if (handoff) store.removeItem(NAV_OPEN_KEY);
+    } catch {
+      /* private mode - the sheet simply opens closed */
+    }
+    if (!handoff) return;
+    const wide = window.matchMedia("(min-width: 900px)").matches;
+    /* eslint-disable react-hooks/set-state-in-effect -- restoring state handed
+       over by the previous locale's tree; see the note above */
+    setPreviewsReady(wide);
+    setOpen(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Pause signal for auto-advancing scenes while the menu is open.
@@ -151,11 +186,21 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     };
   }, [pathname]);
 
-  // v7 #5: global chrome auto-hide. After 1.8s without scroll / pointer /
-  // touch / key input the chrome withdraws (600ms out, 250ms in via CSS on
-  // html[data-dao-idle]). Never hides while the menu is open, while a chrome
-  // control has focus, or while the pointer rests in the top 120px. Debounced
-  // through one shared timer - no flicker under intermittent scroll.
+  // v7 #5 / §03-§04: global chrome auto-hide. After 1.8s without scroll /
+  // pointer / touch / key input the chrome withdraws (600ms out, 250ms in via
+  // CSS on html[data-dao-idle]). Never hides while the menu is open or while a
+  // chrome control has focus. Debounced through one shared timer - no flicker
+  // under intermittent scroll.
+  //
+  // §03: the same choreography now genuinely applies on touch. It did not
+  // before, for one reason: the "pointer is resting in the top 120px" guard
+  // read the last pointermove position, and on a touch device pointermove
+  // fires from the FINGER. Any tap or swipe that started near the top - the
+  // brand, the burger, the language switcher, i.e. exactly what people touch -
+  // pinned pointerY low, and because no mouse ever moves afterwards to reset
+  // it, hide() bailed out forever and the chrome stayed up permanently. The
+  // guard is a hover affordance, so it is now limited to real mouse pointers
+  // and cleared when a touch ends.
   useEffect(() => {
     const root = document.documentElement;
     if (open) {
@@ -166,9 +211,28 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     let pointerY = Infinity;
     let lastArm = 0;
 
-    const hide = () => {
+    // Keyboard focus holds the chrome open; pointer focus must NOT.
+    // Tapping a control leaves focus on it, and on Chromium/Android that focus
+    // is sticky - with a plain activeElement check, opening the burger once and
+    // closing it again pinned the chrome on screen for the rest of the session,
+    // because nothing ever moves the focus off it. :focus-visible is exactly
+    // the distinction ("would the browser draw a focus ring here?"), and if an
+    // engine cannot answer we keep the control visible, which is the safe way
+    // to be wrong.
+    const keyboardFocusInChrome = () => {
       const ae = document.activeElement;
-      if (ae && (ae.closest(".dao-chrome") || ae.closest(".dao-returntab"))) return;
+      if (!ae || !ae.closest) return false;
+      if (!ae.closest(".dao-chrome") && !ae.closest(".dao-returntab")) return false;
+      try {
+        return ae.matches(":focus-visible");
+      } catch {
+        return true;
+      }
+    };
+
+    const hide = () => {
+      if (keyboardFocusInChrome()) return;
+      // only a resting MOUSE holds the chrome open
       if (pointerY < 120) return;
       root.setAttribute("data-dao-idle", "");
     };
@@ -183,7 +247,12 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
       timer = window.setTimeout(hide, 1800);
     };
     const onPointer = (e: PointerEvent) => {
-      pointerY = e.clientY;
+      // a finger or pen is a transient contact, not a resting cursor
+      pointerY = e.pointerType === "mouse" ? e.clientY : Infinity;
+      arm();
+    };
+    const onPointerGone = () => {
+      pointerY = Infinity;
       arm();
     };
 
@@ -191,7 +260,12 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     const opts = { passive: true } as const;
     window.addEventListener("scroll", arm, opts);
     window.addEventListener("pointermove", onPointer, opts);
+    window.addEventListener("pointerdown", onPointer, opts);
+    // touchend/pointerup release the guard so the idle timer can complete
+    window.addEventListener("pointerup", onPointerGone, opts);
+    window.addEventListener("pointercancel", onPointerGone, opts);
     window.addEventListener("touchstart", arm, opts);
+    window.addEventListener("touchend", onPointerGone, opts);
     window.addEventListener("keydown", arm);
     window.addEventListener("focusin", arm);
     return () => {
@@ -199,7 +273,11 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
       root.removeAttribute("data-dao-idle");
       window.removeEventListener("scroll", arm);
       window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onPointer);
+      window.removeEventListener("pointerup", onPointerGone);
+      window.removeEventListener("pointercancel", onPointerGone);
       window.removeEventListener("touchstart", arm);
+      window.removeEventListener("touchend", onPointerGone);
       window.removeEventListener("keydown", arm);
       window.removeEventListener("focusin", arm);
     };
@@ -259,10 +337,19 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
     }
   };
 
-  // §01: one language switcher only - the top-right control. It stays
-  // functional while the sheet is open, so a switch also closes the sheet.
+  // §13/§14: one language switcher only - the top-right control. It stays
+  // functional while the sheet is open, and a switch now KEEPS the sheet open
+  // instead of closing it. switchLocalePath already preserves the current
+  // route, so /work -> /ka/work; the href is a client-side Link, never a hard
+  // load, so the ident does not replay.
   const onLang = () => {
-    if (open || closing) close();
+    if (!open && !closing) return;
+    const store = safeSession();
+    try {
+      store?.setItem(NAV_OPEN_KEY, "1");
+    } catch {
+      /* private mode - the sheet will just be closed after the switch */
+    }
   };
 
   return (

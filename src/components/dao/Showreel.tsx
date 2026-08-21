@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { Messages } from "@/i18n";
+import { IDENT_ATTR, IDENT_DONE_EVENT } from "@/lib/session-lifecycle";
 
 /**
  * Act 01 - Master Showreel. A cinematic moving hero: the master at
@@ -15,20 +16,36 @@ const REEL_SRC = "/media/showreel.mp4";
 // real footage, never the legacy red placeholder composition.
 const REEL_POSTER = "/media/showreel-poster.jpg";
 
+/** bounded timed retries once the reel is genuinely eligible to play */
+const RETRY_MS = 250;
+const MAX_TRIES = 12;
+
 export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: boolean }) {
   const m = messages.dao.reel;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
-  // Autoplay lifecycle. muted + playsInline satisfies the Safari/Chrome
-  // autoplay policy with no user gesture, but readiness must NOT gate the
-  // first attempt: with preload="metadata" iOS Safari settles at
-  // readyState 1 and never fires `canplay` on its own, so a canplay-gated
-  // play() call never runs and the reel sits frozen on its first frame.
-  // Instead: attempt immediately, let readiness events re-arm a bounded
-  // number of retries, and treat the `playing` event as the only proof of
-  // real playback. Reduced-motion visitors keep the still poster - the same
-  // "ambient motion stops" contract as the ticker and the contact sun.
+  // Autoplay lifecycle (§10-§12). muted + playsInline satisfies the
+  // Safari/Chrome autoplay policy with no user gesture, but two things went
+  // wrong before and both had to be fixed:
+  //
+  //   1. attempts were spent while the reel was NOT eligible. The Studio Ident
+  //      is a fixed sheet over the whole viewport for ~3.5s; mobile WebKit and
+  //      Chrome refuse (or immediately re-pause) autoplay for a video that is
+  //      covered or off-screen. Every early attempt was rejected, the budget
+  //      ran out, and the reel sat on frame one.
+  //   2. retries were driven ONLY by readiness events. On a refresh the media
+  //      is already buffered, so loadedmetadata/loadeddata/canplay have all
+  //      fired before the listeners attach - no event ever arrives again, so a
+  //      rejected first play() is never retried. That is why a later re-render
+  //      (a locale switch) sometimes "fixed" it: a fresh element happened to
+  //      attempt at an eligible moment.
+  //
+  // So: wait until the reel is ELIGIBLE (ident gone, element intersecting,
+  // page visible), then attempt on a bounded timer as well as on readiness
+  // events, and treat `playing` as the only proof. Reduced-motion visitors
+  // keep the still poster - the same "ambient motion stops" contract as the
+  // ticker and the contact sun.
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !hasReel) return;
@@ -37,47 +54,95 @@ export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: b
     let disposed = false;
     let confirmed = false;
     let tries = 0;
-    const MAX_TRIES = 4;
+    let timer: number | undefined;
+    let onScreen = false;
 
     // WebKit consults the muted content attribute as well as the property.
     v.defaultMuted = true;
     v.muted = true;
 
+    const identGone = () => !document.documentElement.hasAttribute(IDENT_ATTR);
+    const eligible = () =>
+      !disposed && identGone() && onScreen && document.visibilityState === "visible";
+
+    const clear = () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+      timer = undefined;
+    };
+
     const attempt = () => {
-      if (disposed || !v.paused) return;
-      if (!confirmed) {
-        if (tries >= MAX_TRIES) return;
-        tries += 1;
-      }
+      clear();
+      if (disposed || confirmed) return;
+      // not eligible yet: cost nothing, wait to be re-armed
+      if (!eligible()) return;
+      if (tries >= MAX_TRIES) return;
+      tries += 1;
       v.muted = true;
-      // Rejections are expected while the element is still settling; the
-      // next readiness or visibility event re-arms the attempt.
+      // Rejections are expected while the element settles; the bounded timer
+      // re-arms rather than relying on an event that may never come again.
       void v.play().catch(() => {});
+      if (!confirmed) timer = window.setTimeout(attempt, RETRY_MS);
+    };
+
+    /** something changed that may have made the reel eligible - try again */
+    const rearm = () => {
+      if (disposed || confirmed) return;
+      // a genuine change of circumstance refreshes the budget, so a reel that
+      // was ineligible for its whole first window still gets a fair chance
+      tries = 0;
+      attempt();
     };
 
     const readiness = ["loadedmetadata", "loadeddata", "canplay"] as const;
     const onPlaying = () => {
       confirmed = true;
-      // proof of advancing playback - stop the readiness retries and hand
-      // the stage over from the poster
+      clear();
       for (const e of readiness) v.removeEventListener(e, attempt);
       if (!disposed) setPlaying(true);
     };
     // iOS pauses media when the tab is hidden; resume on return.
     const onVisibility = () => {
-      if (document.visibilityState === "visible") attempt();
+      if (document.visibilityState === "visible") rearm();
+    };
+    // If the browser pauses it again after we confirmed (backgrounding, an
+    // audio-session interruption), one more bounded round is allowed.
+    const onPause = () => {
+      if (disposed || !confirmed) return;
+      if (document.visibilityState !== "visible") return;
+      confirmed = false;
+      tries = 0;
+      for (const e of readiness) v.addEventListener(e, attempt);
+      attempt();
     };
 
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const now = entry?.isIntersecting ?? false;
+        if (now === onScreen) return;
+        onScreen = now;
+        if (onScreen) rearm();
+      },
+      { threshold: 0.1 },
+    );
+    io.observe(v);
+
     v.addEventListener("playing", onPlaying);
+    v.addEventListener("pause", onPause);
     for (const e of readiness) v.addEventListener(e, attempt);
     document.addEventListener("visibilitychange", onVisibility);
+    // the ident tells us the moment it leaves the stage
+    window.addEventListener(IDENT_DONE_EVENT, rearm);
     attempt();
 
     return () => {
       disposed = true;
+      clear();
+      io.disconnect();
       v.removeEventListener("playing", onPlaying);
+      v.removeEventListener("pause", onPause);
       for (const e of readiness) v.removeEventListener(e, attempt);
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener(IDENT_DONE_EVENT, rearm);
     };
   }, [hasReel]);
 
@@ -113,10 +178,10 @@ export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: b
       </div>
       <div className="dao-reel__scrim" aria-hidden="true" />
 
+      {/* §16: studio authorship rather than technical specs - same strip,
+          same typography, same position */}
       <div className="dao-reel__meta dao-label">
-        <span>{m.title}</span>
-        <span>{m.duration}</span>
-        <span>{m.format}</span>
+        <span>{m.authored}</span>
       </div>
     </section>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Messages } from "@/i18n";
 import { cn } from "@/lib/cn";
+import { IDENT_ATTR, IDENT_DONE_EVENT } from "@/lib/session-lifecycle";
 import {
   SERPENT_DASHARRAY,
   SERPENT_DASH_HIDDEN,
@@ -106,6 +107,30 @@ export function StudioIdent({ messages }: { messages: Messages }) {
         document.body.style.overflow = prev;
       };
     }
+  }, [phase]);
+
+  // §10-§12: the Showreel must not spend autoplay attempts while this sheet
+  // covers the viewport - mobile WebKit and Chrome refuse to start a video
+  // that is obscured or off-screen. Mark the document for as long as the sheet
+  // is on stage and announce the exact moment it leaves, so the reel can act
+  // on a real signal instead of guessing at a delay.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (phase === "gone") {
+      if (root.hasAttribute(IDENT_ATTR)) {
+        root.removeAttribute(IDENT_ATTR);
+        window.dispatchEvent(new Event(IDENT_DONE_EVENT));
+      }
+      return;
+    }
+    root.setAttribute(IDENT_ATTR, phase);
+    return () => {
+      // unmounting mid-flight (a skip, a route change) still frees the reel
+      if (root.hasAttribute(IDENT_ATTR)) {
+        root.removeAttribute(IDENT_ATTR);
+        window.dispatchEvent(new Event(IDENT_DONE_EVENT));
+      }
+    };
   }, [phase]);
 
   if (phase === "gone") return null;

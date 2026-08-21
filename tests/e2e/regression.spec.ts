@@ -63,6 +63,10 @@ test.describe("KA routing", () => {
   });
 
   test("KA burger navigation reaches every destination", async ({ page }) => {
+    // seven sequential open-menu-and-navigate cycles; observed exceeding the
+    // default 45s budget once under three-project parallel load, so give it the
+    // slow-test allowance rather than leaving an intermittent failure
+    test.slow();
     const targets = [
       "/ka/services",
       "/ka/studio",
@@ -268,8 +272,14 @@ test.describe("Burger menu language switcher (§01)", () => {
     await expect(page).toHaveURL(/\/ka$/);
     await expect(page.locator(".d404")).toHaveCount(0);
     await expect(page.locator(".dao-ident")).toHaveCount(0);
-    // switching also closes the sheet
-    await expect(page.getByRole("dialog")).toBeHidden();
+    // §14 REVERSES what this used to assert. The sheet closing on a locale
+    // switch was the behaviour, and it was wrong: someone reading the menu in
+    // English who switches to Georgian wants to go on reading that menu, not
+    // to reopen it. It now stays open across the switch, still client-side and
+    // still without replaying the ident (both asserted above).
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.locator(".dao-nav.is-open")).toHaveCount(1);
+    await expect(page.locator("html")).toHaveAttribute("lang", "ka");
   });
 });
 

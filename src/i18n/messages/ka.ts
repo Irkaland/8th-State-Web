@@ -334,10 +334,10 @@ const ka: Messages = {
     },
     reel: {
       act: "მთავარი შოურილი",
+      // §16: the wordmark stays Latin - it is the studio's name
+      authored: "An 8th State Production",
       play: "შოურილის ჩართვა",
       title: "მთავარი შოურილი - 2026",
-      duration: "00:10",
-      format: "16:9 · ფერადი",
       pending: "შოურილი მზადდება - საბოლოო მასტერი მოლოდინშია",
     },
     intro: {

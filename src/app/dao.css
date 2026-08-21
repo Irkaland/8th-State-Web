@@ -58,6 +58,13 @@
   --dao-f-display: var(--f-adevas), var(--f-sanet), serif;
   --dao-f-ui: var(--f-optika), var(--f-georgian), sans-serif;
   --dao-f-numeral: var(--f-glacier), sans-serif;
+  /* §02: the locale-invariant Latin stack. The role tokens above are
+     re-pointed to Georgian faces under html[lang="ka"]; anything that is a
+     Latin wordmark rather than translated copy - `8TH STATE`, `EN`/`KA` -
+     must NOT follow that swap, or the same letters render in a different
+     face per locale. This token is deliberately absent from the Georgian
+     override block. */
+  --dao-f-latin: var(--f-optika), sans-serif;
   --dao-f-ka: var(--f-sanet), var(--f-georgian), sans-serif;
   /* the burger navigation: Glacier in Latin, ALK Sanet in Georgian */
   --dao-f-nav: var(--f-glacier), sans-serif;
@@ -191,8 +198,13 @@ html {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -0.62em;
-  height: 5px;
+  /* §17-§18: down from 5px to 2px - a drawn line, not a highlighter bar.
+     Thinner only: the pencil-rule mask is unchanged, so the wobble, the
+     broken ends and the uneven pressure along the stroke all survive; it now
+     reads as a pencil rule under the words rather than a graphic underline.
+     The offset tightens with it so the stroke stays attached to the text. */
+  bottom: -0.5em;
+  height: 2px;
   background: currentColor;
   -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
   mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
@@ -486,7 +498,7 @@ html[data-dao-idle] .dao-chrome::before {
   opacity: 0;
   transition: opacity 600ms ease;
 }
-html[data-dao-idle] .dao-chrome:focus-within::before {
+html[data-dao-idle] .dao-chrome:has(:focus-visible)::before {
   opacity: 1;
 }
 /* the open ink sheet is its own composition - no green field over it */
@@ -502,8 +514,16 @@ html[data-dao-nav-open] .dao-chrome::before {
 
 /* v7 #5: global chrome auto-hide - after 1.8s idle the mark, EN/KA and
    return tab fade to 0 and the burger chip to 25% (600ms out / 250ms in).
-   Never hides focused controls or while the menu is open (JS-guarded);
-   CSS focus-within is the belt-and-braces layer. */
+   Never hides while the menu is open or while a control holds KEYBOARD focus
+   (JS-guarded); the :has(:focus-visible) rules below are the belt-and-braces
+   layer.
+
+   Deliberately :focus-visible and not :focus-within. A tap leaves pointer
+   focus on whatever was tapped, and on Chromium/Android that focus is sticky -
+   with :focus-within here, opening the burger once and closing it again pinned
+   the chrome on screen for the rest of the session, because nothing ever takes
+   the focus away. Keyboard users still keep every control visible while they
+   are on it. */
 html[data-dao-idle] .dao-chrome__brand,
 html[data-dao-idle] .dao-chrome .dao-lang,
 html[data-dao-idle] .dao-returntab {
@@ -515,16 +535,33 @@ html[data-dao-idle] .dao-burger {
   opacity: 0.25;
   transition: opacity 600ms ease;
 }
+/* §03: on touch devices the whole chrome clears the frame, the burger
+   included - a phone viewport is mostly the artwork, and a 25% chip parked
+   over it is exactly the residue this pass removes. Desktop keeps the 25%
+   chip because a mouse needs a visible target to aim at, and moving the
+   mouse is what restores it. Same 600ms out / 250ms in either way.
+   pointer-events go with it, so the first tap only reveals the chrome and
+   never opens the menu by accident. */
+@media (hover: none) and (pointer: coarse) {
+  html[data-dao-idle] .dao-burger {
+    opacity: 0;
+    pointer-events: none;
+  }
+  html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
 .dao-chrome__brand,
 .dao-chrome .dao-lang,
 .dao-returntab,
 .dao-burger {
   transition: opacity 250ms ease;
 }
-html[data-dao-idle] .dao-chrome:focus-within .dao-chrome__brand,
-html[data-dao-idle] .dao-chrome:focus-within .dao-lang,
-html[data-dao-idle] .dao-chrome:focus-within .dao-burger,
-html[data-dao-idle] .dao-returntab:focus-within {
+html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-chrome__brand,
+html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-lang,
+html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger,
+html[data-dao-idle] .dao-returntab:has(:focus-visible) {
   opacity: 1;
   pointer-events: auto;
 }
@@ -622,6 +659,8 @@ html[data-dao-nav-open] .dao-returntab {
   transition: background-color 250ms ease;
 }
 .dao-chrome__word {
+  /* §02: identical in EN and KA - a Latin wordmark, not copy */
+  font-family: var(--dao-f-latin);
   font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.3em;
@@ -642,6 +681,8 @@ html[data-dao-nav-open] .dao-returntab {
   gap: 18px;
 }
 .dao-lang {
+  /* §02: `EN` / `KA` are Latin labels in both locales */
+  font-family: var(--dao-f-latin);
   display: flex;
   gap: 14px;
   font-weight: 500;
@@ -1563,6 +1604,16 @@ html[data-dao-nav-open] .dao-returntab {
   overflow: hidden;
   padding: 88px 0 120px;
 }
+/* §19: the paper has to be plainly visible in the red, not implied. Grain
+   above the default 0.4 and the weave above its default 0.14; both are still
+   inside the range where #d03e26 is recognisably the brand red rather than a
+   muddied one - the texture is read as the surface the red is printed on. */
+.dao-work > .dao-grain--strong {
+  opacity: 0.55;
+}
+.dao-work > .dao-weave {
+  opacity: 0.26;
+}
 .dao-work__serpent {
   position: absolute;
   left: -140px;
@@ -1883,24 +1934,38 @@ html[data-dao-nav-open] .dao-returntab {
    Act 04 - Services (editorial index)
    ============================================================ */
 
+/* §05: the section is a printed blue field, not paper. The blue is the
+   approved brand hex and the paper material stays on top of it - the grain is
+   multiplied INTO the colour, so the fibre reads as tooth in the ink rather
+   than as a grey film laid over it, and the weave adds the canvas bite. Every
+   descendant below is recoloured for the new ground; nothing relies on the
+   ink-on-paper defaults any more. */
 .dao-svc {
   position: relative;
-  background: var(--dao-paper);
-  color: var(--dao-ink);
+  background: var(--dao-blue);
+  color: var(--dao-paper);
   overflow: hidden;
   padding: 96px var(--dao-gutter) 110px;
+}
+/* the paper material over the blue, pushed well past the paper-ground
+   default (0.4) so the texture is unmistakably present at arm's length */
+.dao-svc > .dao-grain--strong {
+  opacity: 0.62;
+}
+.dao-svc > .dao-weave {
+  opacity: 0.22;
 }
 /* WHAT WE MAKE - major section title, DISPLAY role */
 .dao-svc__title {
   font-family: var(--dao-f-display);
   font-size: clamp(30px, 4.4vw, 64px);
   line-height: 1;
-  color: var(--dao-ink);
+  color: var(--dao-paper);
 }
 .dao-svc__intro {
   font-size: 13px;
   line-height: 1.6;
-  color: var(--dao-brown);
+  color: rgba(242, 237, 227, 0.78);
   max-width: 300px;
 }
 .dao-svc__grid {
@@ -1914,7 +1979,7 @@ html[data-dao-nav-open] .dao-returntab {
   flex-direction: column;
   gap: 34px;
   padding-top: 18px;
-  border-right: 1px solid rgba(19, 18, 16, 0.15);
+  border-right: 1px solid rgba(242, 237, 227, 0.22);
 }
 .dao-svc__group {
   display: flex;
@@ -1929,13 +1994,13 @@ html[data-dao-nav-open] .dao-returntab {
 }
 .dao-svc__groupdesc {
   font-size: 11.5px;
-  color: rgba(19, 18, 16, 0.55);
+  color: rgba(242, 237, 227, 0.62);
 }
 .dao-svc__ornament {
   margin-top: auto;
   width: 120px;
   height: 120px;
-  background: rgba(19, 18, 16, 0.1);
+  background: rgba(242, 237, 227, 0.18);
   --m: url("/assets/graphics/symbols-50.webp");
 }
 .dao-svc__list {
@@ -1943,7 +2008,7 @@ html[data-dao-nav-open] .dao-returntab {
   flex-direction: column;
 }
 .dao-svc__row {
-  border-bottom: 1px solid rgba(19, 18, 16, 0.14);
+  border-bottom: 1px solid rgba(242, 237, 227, 0.2);
 }
 .dao-svc__row:last-child {
   border-bottom: 0;
@@ -1956,7 +2021,7 @@ html[data-dao-nav-open] .dao-returntab {
   padding: 13px 0;
   background: none;
   border: 0;
-  color: var(--dao-ink);
+  color: var(--dao-paper);
   text-align: left;
   transition:
     padding-left 250ms var(--dao-ease-out),
@@ -1967,30 +2032,45 @@ html[data-dao-nav-open] .dao-returntab {
   font-size: 14px;
   transition: color 200ms ease;
 }
+/* §06: capability names are the STRONG editorial role (Optika 600), not the
+   display face. They are an index of what the studio does - a list to be read
+   and scanned - so they take the same weight the site gives strong editorial
+   text everywhere else. Adevas stays on the section title above them, which
+   keeps the display face doing display work only. */
 .dao-svc__name {
   position: relative;
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(21px, 2.8vw, 40px);
   line-height: 1;
 }
+/* §07: barely thicker than a pencil line. The stroke keeps its hand-drawn
+   paint-stroke mask (inherited from .dao-strike) - it is thinner, not
+   straighter, so the ragged ends and uneven body survive at 3px. */
 .dao-svc__name .dao-strike {
-  height: 9px;
+  height: 3px;
+  /* the base rule parks an 8px stroke at bottom:-8px; a 3px one has to ride
+     back up or it detaches from the word it underlines */
+  bottom: -5px;
   background: var(--g, var(--dao-orange));
 }
 .dao-svc__rowbtn:hover,
 .dao-svc__rowbtn:focus-visible,
 .dao-svc__row.is-open .dao-svc__rowbtn {
   padding-left: 18px;
-  background: var(--tint, rgba(224, 105, 18, 0.06));
+  background: var(--tint, rgba(242, 237, 227, 0.08));
 }
 .dao-svc__rowbtn:hover .dao-strike,
 .dao-svc__rowbtn:focus-visible .dao-strike,
 .dao-svc__row.is-open .dao-strike {
   transform: scaleX(1);
 }
+/* the numeral follows the GROUP colour, not the per-capability underline
+   accent (§08): several of those accents are deliberately dark strokes that
+   would be unreadable as 14px text on the blue ground. */
 .dao-svc__rowbtn:hover .dao-svc__num,
 .dao-svc__row.is-open .dao-svc__num {
-  color: var(--g, var(--dao-orange));
+  color: var(--n, var(--dao-yellow));
 }
 .dao-svc__body {
   display: grid;
@@ -2012,7 +2092,7 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-svc__desc {
   font-size: 13px;
   line-height: 1.65;
-  color: rgba(19, 18, 16, 0.7);
+  color: rgba(242, 237, 227, 0.82);
   max-width: 480px;
 }
 .dao-svc__frag {
@@ -2049,7 +2129,7 @@ html[data-dao-nav-open] .dao-returntab {
   font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.26em;
-  border-bottom: 1px solid rgba(19, 18, 16, 0.14);
+  border-bottom: 1px solid rgba(242, 237, 227, 0.2);
 }
 /* Inline group heads replace the rail below 960 (handoff 2a/2b). */
 .dao-svc__grouphead--inline {
@@ -2071,10 +2151,12 @@ html[data-dao-nav-open] .dao-returntab {
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.3em;
-  color: var(--dao-ink);
+  color: var(--dao-paper);
 }
+/* yellow, not the usual red: red on this blue is the one palette pair that
+   vibrates instead of reading */
 .dao-svc__all:hover {
-  color: var(--dao-red);
+  color: var(--dao-yellow);
 }
 @media (max-width: 960px) {
   .dao-svc__grid {

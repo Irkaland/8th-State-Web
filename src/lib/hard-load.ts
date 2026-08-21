@@ -24,6 +24,64 @@ export type SearchParamsLike = {
  */
 export const HARD_LOAD_BYPASS_HEADER = "x-dao-hard-load";
 
+/** "/ka/work" -> "/work" ; "/ka" -> "/" ; "/work" -> "/work". */
+function barePath(pathname: string): string {
+  if (pathname === "/ka" || pathname === "/en") return "/";
+  if (pathname.startsWith("/ka/") || pathname.startsWith("/en/")) {
+    return pathname.slice(3) || "/";
+  }
+  return pathname || "/";
+}
+
+/** "ka" for /ka and /ka/*, otherwise "en" (EN is served unprefixed). */
+function localeOf(pathname: string): "en" | "ka" {
+  return pathname === "/ka" || pathname.startsWith("/ka/") ? "ka" : "en";
+}
+
+/**
+ * §13: is this request the SAME page in the other language?
+ *
+ * The language switcher is a client-side `<Link>`, so in principle it is an
+ * RSC fetch and never reaches the redirect below. In practice it crosses the
+ * `[locale]` route-group boundary, and on the deployed edge that has been
+ * observed arriving as a plain document GET with none of the router headers -
+ * at which point the refresh contract cannot tell "switched language on
+ * /work" from "typed /ka/work into the address bar", and sends the visitor to
+ * the locale home. That is the reported bug: changing language throws you back
+ * to Home instead of staying on the page you were reading.
+ *
+ * The Referer distinguishes the two unambiguously. A locale switch is the only
+ * navigation whose referrer is the same bare path under a DIFFERENT locale, so
+ * requiring both halves - paths equal, locales different - keeps every other
+ * document load, including a refresh of the page itself (same locale) and a
+ * deep link from elsewhere (different path), on the existing contract.
+ *
+ * A malformed or cross-origin Referer simply fails the check and falls back to
+ * the old behaviour, which is the safe direction.
+ */
+export function isLocaleSwitch(
+  pathname: string,
+  referer: string | null,
+  host: string | null,
+): boolean {
+  if (!referer) return false;
+  let from: URL;
+  try {
+    from = new URL(referer, "http://dao.invalid");
+  } catch {
+    return false;
+  }
+  // A Referer from another site says nothing about our own navigation. Compared
+  // on hostname rather than origin so http/https and the port do not matter
+  // (the proxy sees the platform's internal scheme, not the visitor's).
+  if (host && from.hostname !== "dao.invalid") {
+    const hostname = host.split(":")[0]!.toLowerCase();
+    if (from.hostname.toLowerCase() !== hostname) return false;
+  }
+  if (barePath(from.pathname) !== barePath(pathname)) return false;
+  return localeOf(from.pathname) !== localeOf(pathname);
+}
+
 /**
  * Decide where a request must be redirected under the refresh contract.
  * Returns the locale home ("/" or "/ka") for a real document load of any
@@ -53,5 +111,9 @@ export function hardLoadRedirect(
   if (accept && !accept.includes("text/html")) return null;
   // The locale homes are already the destination.
   if (pathname === "/" || pathname === "/ka") return null;
+  // §13: switching language keeps you where you are, always.
+  if (isLocaleSwitch(pathname, headers.get("referer"), headers.get("host"))) {
+    return null;
+  }
   return pathname === "/ka" || pathname.startsWith("/ka/") ? "/ka" : "/";
 }
