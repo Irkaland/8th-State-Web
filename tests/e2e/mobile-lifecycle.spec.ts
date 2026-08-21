@@ -1,4 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+import { collectConsoleErrors } from "./helpers";
+import {
+  probeWebKitMediaCapability,
+  skipWhenWebKitMediaUnavailable,
+  webKitMediaUnavailableMessage,
+} from "./media-capability";
 
 /**
  * §03/§04, §10-§12, §13/§14 - the mobile session lifecycle.
@@ -45,6 +51,41 @@ async function reel(page: Page) {
   });
 }
 
+async function expectShowreelStructure(page: Page) {
+  const reelMedia = page.locator(".dao-reel__media");
+  const video = reelMedia.locator("video");
+  await expect(reelMedia).toBeVisible();
+  await expect(video).toBeVisible();
+  await expect(video.locator("source")).toHaveAttribute("src", "/media/showreel.mp4");
+
+  const state = await video.evaluate((v: HTMLVideoElement) => ({
+    muted: v.muted,
+    defaultMuted: v.defaultMuted,
+    loop: v.loop,
+    inline: v.playsInline,
+    hasInlineAttribute: v.hasAttribute("playsinline"),
+    controls: v.controls,
+    preload: v.preload,
+    sourceType: v.querySelector("source")?.getAttribute("type"),
+  }));
+  expect(state.muted).toBe(true);
+  expect(state.defaultMuted).toBe(true);
+  expect(state.loop).toBe(true);
+  expect(state.inline).toBe(true);
+  expect(state.hasInlineAttribute).toBe(true);
+  expect(state.controls).toBe(false);
+  expect(state.preload).toBe("metadata");
+  expect(state.sourceType).toBe("video/mp4");
+
+  const poster = reelMedia.locator("img");
+  await expect(poster).toHaveCount(1);
+  await expect
+    .poll(() => poster.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), {
+      timeout: 15_000,
+    })
+    .toBe(true);
+}
+
 /**
  * Bring the chrome back before touching one of its controls.
  *
@@ -72,7 +113,9 @@ function opacity(page: Page, selector: string) {
 }
 
 test.describe("§10-§12 showreel autoplay on mobile", () => {
-  test("the reel plays and ADVANCES once the ident has left", async ({ page }) => {
+  test("the reel plays and ADVANCES once the ident has left", async ({ page }, testInfo) => {
+    await skipWhenWebKitMediaUnavailable(page, testInfo);
+
     await page.goto("/");
     await waitForIdent(page);
 
@@ -94,7 +137,9 @@ test.describe("§10-§12 showreel autoplay on mobile", () => {
     expect(second!.t).toBeGreaterThan(first!.t);
   });
 
-  test("the poster only leaves once real playback is confirmed", async ({ page }) => {
+  test("the poster only leaves once real playback is confirmed", async ({ page }, testInfo) => {
+    await skipWhenWebKitMediaUnavailable(page, testInfo);
+
     await page.goto("/");
     await waitForIdent(page);
     await page.waitForFunction(PLAYING, null, { timeout: 20_000 });
@@ -103,7 +148,9 @@ test.describe("§10-§12 showreel autoplay on mobile", () => {
     await expect(page.locator(".dao-reel__media img")).toHaveCount(0, { timeout: 10_000 });
   });
 
-  test("it does NOT take a language switch to get the reel going", async ({ page }) => {
+  test("it does NOT take a language switch to get the reel going", async ({ page }, testInfo) => {
+    await skipWhenWebKitMediaUnavailable(page, testInfo);
+
     // the reported symptom: the reel sat on frame one until the visitor
     // happened to switch locale, which remounted the element
     await page.goto("/");
@@ -121,6 +168,29 @@ test.describe("§10-§12 showreel autoplay on mobile", () => {
     await expect(meta).toContainText(/AN 8TH STATE PRODUCTION/i);
     await expect(meta).not.toContainText(/FPS/i);
     await expect(meta).not.toContainText(/PRJ-/i);
+  });
+
+  test("keeps WebKit structure and lifecycle coverage when media decode is unavailable", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-safari", "WebKit fallback contract only");
+
+    const capability = await probeWebKitMediaCapability(page);
+    test.skip(
+      capability.available,
+      "Local WebKit media runtime is available; strict playback covers this.",
+    );
+
+    console.log(webKitMediaUnavailableMessage());
+    const errors = collectConsoleErrors(page);
+    await page.goto("/");
+    await waitForIdent(page);
+    await expect(page).toHaveURL(/localhost:\d+\/$/);
+    await expect(page.locator(".dao-ident")).toHaveCount(0);
+    await expect(page.locator(".dao-reel")).toBeVisible();
+    await expectShowreelStructure(page);
+    await page.waitForLoadState("load");
+    expect(errors(), errors().join("\n")).toEqual([]);
   });
 });
 
@@ -282,7 +352,9 @@ test.describe("§13/§14 locale switching", () => {
     await expect(page.locator(".dao-nav.is-open")).toHaveCount(0, { timeout: 10_000 });
   });
 
-  test("the reel is still playing after the switch", async ({ page }) => {
+  test("the reel is still playing after the switch", async ({ page }, testInfo) => {
+    await skipWhenWebKitMediaUnavailable(page, testInfo);
+
     await page.goto("/");
     await waitForIdent(page);
     await page.waitForFunction(PLAYING, null, { timeout: 20_000 });

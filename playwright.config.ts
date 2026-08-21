@@ -45,7 +45,7 @@ export default defineConfig({
     // the §14 locale handoff are exercised the way a phone exercises them.
     {
       name: "mobile-safari",
-      testMatch: /mobile-lifecycle.spec.ts/,
+      testMatch: /(?:mobile-lifecycle|webkit-media-capability)\.spec\.ts/,
       use: { ...devices["iPhone 14"] },
     },
     {
