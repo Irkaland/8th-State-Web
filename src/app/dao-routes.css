@@ -1430,40 +1430,45 @@ html:has(.dlb) {
 .dlb__cover {
   position: relative;
   padding: 40px var(--dao-gutter) 140px;
+  /* §03B: this is what crops the oversized stem at the right edge. The hero had
+     no containment of its own and relied on an ancestor; making it explicit is
+     what keeps a negatively-offset decoration from ever widening the document.
+     overflow-x only, deliberately: plain `hidden` would also cut the stem with
+     a hard horizontal line at the cover's bottom edge. */
+  overflow-x: clip;
 }
+/* §02: same recession as the Home act - the rose drops to a background
+   density so the STUDIO LAB title dominates. Artwork, colour, corner and scale
+   unchanged. */
 .dlb__rose {
   position: absolute;
   left: -80px;
   bottom: -60px;
   width: clamp(240px, 39vw, 560px);
   aspect-ratio: 1;
-  background: rgba(242, 237, 227, 0.35);
+  background: rgba(242, 237, 227, 0.14);
   --m: url("/assets/graphics/floral-rose.webp");
 }
+/* §03B: grown and pushed off the right edge, cropped by .dlb__cover's
+   overflow. Cream kept, density eased for the larger shape. */
 .dlb__stem {
   position: absolute;
-  right: clamp(14px, 8vw, 120px);
-  top: 60px;
-  width: clamp(110px, 18vw, 260px);
+  right: clamp(-180px, -11vw, -44px);
+  top: 40px;
+  width: clamp(200px, 33vw, 480px);
   aspect-ratio: 26 / 34;
-  background: rgba(242, 237, 227, 0.75);
+  background: rgba(242, 237, 227, 0.55);
   --m: url("/assets/graphics/stem.webp");
   transform: rotate(7deg);
 }
-.dlb__bloom {
-  position: absolute;
-  right: clamp(150px, 28vw, 400px);
-  top: 300px;
-  width: clamp(80px, 10vw, 150px);
-  aspect-ratio: 15 / 17;
-  background: var(--dao-yellow);
-  --m: url("/assets/graphics/bloom.webp");
-  transform: rotate(-9deg);
-}
+/* §03A: the small yellow bloom is removed outright, rule and element both. */
+
+/* moved inboard of the grown stem (§03B) - at its old right: 64px it landed
+   on the stalk. Same artwork and size, clear of both the stem and the copy. */
 .dlb__wreath {
   position: absolute;
-  right: 64px;
-  top: 430px;
+  right: clamp(150px, 24vw, 350px);
+  top: 470px;
   width: 120px;
   height: 120px;
   background: rgba(242, 237, 227, 0.85);
@@ -1748,7 +1753,6 @@ html:has(.dlb) {
   .dlb__workframe:nth-child(2) {
     top: 0;
   }
-  .dlb__bloom,
   .dlb__wreath {
     display: none;
   }
@@ -2135,6 +2139,8 @@ html:has(.dlb) {
   flex-direction: column;
   min-height: 100svh;
 }
+/* §07: the route surface gets the same dark paper as the Home Contact act,
+   so the two read as one material rather than two treatments of black. */
 .dct__oxide {
   position: absolute;
   inset: 0;

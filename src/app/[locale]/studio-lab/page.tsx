@@ -59,11 +59,6 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               aria-hidden="true"
             />
             <span
-              className="dlb__bloom dao-mask dao-fade"
-              style={{ ["--d" as string]: "360ms" }}
-              aria-hidden="true"
-            />
-            <span
               className="dlb__wreath dao-mask dao-fade"
               style={{ ["--d" as string]: "480ms" }}
               aria-hidden="true"

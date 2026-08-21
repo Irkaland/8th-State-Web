@@ -38,11 +38,6 @@ export function StudioLab({ locale, messages }: { locale: Locale; messages: Mess
         style={{ ["--d" as string]: "240ms" }}
         aria-hidden="true"
       />
-      <span
-        className="dao-lab__bloom dao-mask dao-fade"
-        style={{ ["--d" as string]: "360ms" }}
-        aria-hidden="true"
-      />
 
       <div className="dao-lab__body">
         <h2 className="dao-lab__title">

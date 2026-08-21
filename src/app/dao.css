@@ -9,6 +9,11 @@
 
 :root {
   --dao-red: #d03e26;
+  /* The brand black. Already the Selected Work frame colour; named here so the
+     one true black has a token and nothing has to restate the literal or drift
+     to a near-black. --dao-ink (#131210) is the printed-ink neutral and stays
+     what it is - this is the flat black. */
+  --dao-black: #000000;
   --dao-blue: #2374b3;
   /* §07: the Studio Lab primary green is the approved brand olive. */
   --dao-green: #9dab5c;
@@ -22,7 +27,7 @@
   /* §06/§08: media frame colour. Blue is the site-wide frame; the Home
      Selected Work act overrides it to black. */
   --dao-frame: var(--dao-blue);
-  --dao-frame-work: #000000;
+  --dao-frame-work: var(--dao-black);
   /* §07: the Studio Introduction ground - the approved yellow #f0ab11 laid
      over the paper stock at 60%. A wash, not a parent opacity. */
   --dao-intro-wash: rgba(240, 171, 17, 0.6);
@@ -285,6 +290,7 @@ html {
 /* Texture overlays */
 .dao-grain,
 .dao-grain--strong,
+.dao-grain--dark,
 .dao-weave {
   position: absolute;
   inset: 0;
@@ -302,6 +308,22 @@ html {
   opacity: 0.5;
   mix-blend-mode: multiply;
 }
+/* The same paper stock as .dao-grain, blended for a DARK ground.
+   .dao-grain multiplies, which is correct on paper and on saturated colour but
+   does nothing at all on #131210 - multiply can only darken, and the ink is
+   already there. That is precisely why the Contact surface and the footer read
+   as flat despite carrying a texture layer. Screen lifts the fibre out of the
+   black instead, so the surface reads as dark paper rather than a filled
+   rectangle. The strong stock is used because the plain one carries almost no
+   structure (sd 6 vs 17 across the tile) and disappears at this strength. */
+.dao-grain--dark {
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  /* measured: mean ground #131210 -> #2a2927, paper-on-ground contrast
+     16.05:1 -> 12.44:1. The black stays black and text stays far above AA. */
+  opacity: 0.1;
+  mix-blend-mode: screen;
+}
 .dao-weave {
   background: url("/assets/textures/canvas-weave.webp");
   background-size: 512px;
@@ -310,7 +332,8 @@ html {
 }
 @media (max-width: 560px) {
   .dao-grain,
-  .dao-grain--strong {
+  .dao-grain--strong,
+  .dao-grain--dark {
     background-size: 280px;
   }
   .dao-weave {
@@ -1747,7 +1770,9 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-work__progfill {
   position: absolute;
   inset: 0;
-  background: var(--dao-red);
+  /* the fill is the brand black on the red field - red on red never read as a
+     progress state. Geometry, timing and the keyframes below are untouched. */
+  background: var(--dao-black);
   transform-origin: left center;
   animation: dao-prog-fill 5s linear forwards;
 }
@@ -2189,35 +2214,37 @@ html[data-dao-nav-open] .dao-returntab {
 }
 /* On the olive field the botanicals print in cream - mint sinks into
    #9DAB5C (§07). */
+/* §02: the rose is a background layer, not a co-star. Same artwork, same
+   cream, same corner and scale - only the ink density drops, from 0.35 to
+   0.14, so the title reads as clearly dominant over it. It stays plainly
+   visible as a shape; it stops competing. */
 .dao-lab__rose {
   position: absolute;
   left: -60px;
   bottom: -40px;
   width: clamp(220px, 32vw, 460px);
   aspect-ratio: 1;
-  background: rgba(242, 237, 227, 0.35);
+  background: rgba(242, 237, 227, 0.14);
   --m: url("/assets/graphics/floral-rose.webp");
 }
+/* §03B: the tall stem becomes an editorial crop rather than a centred icon.
+   It roughly doubles in size and is pushed PAST the right edge with a negative
+   offset, so the artwork runs off screen and is cut by the section's own
+   overflow: hidden - the document never gets wider, which is why the negative
+   offset is on the element and not on any padding or width. Cream treatment
+   kept; density eased 0.75 -> 0.55 so a much larger shape stays atmospheric. */
 .dao-lab__stem {
   position: absolute;
-  right: clamp(16px, 6vw, 80px);
-  top: 120px;
-  width: clamp(100px, 16vw, 230px);
+  right: clamp(-150px, -10vw, -40px);
+  top: 90px;
+  width: clamp(180px, 30vw, 430px);
   aspect-ratio: 23 / 30;
-  background: rgba(242, 237, 227, 0.75);
+  background: rgba(242, 237, 227, 0.55);
   --m: url("/assets/graphics/stem.webp");
   transform: rotate(6deg);
 }
-.dao-lab__bloom {
-  position: absolute;
-  right: clamp(140px, 21vw, 300px);
-  top: 300px;
-  width: clamp(70px, 9vw, 130px);
-  aspect-ratio: 13 / 15;
-  background: var(--dao-yellow);
-  --m: url("/assets/graphics/bloom.webp");
-  transform: rotate(-8deg);
-}
+/* §03A: the small yellow bloom is removed outright - rule and element both,
+   so nothing is left hidden in the DOM waiting to come back. */
 .dao-lab__body {
   display: flex;
   flex-direction: column;
@@ -2319,9 +2346,6 @@ html[data-dao-nav-open] .dao-returntab {
   .dao-lab__label {
     top: 56px;
   }
-  .dao-lab__bloom {
-    display: none;
-  }
   .dao-lab__stem {
     top: 70px;
   }
@@ -2346,13 +2370,20 @@ html[data-dao-nav-open] .dao-returntab {
   /* room for the v7 End of Reel production card */
   padding: 170px var(--dao-gutter) 320px;
 }
+/* §04: a large atmospheric ground rather than an illustration behind the
+   form. Roughly 1.6x the diameter, dropped down the section, and thinned from
+   0.06 to 0.035 cream so that growing it does not add up to more presence.
+   The extra size runs off the right edge and is cropped by .dao-contact's own
+   overflow: hidden - the negative offset is on the element, so the document
+   never gets wider. The form sits in .dao-contact__grid, which is positioned
+   and later in the DOM, so it always paints above this. */
 .dao-contact__sun {
   position: absolute;
-  right: -160px;
-  top: 60px;
-  width: clamp(280px, 44vw, 640px);
+  right: clamp(-420px, -20vw, -190px);
+  top: clamp(150px, 22vw, 300px);
+  width: clamp(420px, 70vw, 1040px);
   aspect-ratio: 1;
-  background: rgba(242, 237, 227, 0.06);
+  background: rgba(242, 237, 227, 0.035);
   --m: url("/assets/graphics/sun.webp");
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -2451,24 +2482,49 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-field textarea:focus {
   border-bottom-color: var(--dao-paper);
 }
+/* §05: the brand blue, softer at rest and full on interaction.
+   The softer state is the brand hex at 62% rather than a second, lightened
+   blue, so there is exactly one blue in the system and the resting state is
+   literally the same colour with less of it. It sits on the ink ground, so the
+   label had to leave --dao-ink: near-black on a dark translucent blue is
+   unreadable. Paper keeps it well clear of AA in both states (about 7:1 at
+   rest, 4.3:1 on full blue). Dimensions, type, padding, the lift and the star
+   are all untouched. */
 .dao-contact__send {
   align-self: flex-start;
   position: relative;
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.3em;
-  color: var(--dao-ink);
-  background: var(--dao-yellow);
+  color: var(--dao-paper);
+  background: rgba(35, 116, 179, 0.62);
   padding: 14px 26px;
   border: 0;
   transition:
     transform 200ms var(--dao-ease-out),
-    box-shadow 200ms ease;
+    box-shadow 200ms ease,
+    background-color 250ms ease;
 }
-.dao-contact__send:hover,
+/* Gated on a device that can actually hover. Without this, a tap on a phone
+   leaves the :hover state stuck on the button until something else is
+   touched - the button would simply look permanently hovered. */
+@media (hover: hover) {
+  .dao-contact__send:hover {
+    background: var(--dao-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+/* Keyboard focus is not a hover, and must work on every device. */
 .dao-contact__send:focus-visible {
+  background: var(--dao-blue);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+/* A touch reaches full blue for as long as the finger is down, then releases -
+   the interaction still reads, without the sticky state. */
+.dao-contact__send:active {
+  background: var(--dao-blue);
 }
 .dao-contact__star {
   position: absolute;
@@ -2503,14 +2559,23 @@ html[data-dao-nav-open] .dao-returntab {
   gap: 14px;
 }
 /* v7 #13 End of Reel: a closing production card, not a footer row. The full
-   logo sits on its cream paper label (never raw on ink), 128px desktop /
-   84 / 70, printed with grain, and settles 1° on entrance. */
+   logo sits on its own paper label (never raw on ink), 128px desktop /
+   84 / 70, printed with grain, and settles 1° on entrance.
+   §06: that label is now brand-blue paper instead of cream. Only the material
+   changes - the logo artwork, its proportions and its position are as they
+   were. The texture is .dao-grain--strong rather than .dao-grain because the
+   plain stock carries too little structure to register on a mid-tone (the same
+   reason What We Make uses the strong stock on this exact blue). */
 .dao-credits__chip {
   position: relative;
-  background: var(--dao-paper);
+  background: var(--dao-blue);
   padding: 16px 22px;
   transform: rotate(-1.5deg);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.dao-credits__chip .dao-grain--strong {
+  opacity: 0.7;
 }
 @media (prefers-reduced-motion: no-preference) {
   .is-in .dao-credits__chip {
@@ -2525,11 +2590,19 @@ html[data-dao-nav-open] .dao-returntab {
     transform: rotate(-1.5deg);
   }
 }
+/* The logo is a transparent PNG carrying the RED serpent and the white sun,
+   not black-on-white. On cream, multiply was indistinguishable from normal
+   compositing; on blue it would multiply the serpent to near-black and sink
+   the white sun into the field, i.e. it would change the logo's colours. So
+   the blend goes, and the logo is lifted above the grain layer as well, which
+   keeps the artwork exactly as drawn while the card behind it carries the
+   paper. */
 .dao-credits__chip img {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 128px;
   height: auto;
-  mix-blend-mode: multiply;
 }
 @media (max-width: 960px) {
   .dao-credits__chip img {

@@ -29,6 +29,13 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
       aria-label={m.act}
     >
       <div className="dao-weave" aria-hidden="true" />
+      {/* §07: paper on the black surface. The weave above it blends with
+          overlay, which cannot lift anything out of #131210 - this layer is the
+          same paper stock in screen, which can, so the ground reads as a
+          material instead of a filled rectangle. Both the grid and the credits
+          below are positioned and later in the DOM, so they paint above it and
+          no text or control is blended through. */}
+      <div className="dao-grain--dark" aria-hidden="true" />
       <span className="dao-contact__sun dao-mask" aria-hidden="true" />
 
       <div className="dao-contact__grid">
@@ -106,7 +113,13 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
           aria-label="8th State Production"
         >
           <span className="dao-credits__chip">
-            <span className="dao-grain" style={{ backgroundSize: "200px" }} aria-hidden="true" />
+            {/* §06: the strong paper stock - the plain grain is too smooth to
+                register on a mid-tone blue */}
+            <span
+              className="dao-grain--strong"
+              style={{ backgroundSize: "200px" }}
+              aria-hidden="true"
+            />
             <Image
               src="/assets/brand/8th-state-logo.png"
               alt="8th State Production"

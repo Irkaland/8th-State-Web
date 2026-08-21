@@ -42,8 +42,13 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
     >
       <div className="dao-page dao-page--ink dct" data-dao-scene="dark">
         <div className="dao-weave" aria-hidden="true" />
+        {/* §07: the same dark paper the Home Contact act carries */}
+        <div className="dao-grain--dark" aria-hidden="true" />
         <div className="dct__oxide" aria-hidden="true" />
-        <span className="dao-contact__sun dao-mask" style={{ top: 80 }} aria-hidden="true" />
+        {/* §04: the inline top override is gone - it was tuned for the old
+            640px sun, and would have held the enlarged one high on this route
+            while it sat lower on Home. One rule now positions both. */}
+        <span className="dao-contact__sun dao-mask" aria-hidden="true" />
 
         <InView className="dct__grid" threshold={0.05}>
           <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
@@ -137,7 +142,13 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         <footer className="dao-credits is-in" style={{ position: "relative" }}>
           <div className="dao-credits__brand">
             <span className="dao-credits__chip">
-              <span className="dao-grain" style={{ backgroundSize: "200px" }} aria-hidden="true" />
+              {/* §06: the strong paper stock - the plain grain is too smooth to
+                  register on a mid-tone blue */}
+              <span
+                className="dao-grain--strong"
+                style={{ backgroundSize: "200px" }}
+                aria-hidden="true"
+              />
               <Image
                 src="/assets/brand/8th-state-logo.png"
                 alt="8th State Production"
