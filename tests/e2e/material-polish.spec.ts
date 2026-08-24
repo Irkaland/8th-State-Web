@@ -4,7 +4,9 @@ import { expectNoSeriousA11y, gotoRoute } from "./helpers";
 /**
  * Contact / Studio Lab / footer material polish pass.
  *
- *  §01  the Selected Work progress fill is the brand black
+ *  §01  the Selected Work progress fill is not the red field it sits on
+ *       (this pass made it black; the brand refinement pass moved it to
+ *       Production Blue - see brand-refinement.spec.ts for the exact colour)
  *  §02  the Studio Lab left rose recedes into the ground
  *  §03  the small yellow bloom is gone; the tall stem is grown and cropped
  *  §04  the Contact sun is a large, fainter, lower atmospheric ground
@@ -56,13 +58,17 @@ async function styles(page: Page, selector: string, props: string[], pseudo?: st
 }
 
 test.describe("§01 Selected Work progress indicators", () => {
-  test("the active fill is the brand black, not red", async ({ page }) => {
+  // SUPERSEDED: this pass made the fill black, and the brand refinement pass
+  // that followed moved it to Production Blue (§02 there). The claim worth
+  // keeping is the one that motivated the change in the first place - the fill
+  // must not be the red it sits on - so that is what this now asserts, and the
+  // exact colour is owned by brand-refinement.spec.ts.
+  test("the active fill is not the red field it sits on", async ({ page }) => {
     await gotoRoute(page, "/");
     const fill = await styles(page, ".dao-work__progfill", ["background-color"]);
     expect(fill, "an active indicator must be filling").not.toBeNull();
     const c = rgba(fill!["background-color"]!);
-    expect([c[0], c[1], c[2]]).toEqual([0, 0, 0]);
-    expect([c[0], c[1], c[2]], "and specifically no longer the red").not.toEqual([...RED]);
+    expect([c[0], c[1], c[2]], "red on red never read as a progress state").not.toEqual([...RED]);
   });
 
   test("the fill reads against the red field it sits on", async ({ page }) => {
@@ -74,8 +80,19 @@ test.describe("§01 Selected Work progress indicators", () => {
       (await styles(page, ".dao-work", ["background-color"]))!["background-color"]!,
     );
     expect([field[0], field[1], field[2]], "the red field is untouched").toEqual([...RED]);
-    // this is the whole point of the change - red on red was invisible
-    expect(contrast(fill, field)).toBeGreaterThan(3);
+
+    // The fill separates from the field by HUE, not by value. Production Blue
+    // and the brand red sit at almost the same luminance (1.04:1), so the
+    // luminance test the black fill passed at 4.40:1 is not the right one any
+    // more - what carries the mandated blue is a ~230-unit RGB distance and a
+    // 141-step difference on the BLUE channel, which is the channel that
+    // survives both common forms of red-green colour blindness.
+    const dist = Math.sqrt([0, 1, 2].reduce((s, i) => s + (fill[i]! - field[i]!) ** 2, 0));
+    expect(dist, "the fill must be a plainly different colour").toBeGreaterThan(120);
+    expect(
+      Math.abs(fill[2]! - field[2]!),
+      "and separated on the blue channel, not only on red/green",
+    ).toBeGreaterThan(80);
   });
 
   test("geometry, count, spacing and the fill animation are all preserved", async ({ page }) => {

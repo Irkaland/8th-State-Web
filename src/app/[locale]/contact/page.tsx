@@ -44,7 +44,6 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         <div className="dao-weave" aria-hidden="true" />
         {/* §07: the same dark paper the Home Contact act carries */}
         <div className="dao-grain--dark" aria-hidden="true" />
-        <div className="dct__oxide" aria-hidden="true" />
         {/* §04: the inline top override is gone - it was tuned for the old
             640px sun, and would have held the enlarged one high on this route
             while it sat lower on Home. One rule now positions both. */}
@@ -94,7 +93,12 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 flexWrap: "wrap",
               }}
             >
-              <Link href={localeHref(locale, "/start-a-project")} className="dao-chipcta">
+              {/* §19: the same blue button language as SEND - softened at rest,
+                  full #2374b3 on interaction */}
+              <Link
+                href={localeHref(locale, "/start-a-project")}
+                className="dao-chipcta dao-btnfill"
+              >
                 {up(R.briefCta)}
                 <span
                   className="dao-chipcta__glyph dao-mask"
@@ -127,9 +131,11 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               <label htmlFor="dct-message">{up(R.message)}</label>
               <textarea id="dct-message" name="message" rows={3} />
             </div>
+            {/* §19: was an outlined ghost button - now the same blue fill system
+                as SEND, so the page has one button language rather than two */}
             <button
               type="button"
-              className="dct__sendnote"
+              className="dct__sendnote dao-btnfill"
               aria-disabled="true"
               title={c.sendPending}
             >

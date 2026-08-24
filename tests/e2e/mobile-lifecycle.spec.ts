@@ -397,7 +397,13 @@ test.describe("§15 returning after a long background", () => {
 
     // no re-entry: same page, same position, no ident
     await expect(page.locator(".dao-ident")).toHaveCount(0);
-    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(before);
+    // Tolerance rather than pixel equality. What this asserts is that the page
+    // was NOT re-entered - a re-entry resets the scroll to 0 - and the settle
+    // detection above can still hand back a value a frame or two before the
+    // smooth scroll fully stops, which made an exact match flaky on WebKit.
+    const after = await page.evaluate(() => Math.round(window.scrollY));
+    expect(Math.abs(after - before), `${before} -> ${after}`).toBeLessThanOrEqual(40);
+    expect(after, "and certainly not reset to the top").toBeGreaterThan(400);
   });
 
   test("a long absence re-enters the site from the Studio Ident", async ({ page }) => {

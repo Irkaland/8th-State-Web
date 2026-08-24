@@ -102,6 +102,18 @@ html:has(.dlb) {
 .dao-sheet--cream {
   background: var(--dao-paper);
 }
+/* §18: the Georgia Production field note is Production Blue stock rather than
+   white. .dao-sheet already carries a paper-grain ::before, so the material
+   system is reused - it is only pushed harder here (0.45 -> 0.72) because the
+   same grain that reads clearly on white barely registers on a mid-tone. Card
+   position, size, shadow and copy are untouched; the text colours move in the
+   JSX, where they were set. */
+.dao-sheet.dgp__note {
+  background: var(--dao-blue);
+}
+.dao-sheet.dgp__note::before {
+  opacity: 0.72;
+}
 .dao-sheet > * {
   position: relative;
 }
@@ -125,6 +137,11 @@ html:has(.dlb) {
 }
 
 /* yellow paper-chip CTA */
+/* Geometry and type only. The fill, the transition and the interaction states
+   come from .dao-btnfill (dao.css), so the two consumers of this chip - WRITE
+   TO THE LAB in red (§14) and START A PROJECT BRIEF in blue (§19) - share one
+   behaviour and differ only in their two colour stops. The label is paper
+   because both fills are mid-to-dark brand colours. */
 .dao-chipcta {
   position: relative;
   display: inline-block;
@@ -132,19 +149,13 @@ html:has(.dlb) {
   font-size: 11px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--dao-ink);
-  background: var(--dao-yellow);
+  color: var(--dao-paper);
   padding: 16px 28px;
   border: 0;
-  transition:
-    transform 200ms var(--dao-ease-out),
-    box-shadow 200ms ease;
 }
 .dao-chipcta:hover,
 .dao-chipcta:focus-visible {
-  color: var(--dao-ink);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  color: var(--dao-paper);
 }
 .dao-chipcta__glyph {
   position: absolute;
@@ -153,10 +164,6 @@ html:has(.dlb) {
   width: 28px;
   height: 28px;
   background: var(--dao-red);
-  transition: transform 300ms var(--dao-ease-out);
-}
-.dao-chipcta:hover .dao-chipcta__glyph {
-  transform: rotate(45deg);
 }
 
 /* ---------- page-transition veils (4i families) ---------- */
@@ -279,11 +286,12 @@ html:has(.dlb) {
 .dwk__filter--lab:hover {
   color: var(--dao-mint);
 }
+/* §08: re-weighted with the shared .dao-strike base */
 .dwk__filter .dao-strike {
   left: -6px;
   width: calc(100% + 12px);
-  bottom: -5px;
-  height: 6px;
+  bottom: -4px;
+  height: 4px;
   background: var(--dao-yellow);
 }
 .dwk__filter[aria-current="true"] {
@@ -375,9 +383,10 @@ html:has(.dlb) {
   color: var(--dao-paper);
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5);
 }
+/* §08: re-weighted with the shared .dao-strike base */
 .dwk__name .dao-strike {
-  bottom: -9px;
-  height: 8px;
+  bottom: -7px;
+  height: 5px;
 }
 .dwk__meta {
   font-weight: 500;
@@ -414,14 +423,19 @@ html:has(.dlb) {
 }
 /* §06: the frame behind a feature row. Clean straight geometry on all four
    sides - the torn lower termination is gone - and slightly thinner than
-   before (14 -> 10), matching the Home frame's refinement. */
-.dwk__row--feature .dwk__bluepaper {
+   before (14 -> 10), matching the Home frame's refinement.
+   §09: brand red rather than Production Blue. Only the frame around the
+   imagery changes - the badge, the tick, the counter, the end band and the
+   project-page opening stay blue, because those are metadata and background
+   systems rather than framing. The class was renamed off "bluepaper" so it
+   does not describe a colour it no longer has. */
+.dwk__row--feature .dwk__framepaper {
   position: absolute;
   left: -10px;
   top: -10px;
   right: -10px;
   bottom: -10px;
-  background: var(--dao-frame);
+  background: var(--dao-frame-media);
   transform: rotate(-0.8deg);
 }
 .dwk__row--feature .dwk__frame {
@@ -1324,7 +1338,10 @@ html:has(.dlb) {
   position: relative;
   background: var(--dao-ink);
   color: var(--dao-paper);
-  overflow: hidden;
+  /* §10: overflow-x rather than hidden. The serpent still has to be clipped
+     horizontally, but the Lab card now rises ABOVE this section's top edge to
+     sit across the boundary, and plain `hidden` would shave that overlap off. */
+  overflow-x: clip;
 }
 .dst__roomsbody {
   position: relative;
@@ -1344,13 +1361,23 @@ html:has(.dlb) {
   color: var(--dao-paper);
   text-wrap: pretty;
 }
+/* §10: a physical card laid across the boundary, not a panel inset into the
+   black. Three things make it read that way: it starts above this section so it
+   overlaps the paper world above, it is inset from the right so all four edges
+   are visible, and it carries a real drop shadow so it sits ON the black rather
+   than being cut out of it.
+   The tilt is deliberately small - 1.1deg, negative so the card RISES from left
+   to right - and the shadow is angled with it. Any more and the type starts to
+   fight the baseline of the copy beside it. */
 .dst__labpanel {
   position: absolute;
-  right: 0;
-  top: 0;
+  right: clamp(14px, 2.6vw, 52px);
+  top: -58px;
   bottom: 0;
   width: clamp(260px, 29vw, 420px);
   background: var(--dao-green);
+  transform: rotate(-1.1deg);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.55);
 }
 .dst__labpanel-inner {
   position: relative;
@@ -1378,18 +1405,32 @@ html:has(.dlb) {
   --m: url("/assets/graphics/serpent-long.webp");
   pointer-events: none;
 }
+/* §11: this section had no containment, so .dst__handoffsun below overflowed
+   its bottom edge and EXTENDED THE DOCUMENT past .dao-page. The strip that
+   appeared underneath was the body's flat ink with none of the section's weave
+   over it - which is exactly the "lower portion is more sharply black" seam.
+   The fix is containment here, at the source, rather than another layer painted
+   over the join: with the sun cropped, the black is one continuous material
+   from the top of this section to the end of the page. */
 .dst__handoff {
   position: relative;
   background: var(--dao-ink);
   color: var(--dao-paper);
   padding: 90px var(--dao-gutter) 80px;
+  overflow: clip;
 }
+/* §12: larger - roughly double - and still a print, not a light source. The
+   opacity is unchanged at 0.06 cream, and it is pushed further off the right
+   edge so the extra size is spent on crop rather than on presence. It is
+   cropped by .dst__handoff's overflow above, so growing it can no longer
+   lengthen the page. */
 .dst__handoffsun {
   position: absolute;
-  right: -80px;
-  top: 20px;
-  width: 300px;
-  height: 300px;
+  right: clamp(-260px, -14vw, -110px);
+  top: 10px;
+  width: clamp(360px, 40vw, 620px);
+  aspect-ratio: 1;
+  height: auto;
   background: rgba(242, 237, 227, 0.06);
   --m: url("/assets/graphics/sun.webp");
 }
@@ -1409,9 +1450,16 @@ html:has(.dlb) {
     grid-template-columns: 1fr;
     gap: 40px;
   }
+  /* §10: below 720 the card is a full-width block in the flow, where a tilt
+     and a negative top would only cost readability and leave a wedge of black
+     above it. Desktop is where the overlap has to communicate. */
   .dst__rooms .dst__labpanel {
     position: relative;
     width: 100%;
+    top: 0;
+    right: 0;
+    transform: none;
+    box-shadow: none;
   }
   .dst__roomsbody {
     padding-bottom: 40px;
@@ -1528,10 +1576,11 @@ html:has(.dlb) {
 .dlb__filter:focus-visible {
   color: var(--dao-ink);
 }
+/* §08: re-weighted with the shared .dao-strike base */
 .dlb__filter .dao-strike {
   background: var(--dao-yellow);
   bottom: 0;
-  height: 6px;
+  height: 4px;
 }
 .dlb__filter[aria-pressed="true"] {
   color: var(--dao-ink);
@@ -1762,6 +1811,22 @@ html:has(.dlb) {
    /process - production choreography (4f)
    ============================================================ */
 
+/* §15: the Process environment is orange PAPER, not a flat orange screen.
+   Scoped to .dpr rather than .dao-page--paper: that class is the shared cream
+   ground for /services, /work and the legal pages, and none of those are
+   changing. The stock is .dao-grain--strong at a raised opacity for the same
+   reason What We Make needed it on blue - the plain grain carries too little
+   structure (sd 6 vs 17 across the tile) to register on a saturated mid-tone,
+   and would read as a slight dulling rather than as paper. */
+.dpr {
+  background: var(--dao-orange);
+}
+.dpr > .dao-grain--strong {
+  opacity: 0.62;
+}
+.dpr > .dao-weave {
+  opacity: 0.2;
+}
 .dpr__cover {
   padding: 26px var(--dao-gutter) 60px;
   display: flex;
@@ -1773,13 +1838,18 @@ html:has(.dlb) {
   position: relative;
   padding: 0 var(--dao-gutter) 90px;
 }
+/* §17: the thread behind the call sheets. It was orange on cream; on an
+   orange ground that is invisible, so it becomes dark ink instead. Not flat
+   black at full strength - 0.34 of the brand ink, so it reads as ink printed
+   imperfectly onto the orange stock and still sits behind the cards. The path,
+   the artwork and the layering are untouched. */
 .dpr__serpent {
   position: absolute;
   left: -100px;
   right: -100px;
   top: 120px;
   height: 110px;
-  background: rgba(224, 105, 18, 0.25);
+  background: rgba(19, 18, 16, 0.34);
   --m: url("/assets/graphics/serpent-long.webp");
   pointer-events: none;
 }
@@ -2138,19 +2208,23 @@ html:has(.dlb) {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
+  /* §21: the dead black area below the footer was not padding or a min-height -
+     it was the enlarged .dao-contact__sun overflowing this element's bottom by
+     261px and extending the document, leaving a strip of un-textured body ink
+     under the footer. .dao-page only clips horizontally, so nothing caught it.
+     Clipping here ends the page where the footer ends, and the sun crops
+     against the section edge the way the Home act's already does. */
+  overflow: clip;
 }
-/* §07: the route surface gets the same dark paper as the Home Contact act,
-   so the two read as one material rather than two treatments of black. */
-.dct__oxide {
-  position: absolute;
-  inset: 0;
-  background: url("/assets/textures/oxide-stain.webp");
-  background-size: 1400px;
-  background-position: 80% 100%;
-  opacity: 0.12;
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
+/* §07: the route surface carries the same dark paper as the Home Contact act,
+   so the two read as one material rather than two treatments of black.
+
+   §20: the oxide-stain layer that used to sit here is gone. It was a mottled
+   stain texture blended with SCREEN at 0.12, and screen on a near-black ground
+   can only lighten - so the texture's blotches surfaced as the large pale,
+   smoky patches the brief asks to remove. The paper character stays: the weave
+   and .dao-grain--dark are still on this surface, and those are what make it
+   read as dark material rather than flat black. */
 .dct__grid {
   position: relative;
   display: grid;
@@ -2171,23 +2245,17 @@ html:has(.dlb) {
   gap: 22px;
   padding-top: 60px;
 }
+/* §19: was an outlined ghost button. Both Contact buttons now speak the same
+   blue language as SEND, so this becomes a filled one and drops its border -
+   the fill and the states come from .dao-btnfill. */
 .dct__sendnote {
   align-self: flex-start;
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.3em;
   color: var(--dao-paper);
-  border: 1px solid rgba(242, 237, 227, 0.5);
-  background: none;
+  border: 0;
   padding: 13px 24px;
-  transition:
-    border-color 200ms ease,
-    background-color 200ms ease;
-}
-.dct__sendnote:hover,
-.dct__sendnote:focus-visible {
-  border-color: var(--dao-paper);
-  background: rgba(242, 237, 227, 0.06);
 }
 @media (max-width: 960px) {
   .dct__grid {
@@ -2300,12 +2368,13 @@ html:has(.dlb) {
 .dbr__chip[aria-pressed="true"] {
   background: rgba(35, 116, 179, 0.08);
 }
+/* §08: re-weighted with the shared .dao-strike base */
 .dbr__chip .dao-strike {
   left: 8px;
   right: 8px;
   width: auto;
   bottom: 6px;
-  height: 6px;
+  height: 4px;
   background: var(--dao-blue);
 }
 .dbr__chip[aria-pressed="true"] .dao-strike {
@@ -2484,10 +2553,11 @@ html:has(.dlb) {
 .dlg__tab[aria-current="page"] {
   color: var(--dao-ink);
 }
+/* §08: re-weighted with the shared .dao-strike base */
 .dlg__tab[aria-current="page"] .dao-strike {
   transform: scaleX(1);
   bottom: -2px;
-  height: 5px;
+  height: 3px;
 }
 .dlg__title {
   font-family: var(--dao-f-display);

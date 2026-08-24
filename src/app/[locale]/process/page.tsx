@@ -41,11 +41,19 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
       veil="paper"
       returnTab={{ label: up(m.nav.studio), fallback: "/studio", ground: "light" }}
     >
-      <div className="dao-page dao-page--paper" data-dao-scene="light">
-        <div className="dao-grain" aria-hidden="true" />
+      {/* §15: the orange environment is scoped to this route's own class, not
+          to the shared cream .dao-page--paper. The strong stock plus the weave
+          is what keeps it reading as printed orange paper rather than a flat
+          orange screen. */}
+      <div className="dao-page dao-page--paper dpr" data-dao-scene="light">
+        <div className="dao-grain--strong" aria-hidden="true" />
+        <div className="dao-weave" aria-hidden="true" />
 
         <InView className="dpr__cover" threshold={0.05}>
-          <span className="dao-kicker dao-fade" style={{ color: "var(--dao-orange)" }}>
+          {/* §16: this label was orange on cream. On the orange ground it has to
+              leave the ground colour entirely - the brand ink gives the
+              strongest editorial reading and needs no new colour. */}
+          <span className="dao-kicker dao-fade" style={{ color: "var(--dao-ink)" }}>
             {up(R.kicker)}
           </span>
           <h1 className="dao-cover__title dao-side" style={{ ["--x" as string]: "-60px" }}>

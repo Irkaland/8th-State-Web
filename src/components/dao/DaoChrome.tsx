@@ -439,7 +439,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
                 {m.work}
                 <span
                   className={cn("dao-strike", workOpen && "dao-strike--on")}
-                  style={{ background: "var(--dao-blue)", bottom: "6px", height: "12px" }}
+                  // §08: thinner with the shared .dao-strike base (12 -> 6)
+                  style={{ background: "var(--dao-blue)", bottom: "6px", height: "6px" }}
                   aria-hidden="true"
                 />
               </Link>
@@ -451,7 +452,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
           <div className={cn("dao-nav__cats", workOpen && "is-open")} inert={!workOpen}>
             <Link href={href("/work?category=film-video")} className="dao-nav__cat" onClick={close}>
               {m.catFilm}
-              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 5 }} />
+              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 3 }} />
             </Link>
             <Link
               href={href("/work?category=photography")}
@@ -459,7 +460,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
               onClick={close}
             >
               {m.catPhoto}
-              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 5 }} />
+              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 3 }} />
             </Link>
             <Link
               href={href("/work?category=production-spatial")}
@@ -467,7 +468,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
               onClick={close}
             >
               {m.catSpatial}
-              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 5 }} />
+              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 3 }} />
             </Link>
             <Link
               href={href("/work?category=studio-lab")}
@@ -475,11 +476,11 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
               onClick={close}
             >
               {m.catLab}
-              <span className="dao-strike" style={{ background: "var(--dao-green)", height: 5 }} />
+              <span className="dao-strike" style={{ background: "var(--dao-green)", height: 3 }} />
             </Link>
             <Link href={href("/work")} className="dao-nav__cat" onClick={close}>
               {m.catArchive}
-              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 5 }} />
+              <span className="dao-strike" style={{ background: "var(--dao-blue)", height: 3 }} />
             </Link>
           </div>
 
@@ -673,7 +674,8 @@ function NavRow({
                 style={{
                   background: "var(--dao-green)",
                   bottom: "0.02em",
-                  height: "0.16em",
+                  // §08: thinner with the shared .dao-strike base
+                  height: "0.1em",
                   left: "-2%",
                   width: "104%",
                 }}

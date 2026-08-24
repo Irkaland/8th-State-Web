@@ -44,9 +44,14 @@ test.describe("Homepage - One Continuous Take", () => {
     // brand pass §02: nothing prints in below PRODUCTION any more - the
     // composition is the brand mark and the wordmark, nothing else
     await expect(page.locator(".dao-ident__logolabel")).toHaveCount(0);
-    // still holding at 2.0s with no input
+    // The 2s window is measured from the moment the composition COMPLETES, not
+    // from navigation. Anchored on navigation it was flaky under parallel load:
+    // slow startup plus the assertions above could eat the ident's whole
+    // ~3.5s life before the wait even began, and the test then failed for
+    // reasons that had nothing to do with the hold.
+    await expect(ident).toHaveClass(/is-drawn/, { timeout: 10_000 });
     await page.waitForTimeout(2_000);
-    await expect(ident).toBeVisible();
+    await expect(ident, "the completed composition must hold for 2s").toBeVisible();
     await expect(ident).toBeHidden({ timeout: 6_000 });
   });
 
@@ -375,7 +380,9 @@ test.describe("Global polish pass", () => {
       page.evaluate(
         () => getComputedStyle(document.querySelector(".dao-chrome")!, "::before").opacity,
       );
-    expect(await beforeOpacity()).toBe("1");
+    // poll rather than sample once: the backing has a 250ms fade-in, so an
+    // instantaneous read straight after the pointer move catches it mid-flight
+    await expect.poll(beforeOpacity, { timeout: 4_000 }).toBe("1");
     await page.waitForTimeout(2_300);
     await expect(page.locator("html")).toHaveAttribute("data-dao-idle", "");
     await page.waitForTimeout(700); // 600ms fade-out completes

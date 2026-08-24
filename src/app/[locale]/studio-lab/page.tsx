@@ -155,7 +155,12 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                     {R.collabText} {cr}.
                   </p>
                 </div>
-                <Link href={localeHref(locale, "/contact")} className="dao-chipcta">
+                {/* §14: brand red at rest, deepening on interaction - the same
+                    system and timing as the Contact SEND button */}
+                <Link
+                  href={localeHref(locale, "/contact")}
+                  className="dao-chipcta dao-btnfill dao-btnfill--red"
+                >
                   {up(R.writeToLab)}
                   <span
                     className="dao-chipcta__glyph dao-mask"

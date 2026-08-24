@@ -24,9 +24,12 @@
   /* §03: the approved Studio Ident ground - the intro direction's green.
      A fixed brand hex like the rest of this block, not a derived tint. */
   --dao-ident-green: #126149;
-  /* §06/§08: media frame colour. Blue is the site-wide frame; the Home
-     Selected Work act overrides it to black. */
-  --dao-frame: var(--dao-blue);
+  /* §06/§08: media frame colours - two roles, both in use. The Home Selected
+     Work act frames in black; §09 moves the Work archive's feature frames from
+     Production Blue to brand red. The old generic --dao-frame token is gone
+     with that change: red was its only consumer, so leaving a blue token behind
+     with nothing pointing at it would just be dead code. */
+  --dao-frame-media: var(--dao-red);
   --dao-frame-work: var(--dao-black);
   /* §07: the Studio Introduction ground - the approved yellow #f0ab11 laid
      over the paper stock at 60%. A wash, not a parent opacity. */
@@ -264,6 +267,101 @@ html {
   }
 }
 
+/* ============================================================
+   Brand-fill buttons - ONE system (§14/§19)
+   ============================================================
+   The Contact SEND button established the behaviour: a brand colour held back
+   at rest that reaches full strength on interaction, with a small lift and a
+   shadow. Three more buttons now need it - SEND NOTE and START A PROJECT BRIEF
+   in blue, WRITE TO THE LAB in red - so the behaviour lives here once instead
+   of being re-typed per page.
+
+   A consumer sets two stops and nothing else:
+     --dao-btn-rest   the fill at rest
+     --dao-btn-live   the fill on hover / focus-visible / active
+   Blue runs softened -> full. Red runs full -> deepened with the brand ink,
+   because #d03e26 is already at full strength at rest (§14 asks for exactly
+   that) and the state change has to go somewhere. Same class, same easing,
+   same duration, same triggers - only the two stops differ.
+
+   Hover is gated behind (hover: hover): without it a tap on a phone leaves the
+   button looking permanently hovered. focus-visible covers keyboards on every
+   device and :active gives touch a real press state that releases. */
+.dao-btnfill {
+  /* Written as literal rgba rather than color-mix(): color-mix computes to
+     `color(srgb ...)`, which reads back differently from every other colour on
+     the site and needs Safari 16.2+. The derivation is in the comment instead -
+     these ARE the brand hexes, nothing new. */
+  /* #2374b3 at 62% */
+  --dao-btn-rest: rgba(35, 116, 179, 0.62);
+  --dao-btn-live: var(--dao-blue);
+  background: var(--dao-btn-rest);
+  transition:
+    background-color 250ms ease,
+    transform 200ms var(--dao-ease-out),
+    box-shadow 200ms ease;
+}
+@media (hover: hover) {
+  .dao-btnfill:hover {
+    background: var(--dao-btn-live);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+.dao-btnfill:focus-visible {
+  background: var(--dao-btn-live);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+.dao-btnfill:active {
+  background: var(--dao-btn-live);
+}
+/* §14: brand red. Full strength at rest, deepened with the brand ink on
+   interaction - the palette's own darkening move (the same one that produced
+   --dao-green-ink), not a new colour. */
+.dao-btnfill--red {
+  --dao-btn-rest: var(--dao-red);
+  /* #d03e26 at 82% over #131210 = rgb(175, 54, 34) - the palette's own
+     darkening move, the same one that produced --dao-green-ink */
+  --dao-btn-live: rgb(175, 54, 34);
+}
+/* §14: the label on the red fill. Paper (#f2ede3) measures 4.09:1 against
+   #d03e26, which is under AA for 11px text, and the brief fixes both the red
+   and the type - so the label takes pure white (4.77:1). It is the one place
+   the off-white brand paper cannot carry the contrast. */
+/* Compound selector deliberately: dao-routes.css is imported after this file
+   and its .dao-chipcta sets the label to paper, so a single-class rule here
+   would lose on order. Two classes outrank it regardless of order. */
+.dao-chipcta.dao-btnfill--red,
+.dao-chipcta.dao-btnfill--red:hover,
+.dao-chipcta.dao-btnfill--red:focus-visible {
+  color: #fff;
+}
+
+/* §22: the rotating accent glyph, shared by every button that carries one.
+   The Contact star already had this behaviour; the brief asks for the same
+   rotation on the Start a Project star rather than a second implementation, so
+   the selector simply names all the hosts. Gated on hover-capability so a tap
+   cannot leave the star parked at 45deg, and silenced under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .dao-contact__star,
+  .dao-chipcta__glyph {
+    transition: transform 300ms var(--dao-ease-out);
+  }
+  @media (hover: hover) {
+    .dao-contact__send:hover .dao-contact__star,
+    .dao-chipcta:hover .dao-chipcta__glyph,
+    .dbr__send:hover .dao-chipcta__glyph {
+      transform: rotate(45deg);
+    }
+  }
+  .dao-contact__send:focus-visible .dao-contact__star,
+  .dao-chipcta:focus-visible .dao-chipcta__glyph,
+  .dbr__send:focus-visible .dao-chipcta__glyph {
+    transform: rotate(45deg);
+  }
+}
+
 /* Masked brand glyph: colour comes from background-color, shape from --m. */
 .dao-mask {
   display: block;
@@ -364,12 +462,18 @@ html {
 
 /* Paint-stroke strike (hover/active underline language). Parent must be
    position:relative. Draws left→right in 240ms per handoff 2g. */
+/* §08: the shared hover/active underline. Thinner than it was (8px -> 5px,
+   with the offset following it) while keeping the paint-stroke mask, so every
+   surface that uses it - burger navigation, Work labels and filters, Lab
+   filters, brief chips, legal tabs, 404 links - gets the lighter line from one
+   edit instead of eight. The local overrides further down are re-weighted in
+   the same proportion rather than left to tower over the new base. */
 .dao-strike {
   position: absolute;
   left: 0;
-  bottom: -8px;
+  bottom: -5px;
   width: 100%;
-  height: 8px;
+  height: 5px;
   background: var(--dao-red);
   -webkit-mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
   mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
@@ -875,10 +979,15 @@ html[data-dao-nav-open] .dao-returntab {
   gap: 26px;
   padding: clamp(2px, 0.7vh, 8px) 0;
 }
+/* §05: the 01-08 numerals are brand red. Only the numerals - the labels and
+   the Georgian companions keep their own colours and their own hierarchy. Full
+   strength rather than the old 40% cream: #d03e26 on the ink sheet is already
+   quieter than paper at 40%, so the numerals stay subordinate to the labels
+   without needing to be faded on top of that. */
 .dao-nav__num {
   font-family: var(--dao-f-numeral);
   font-size: 15px;
-  color: rgba(242, 237, 227, 0.4);
+  color: var(--dao-red);
 }
 /* §04: the WORK numeral doubles as the categories toggle - visually the
    same numeral, functionally a button. */
@@ -892,6 +1001,8 @@ html[data-dao-nav-open] .dao-returntab {
   cursor: pointer;
   line-height: inherit;
 }
+/* the WORK numeral is also the categories toggle, so it still needs a visible
+   active state - it brightens to paper rather than staying red */
 .dao-nav__num--toggle:hover,
 .dao-nav__num--toggle[aria-expanded="true"] {
   color: rgba(242, 237, 227, 0.85);
@@ -907,8 +1018,15 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-nav__link {
   position: relative;
   font-family: var(--dao-f-nav);
-  /* eight destinations: type scales with viewport HEIGHT (v7 #2) */
-  font-size: clamp(26px, 5.4vh, 64px);
+  /* Eight destinations, so the type scales with viewport HEIGHT to keep all
+     eight on one screen (v7 #2).
+     §06: height alone was the bug. A tall narrow phone (390x844) gave 5.4vh =
+     45px, which is far more than 390px of width can hold, so GEORGIA
+     PRODUCTION and START A PROJECT wrapped to two lines. The vw term is a
+     ceiling, not a replacement: height still drives the size wherever width
+     allows it, and desktop is untouched because 5.4vh is the smaller of the
+     two on any normal landscape viewport. */
+  font-size: clamp(19px, min(5.4vh, 6.2vw), 64px);
   line-height: 1.1;
   color: var(--dao-paper);
   transition: color 200ms ease;
@@ -918,7 +1036,7 @@ html[data-dao-nav-open] .dao-returntab {
   text-align: left;
 }
 .dao-nav__link--sm {
-  font-size: clamp(20px, 3.5vh, 46px);
+  font-size: clamp(16px, min(3.5vh, 4.6vw), 46px);
 }
 .dao-nav__link--lab:hover [data-dao-bloom],
 .dao-nav__link--lab:focus-visible [data-dao-bloom] {
@@ -1002,9 +1120,11 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-nav__row.is-dim .dao-nav__link--lab {
   color: rgba(122, 212, 201, 0.55);
 }
-/* v7 #4: hover preview - a torn-edged paper photograph pinned INTO the
-   serpent midground (right third, vertically centred on the hovered row).
-   Secondary to type: max 300×190 at 1440; hidden below 900w. */
+/* v7 #4: hover preview - a framed photograph pinned INTO the serpent midground
+   (right third, vertically centred on the hovered row). Secondary to type:
+   max 300×190 at 1440; hidden below 900w.
+   §07: it used to be torn-edged - a strip of cream paper across the top. It is
+   now framed on all four sides by a drawn red ink frame; see ::after below. */
 .dao-nav__preview {
   position: absolute;
   right: 11%;
@@ -1024,17 +1144,26 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-nav__preview.is-live {
   opacity: 1;
 }
-.dao-nav__preview::before {
-  /* torn paper header pinning the photo into the scene */
+/* §07: the preview is framed rather than taped. What was here before was a
+   torn strip of cream paper across the top edge only - the rough white
+   treatment the brief asks to remove.
+   In its place, a thin hand-drawn frame on all four sides in brand red. The
+   artwork is scripts/make-ink-frame.mjs: four independent pen runs that cross
+   at the corners, with the weight and the centreline wandering along each run,
+   so it cannot read as a border or a border-radius. It arrives as an alpha
+   silhouette and is painted through the existing .dao-mask architecture, so
+   the colour stays a token. It sits ABOVE the photo (the inner is z-index 0),
+   which is what makes it a frame rather than a mount. */
+.dao-nav__preview::after {
   content: "";
   position: absolute;
-  left: -6px;
-  right: -6px;
-  top: -10px;
-  height: 14px;
-  background: var(--dao-paper);
-  -webkit-mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
-  mask: url("/assets/textures/torn-edge.webp") center / 100% 100% no-repeat;
+  /* a touch outside the photo, the way a drawn frame overlaps its subject */
+  inset: -5px;
+  z-index: 1;
+  background: var(--dao-red);
+  -webkit-mask: url("/assets/graphics/ink-frame.svg") center / 100% 100% no-repeat;
+  mask: url("/assets/graphics/ink-frame.svg") center / 100% 100% no-repeat;
+  pointer-events: none;
 }
 .dao-nav__previewinner {
   position: absolute;
@@ -1076,6 +1205,28 @@ html[data-dao-nav-open] .dao-returntab {
   }
   .dao-nav__num {
     font-size: 11px;
+  }
+}
+/* §06: below 620 the Georgian companion moves onto its own line.
+   This, not the type size, was why GEORGIA PRODUCTION and START A PROJECT
+   wrapped. The row is a flex line holding [numeral][label][companion], and on a
+   390px screen the companion was taking 154px of a 354px row - the label was
+   being handed 158px for 208px of text. Shrinking the label enough to fit
+   alongside it would have meant ~13.6px against 24px for its neighbours, which
+   destroys the hierarchy the brief asks to keep.
+   A two-column grid instead: the numeral keeps its column, and the label and
+   its companion stack in the second one, so the label gets the whole remaining
+   width and the companion stays aligned under it rather than beside it. */
+@media (max-width: 620px) {
+  .dao-nav__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 1px;
+    align-items: baseline;
+  }
+  .dao-nav__ka {
+    grid-column: 2;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1718,15 +1869,18 @@ html[data-dao-nav-open] .dao-returntab {
 }
 /* §06/§08: the frame behind the active project. Black here rather than the
    blue used elsewhere (§08), clean straight geometry on all four sides - the
-   torn lower termination is gone (§06) - and a little thinner than before
-   (28/26/24 -> 18/16/16) so it still reads as an intentional graphic frame
-   without the earlier weight. */
+   torn lower termination is gone (§06) - and progressively lighter over
+   successive passes (28/26/24 -> 18/16 -> 11/9) so it still reads as an
+   intentional graphic frame rather than a mount. The -1.6deg rotation stays:
+   that tilt is the frame's handmade character and is the reason it does not
+   read as a border. Deliberately not hairline - at 11/9 it is still plainly a
+   black frame, just no longer the heaviest element in the composition. */
 .dao-work__sheet {
   position: absolute;
-  left: -18px;
-  right: -18px;
-  top: -16px;
-  bottom: -16px;
+  left: -11px;
+  right: -11px;
+  top: -9px;
+  bottom: -9px;
   transform: rotate(-1.6deg);
   background: var(--dao-frame-work);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
@@ -1770,9 +1924,11 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-work__progfill {
   position: absolute;
   inset: 0;
-  /* the fill is the brand black on the red field - red on red never read as a
-     progress state. Geometry, timing and the keyframes below are untouched. */
-  background: var(--dao-black);
+  /* Production Blue on the red field. Black read as a progress state but sat
+     outside the palette conversation; the blue is the brand's production
+     colour and separates from #d03e26 on hue as well as value. Geometry,
+     timing, direction and the keyframes below are all untouched. */
+  background: var(--dao-blue);
   transform-origin: left center;
   animation: dao-prog-fill 5s linear forwards;
 }
@@ -1849,11 +2005,12 @@ html[data-dao-nav-open] .dao-returntab {
   color: var(--dao-paper);
   display: inline-block;
 }
+/* §08: re-weighted with the shared base (10 -> 6) */
 .dao-work__name .dao-strike {
   left: 8%;
   width: 84%;
-  bottom: -10px;
-  height: 10px;
+  bottom: -8px;
+  height: 6px;
 }
 .dao-work__meta {
   display: flex;
@@ -1936,10 +2093,10 @@ html[data-dao-nav-open] .dao-returntab {
     margin-left: calc((100vw - 96px) / -2);
   }
   .dao-work__sheet {
-    left: -12px;
-    right: -12px;
-    top: -10px;
-    bottom: -10px;
+    left: -8px;
+    right: -8px;
+    top: -7px;
+    bottom: -7px;
   }
   .dao-work__caption {
     align-items: flex-start;
@@ -2283,6 +2440,7 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-lab__cta:hover {
   color: var(--dao-ink);
 }
+/* §08: re-weighted with the shared base (10 -> 6) */
 .dao-lab__cta .dao-strike {
   background: var(--dao-yellow);
   bottom: 3px;
@@ -2291,7 +2449,7 @@ html[data-dao-nav-open] .dao-returntab {
 }
 .dao-lab__cta:hover .dao-strike,
 .dao-lab__cta:focus-visible .dao-strike {
-  height: 10px;
+  height: 6px;
 }
 .dao-lab__wreath {
   width: 34px;
@@ -2482,14 +2640,12 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-field textarea:focus {
   border-bottom-color: var(--dao-paper);
 }
-/* §05: the brand blue, softer at rest and full on interaction.
-   The softer state is the brand hex at 62% rather than a second, lightened
-   blue, so there is exactly one blue in the system and the resting state is
-   literally the same colour with less of it. It sits on the ink ground, so the
-   label had to leave --dao-ink: near-black on a dark translucent blue is
-   unreadable. Paper keeps it well clear of AA in both states (about 7:1 at
-   rest, 4.3:1 on full blue). Dimensions, type, padding, the lift and the star
-   are all untouched. */
+/* §05: the brand blue, softer at rest and full on interaction. The colour,
+   the timing and the state triggers now come from .dao-btnfill above - this
+   rule is only what is particular to THIS button. The label is paper rather
+   than ink because the button sits on the ink ground: near-black on a dark
+   translucent blue is unreadable. Paper stays well clear of AA in both states
+   (about 7:1 at rest, 4.3:1 on full blue). */
 .dao-contact__send {
   align-self: flex-start;
   position: relative;
@@ -2497,34 +2653,8 @@ html[data-dao-nav-open] .dao-returntab {
   font-size: 12px;
   letter-spacing: 0.3em;
   color: var(--dao-paper);
-  background: rgba(35, 116, 179, 0.62);
   padding: 14px 26px;
   border: 0;
-  transition:
-    transform 200ms var(--dao-ease-out),
-    box-shadow 200ms ease,
-    background-color 250ms ease;
-}
-/* Gated on a device that can actually hover. Without this, a tap on a phone
-   leaves the :hover state stuck on the button until something else is
-   touched - the button would simply look permanently hovered. */
-@media (hover: hover) {
-  .dao-contact__send:hover {
-    background: var(--dao-blue);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  }
-}
-/* Keyboard focus is not a hover, and must work on every device. */
-.dao-contact__send:focus-visible {
-  background: var(--dao-blue);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-/* A touch reaches full blue for as long as the finger is down, then releases -
-   the interaction still reads, without the sticky state. */
-.dao-contact__send:active {
-  background: var(--dao-blue);
 }
 .dao-contact__star {
   position: absolute;
@@ -2534,11 +2664,6 @@ html[data-dao-nav-open] .dao-returntab {
   height: 30px;
   background: var(--dao-red);
   --m: url("/assets/graphics/star-solid.webp");
-  transition: transform 300ms var(--dao-ease-out);
-}
-.dao-contact__send:hover .dao-contact__star,
-.dao-contact__send:focus-visible .dao-contact__star {
-  transform: rotate(45deg);
 }
 /* end credits */
 .dao-credits {

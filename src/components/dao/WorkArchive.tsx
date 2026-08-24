@@ -99,7 +99,9 @@ export function WorkArchive({
           const n = frameIndex;
           return (
             <InView key={p.slug} className="dwk__row--feature">
-              <div className="dwk__bluepaper" aria-hidden="true">
+              {/* §09: the feature frame - brand red now, hence the rename off
+                  "bluepaper" */}
+              <div className="dwk__framepaper" aria-hidden="true">
                 <div className="dao-grain--strong" />
               </div>
               <Frame

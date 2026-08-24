@@ -196,18 +196,28 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
                 </div>
               ))}
             </div>
+            {/* §18: blue stock. The three text colours were all dark - ink body,
+                red kicker, brown reference - and none of them survives on
+                #2374b3 (the red measures 1.04:1 against it). They move to the
+                palette's light end: yellow for the label, paper for the copy,
+                paper at 0.72 for the reference. Copy, sizes and hierarchy are
+                unchanged. */}
             <div className="dao-sheet dgp__note dao-fade" style={{ ["--d" as string]: "200ms" }}>
-              <span className="dao-kicker" style={{ color: "var(--dao-red)" }}>
+              <span className="dao-kicker" style={{ color: "var(--dao-yellow)" }}>
                 {up(R.fieldNote)}
               </span>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--dao-ink)" }}>
-                {m.georgia.ctaDesc}
-              </p>
+              {/* paper measures 4.26:1 on #2374b3 - just under AA for 14px copy,
+                  so the body takes white (5.05:1). The label above stays brand
+                  yellow, which already clears at 4.59:1. */}
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: "#fff" }}>{m.georgia.ctaDesc}</p>
               <span
                 style={{
                   fontFamily: "var(--dao-f-numeral)",
                   fontSize: 12,
-                  color: "var(--dao-brown)",
+                  // full white: on #2374b3 nothing under 0.95 alpha clears AA,
+                  // and a 5% step is not a hierarchy. The numeral face and the
+                  // smaller size already separate this from the body copy.
+                  color: "#fff",
                 }}
               >
                 GP-NOTE-01
