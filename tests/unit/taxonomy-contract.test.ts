@@ -15,6 +15,7 @@ import {
   ALL_FILTER,
   IN_DEVELOPMENT_FILTER,
   applyWorkFilter,
+  capabilityHasWork,
   parseWorkFilter,
   workFilterHref,
   workFilterLabel,
@@ -189,6 +190,40 @@ describe("related work is capability-specific", () => {
       const got = capabilitiesOfProject(p);
       const sorted = [...got].sort((a, b) => order.indexOf(a) - order.indexOf(b));
       expect(got).toEqual(sorted);
+    }
+  });
+});
+
+describe("the worked-example mark is a claim about real projects", () => {
+  // It renders directly above a capability's Related Work link. Hardcoded, it
+  // showed a tick over an empty archive for Scenography and Decoration and
+  // suppressed itself for Costume Design, which has two credited projects.
+  it("marks a capability exactly when it has credited work", () => {
+    const all = projectsSorted();
+    for (const s of DAO_SERVICES) {
+      const hits = applyWorkFilter(all, parseWorkFilter({ capability: s.id }));
+      expect(capabilityHasWork(all, s.id), s.id).toBe(hits.length > 0);
+    }
+  });
+
+  it("never claims work for a capability with an empty archive", () => {
+    const all = projectsSorted();
+    for (const id of ["art-direction", "scenography", "decoration", "post-production"] as const) {
+      expect(applyWorkFilter(all, parseWorkFilter({ capability: id }))).toHaveLength(0);
+      expect(capabilityHasWork(all, id), `${id} must not claim a worked example`).toBe(false);
+    }
+  });
+
+  it("does claim work for the capabilities that have it", () => {
+    const all = projectsSorted();
+    for (const id of [
+      "creative-direction",
+      "production-design",
+      "costume-design",
+      "film-video-production",
+      "photography",
+    ] as const) {
+      expect(capabilityHasWork(all, id), `${id} has credited projects`).toBe(true);
     }
   });
 });

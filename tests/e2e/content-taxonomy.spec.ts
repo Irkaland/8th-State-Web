@@ -238,6 +238,54 @@ test.describe("§05 / §13 / §24 Services", () => {
     expect(artDirection).toMatch(/\/work\?capability=art-direction$/);
   });
 
+  test("the worked-example mark matches the capability's real archive", async ({ page }) => {
+    // The mark sits directly above the Related Work link, so it is a claim about
+    // the portfolio. Hardcoded it was wrong three ways at once: Scenography and
+    // Decoration ticked with an empty archive, Costume Design stayed unmarked
+    // with two credited projects.
+    await gotoRoute(page, "/services");
+    const marked = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-dao-capability]")].map((el) => ({
+        id: el.getAttribute("data-dao-capability"),
+        marked: !!el.parentElement?.querySelector(".dsv__worked"),
+      })),
+    );
+    const byId = new Map(marked.map((m) => [m.id, m.marked]));
+    expect(byId.get("scenography"), "0 credited projects").toBe(false);
+    expect(byId.get("decoration"), "0 credited projects").toBe(false);
+    expect(byId.get("costume-design"), "2 credited projects").toBe(true);
+    expect(byId.get("production-design"), "5 credited projects").toBe(true);
+  });
+
+  test("every capability route lands on its own archive, empty or not", async ({ page }) => {
+    // walks all nine individually: a zero-result capability must stay at zero and
+    // must not widen, substitute a neighbour, or redirect to ALL
+    const expected: Record<string, number> = {
+      "creative-direction": 5,
+      "art-direction": 0,
+      "production-design": 5,
+      scenography: 0,
+      "costume-design": 2,
+      decoration: 0,
+      "film-video-production": 2,
+      photography: 11,
+      "post-production": 0,
+    };
+    for (const [id, count] of Object.entries(expected)) {
+      await gotoRoute(page, `/work?capability=${id}`);
+      expect(new URL(page.url()).searchParams.get("capability"), id).toBe(id);
+      const shown = await page.locator(".dwk__frame").count();
+      const empty = await page.locator(".dwk__empty, .dwk__emptytitle").count();
+      if (count === 0) {
+        expect(shown, `${id} must show no projects`).toBe(0);
+        expect(empty, `${id} must show the empty state`).toBeGreaterThan(0);
+      } else {
+        expect(shown, `${id} project count`).toBe(count);
+        expect(empty, `${id} must not show the empty state`).toBe(0);
+      }
+    }
+  });
+
   test("Related Work preserves the locale", async ({ page }) => {
     await gotoRoute(page, "/ka/services");
     const hrefs = await page.evaluate(() =>

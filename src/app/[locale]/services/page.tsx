@@ -6,6 +6,8 @@ import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
 import { t } from "@/content/localized";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
+import { projectsSorted } from "@/content/projects";
+import { capabilityHasWork } from "@/content/work-filters";
 import { CapabilityWorkLink } from "@/components/dao/CapabilityWorkLink";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
@@ -37,6 +39,9 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
   const m = getMessages(locale);
   const R = m.daoRoutes.services;
   const [g1, g2, g3, g4] = DAO_SERVICE_GROUPS;
+  // the credited archive, so a capability's "worked example" mark is read from
+  // the same data its Related Work link filters on
+  const archive = projectsSorted();
 
   return (
     <DaoShell
@@ -170,7 +175,10 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
           <div className="dsv__g2grid">
             {(["03", "04", "05", "06"] as const).map((n, i) => {
               const s = svc(n);
-              const worked = n !== "05";
+              // never asserted by hand: this mark sits directly above the
+              // capability's Related Work link, so a hardcoded claim would show a
+              // tick above an empty archive
+              const worked = capabilityHasWork(archive, s.id);
               return (
                 <div
                   key={n}

@@ -84,6 +84,21 @@ export function applyWorkFilter(projects: Project[], f: WorkFilter): Project[] {
 }
 
 /**
+ * Does this capability have at least one explicitly credited project?
+ *
+ * The Services page marks a capability with "worked example", and that mark is a
+ * claim about the portfolio, so it has to be read from the same data the Related
+ * Work link filters on. While it was hardcoded the two disagreed: Scenography and
+ * Decoration claimed a worked example with zero credited projects, and Costume
+ * Design suppressed the mark while having two. Deriving it means the claim and the
+ * filtered archive can never contradict each other, and it stays correct on its
+ * own as projects are credited.
+ */
+export function capabilityHasWork(projects: Project[], id: CapabilityId): boolean {
+  return projects.some((p) => projectHasCapability(p, id));
+}
+
+/**
  * A human label for the active filter, used by the contextual chip so a visitor
  * arriving from a Related Work link can see why the archive is narrowed.
  */
