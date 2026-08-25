@@ -194,46 +194,41 @@ describe("§06 Studio Lab colour hierarchy", () => {
   });
 });
 
-describe("§07 the Studio Lab bloom sits between the two labels", () => {
+describe("the Studio Lab bloom is gone from the burger", () => {
   const css = read("src/app/dao.css");
   const jsx = read("src/components/dao/DaoChrome.tsx");
 
-  it("is its own slot, not a child of either label", () => {
-    expect(jsx).toContain('className="dao-nav__bloomslot"');
-    // it must appear AFTER the closing </Link> of the primary label
-    const link = jsx.indexOf("dao-nav__link--lab");
-    const slot = jsx.indexOf("dao-nav__bloomslot");
-    expect(slot).toBeGreaterThan(link);
-    // and before the secondary companion, so it lands in the gap
-    const ka = jsx.indexOf('className="dao-nav__ka"', slot);
-    expect(ka).toBeGreaterThan(slot);
+  // SUPERSEDED: the previous pass moved this ornament into its own slot between
+  // the two labels. This pass removes it outright - it read as too small to earn
+  // its place - so these assertions now guard the removal instead of the
+  // positioning. The colour hierarchy and the green rule are unaffected.
+  it("renders neither the symbol nor its slot", () => {
+    expect(jsx).not.toContain("dao-nav__bloomslot");
+    expect(jsx).not.toContain("dao-nav__bloom ");
+    expect(jsx).not.toContain("data-dao-bloom");
+    expect(jsx).not.toContain("bloom.webp");
   });
 
-  it("centres itself in the gap without consuming layout width", () => {
-    const rule = css.match(/\.dao-nav__bloomslot \{[^}]*\}/)![0];
-    expect(rule).toContain("width: 0");
-    // negative side margins cancel exactly one row gap
-    expect(rule).toContain("calc(var(--dao-nav-gap) / -2)");
+  it("leaves no dead CSS behind", () => {
+    // selector-level, not substring: prose in comments is allowed to mention it
+    expect(css).not.toMatch(/\.dao-nav__bloomslot\b/);
+    expect(css).not.toMatch(/\.dao-nav__bloom\b/);
+    // including the mobile stand-down rule that existed only for the slot
+    const mobile = css.slice(css.indexOf("@media (max-width: 900px)"));
+    expect(mobile).not.toMatch(/\.dao-nav__bloom/);
+  });
+
+  it("keeps one intentional gap between the two labels", () => {
+    // the slot used to cancel a gap with negative margins; with it gone the row
+    // gap alone separates the labels, and it is still a single named value
     expect(css).toContain("--dao-nav-gap: 26px");
     expect(css).toMatch(/gap: var\(--dao-nav-gap\)/);
+    expect(css).not.toContain("calc(var(--dao-nav-gap) / -2)");
   });
 
-  it("stays narrower than the gap so it cannot touch the text", () => {
-    // anchored: there are also :hover / :focus-within rules for this class
-    const rule = css.match(/^\.dao-nav__bloom \{[^}]*\}/m)![0];
-    const max = rule.match(/width: clamp\([^,]+,[^,]+,\s*(\d+)px\)/);
-    expect(max, "bloom width is clamped").not.toBeNull();
-    expect(Number(max![1])).toBeLessThan(26);
-  });
-
-  it("is revealed by focus as well as hover, never hover alone", () => {
-    expect(css).toContain(".dao-nav__row--lab:focus-within .dao-nav__bloom");
-    expect(css).toContain(".dao-nav__row--lab:hover .dao-nav__bloom");
-  });
-
-  it("stands down where the labels stack instead of guessing a position", () => {
-    const mobile = css.slice(css.indexOf("@media (max-width: 900px)"));
-    expect(mobile).toContain(".dao-nav__bloomslot");
+  it("keeps the Studio Lab green rule", () => {
+    expect(jsx).toContain('background: "var(--dao-green)"');
+    expect(css).toContain(".dao-nav__link--lab:hover .dao-strike");
   });
 });
 
@@ -454,5 +449,119 @@ describe("§01 the four layer descriptors are preserved", () => {
     // and the capabilities were not shrunk to achieve it
     expect(floor(cap)).toBe(18);
     expect(ceil(cap)).toBe(30);
+  });
+});
+
+/* ------------------------------------------------------------------------- */
+/* Typography and navigation cleanup pass                                    */
+/* ------------------------------------------------------------------------- */
+
+describe("typography cleanup - Optika at real weights only", () => {
+  const routes = read("src/app/dao-routes.css");
+
+  it("has no Optika Bold file to synthesise from", () => {
+    expect(() => read("src/fonts/Optika-Bold.woff2")).toThrow();
+    read("src/fonts/Optika-SemiBold.woff2");
+    expect(read("src/app/dao.css")).toContain("--dao-w-editorial: 600");
+  });
+
+  /** every target, its reusable class, and the token it must resolve through */
+  const TARGETS: [string, string, string][] = [
+    ["Services capability titles", ".dsv__name", "var(--dao-f-ui)"],
+    ["Studio 'Make something with us.'", ".dst__make", "var(--dao-f-ui)"],
+    ["Studio Lab green-card copy", ".dst__lablines", "var(--dao-f-ui)"],
+    ["Studio Lab study card title", ".dlb__notename", "var(--dao-f-ui)"],
+  ];
+
+  for (const [label, selector, family] of TARGETS) {
+    it(`${label} declare Optika at the editorial weight`, () => {
+      const rule = routes.match(new RegExp(`^\\${selector} \\{[\\s\\S]*?\\n\\}`, "m"))![0];
+      expect(rule).toContain(`font-family: ${family}`);
+      expect(rule).toContain("font-weight: var(--dao-w-editorial)");
+      // the display face is gone, and no synthetic bold was introduced
+      expect(rule).not.toContain("var(--dao-f-display)");
+      expect(rule).not.toMatch(/font-weight:\s*(700|800|900|bold)/);
+    });
+  }
+
+  it("sets the Services capability face once, not per instance", () => {
+    // all nine titles share .dsv__name; only the sizes are context-scoped
+    const page = read("src/app/[locale]/services/page.tsx");
+    const carousel = read("src/components/dao/ServicesFilmCarousel.tsx");
+    expect((page.match(/dsv__name/g) || []).length).toBe(4); // 01, 02, 03-06 map, 09
+    expect(carousel).toContain("dsv__name"); // 07, 08
+    // no one-off font declarations on those instances
+    expect(page).not.toMatch(/dsv__name[\s\S]{0,200}fontFamily/);
+    for (const scope of [".dsv__g1names", ".dsv__g2grid", ".dsv__g3names", ".dsv__g4"]) {
+      expect(routes, `${scope} keeps its own size`).toContain(`${scope} .dsv__name`);
+    }
+  });
+
+  it("moves the Studio Lab card copy off an inline style onto a class", () => {
+    const studio = read("src/app/[locale]/studio/page.tsx");
+    expect(studio).toContain('className="dst__lablines"');
+    expect(studio).not.toMatch(/fontFamily: "var\(--dao-f-display\)"/);
+    // the three-line structure is still carried by the same mechanism
+    expect(routes.match(/^\.dst__lablines \{[\s\S]*?\n\}/m)![0]).toContain("white-space: pre-line");
+  });
+
+  it("keeps the red full stop and the CTA out of the Make heading change", () => {
+    const studio = read("src/app/[locale]/studio/page.tsx");
+    const make = studio.slice(studio.indexOf('className="dst__make'));
+    expect(make.slice(0, 400)).toContain('color: "var(--dao-red)"');
+  });
+});
+
+describe("Start a Project placeholders are Optika 400", () => {
+  const routes = read("src/app/dao-routes.css");
+  const rule = routes.match(/^\.dbr__write::placeholder \{[\s\S]*?\n\}/m)![0];
+
+  it("declares Optika at 400, never the editorial weight", () => {
+    expect(rule).toContain("font-family: var(--dao-f-ui)");
+    expect(rule).toContain("font-weight: 400");
+    expect(rule).not.toContain("var(--dao-f-display)");
+    expect(rule).not.toContain("var(--dao-w-editorial)");
+    expect(rule).not.toMatch(/font-weight:\s*(600|700|bold)/);
+  });
+
+  it("keeps the muted placeholder colour", () => {
+    expect(rule).toContain("rgba(19, 18, 16, 0.4)");
+  });
+
+  it("covers every placeholder in the form through one shared class", () => {
+    const brief = read("src/components/dao/DaoBrief.tsx");
+    const placeholders = [...brief.matchAll(/placeholder=\{([^}]+)\}/g)].map((m) => m[1]);
+    expect(placeholders).toEqual(["m.q2Placeholder", "m.whenPlaceholder", "m.wherePlaceholder"]);
+    // and each of those controls carries .dbr__write
+    for (const p of placeholders) {
+      const at = brief.indexOf(`placeholder={${p}}`);
+      expect(brief.slice(at - 260, at)).toContain("dbr__write");
+    }
+  });
+
+  it("does not touch the typed value, labels or the unplaceheld inputs", () => {
+    const write = routes.match(/^\.dbr__write \{[\s\S]*?\n\}/m)![0];
+    expect(write).toContain("var(--dao-f-display)"); // the value keeps its own face
+    const brief = read("src/components/dao/DaoBrief.tsx");
+    // name/email use real labels and no placeholder at all
+    expect(brief).toContain('className="dbr__input"');
+    expect(brief).not.toMatch(/dbr__input[\s\S]{0,200}placeholder=/);
+  });
+
+  it("keeps every placeholder field labelled, so placeholders are not the label", () => {
+    const brief = read("src/components/dao/DaoBrief.tsx");
+    for (const id of ["brief-about", "brief-when", "brief-where"]) {
+      expect(brief).toContain(`htmlFor="${id}"`);
+      expect(brief).toContain(`id="${id}"`);
+    }
+  });
+
+  it("keeps the placeholder wording unchanged in both locales", () => {
+    for (const m of [en, ka]) {
+      for (const k of ["q2Placeholder", "whenPlaceholder", "wherePlaceholder"] as const) {
+        expect(m.daoRoutes.brief[k].length).toBeGreaterThan(0);
+      }
+    }
+    expect(en.daoRoutes.brief.wherePlaceholder).toBe("Georgia, elsewhere, or undecided");
   });
 });

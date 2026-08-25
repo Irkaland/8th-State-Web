@@ -670,39 +670,23 @@ function NavRow({
           onClick={onClick}
         >
           {label}
+          {/* Studio Lab keeps its green rule. The bloom that used to sit between
+              the two labels is gone - the row gap alone separates them now. */}
           {lab && (
-            <>
-              <span
-                className="dao-strike"
-                style={{
-                  background: "var(--dao-green)",
-                  bottom: "0.02em",
-                  // §08: thinner with the shared .dao-strike base
-                  height: "0.1em",
-                  left: "-2%",
-                  width: "104%",
-                }}
-                aria-hidden="true"
-              />
-            </>
+            <span
+              className="dao-strike"
+              style={{
+                background: "var(--dao-green)",
+                bottom: "0.02em",
+                // §08: thinner with the shared .dao-strike base
+                height: "0.1em",
+                left: "-2%",
+                width: "104%",
+              }}
+              aria-hidden="true"
+            />
           )}
         </Link>
-        {/* §07: the bloom used to hang off the right edge of the primary label,
-            which tied it to that label and to its exact width. It is now its own
-            slot BETWEEN the two labels: a zero-width flex item whose negative side
-            margins cancel one row gap, so it centres itself in the space between
-            the labels at any width and in either locale with no hardcoded offset.
-            Below 900px the row becomes a two-column grid and the labels stack, so
-            the slot stands down there (see CSS). */}
-        {lab && (
-          <span className="dao-nav__bloomslot" aria-hidden="true">
-            <span
-              className="dao-nav__bloom dao-mask"
-              style={{ ["--m" as string]: "url(/assets/graphics/bloom.webp)" }}
-              data-dao-bloom
-            />
-          </span>
-        )}
         <span className="dao-nav__ka" lang={/[ა-ჰ]/.test(ka) ? "ka" : "en"} aria-hidden="true">
           {ka}
         </span>

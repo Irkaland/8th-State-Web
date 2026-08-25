@@ -518,7 +518,12 @@ test.describe("EN/KA switching still works", () => {
     await expect(page).toHaveURL(/\/ka\/studio$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "ka");
     const kaFam = await famOf(page, ".dst__make");
-    expect(enFam).toContain("adevas");
-    expect(kaFam).not.toContain("adevas");
+    // SUPERSEDED: this heading was the display face (Adevas) until the typography
+    // cleanup pass moved "Make something with us." to strong Optika. The point of
+    // the test is unchanged - the face must still RE-RESOLVE across the locale
+    // switch, because --dao-f-ui is re-pointed to the Georgian stack under
+    // html[lang="ka"] - so it now asserts that against the new EN face.
+    expect(enFam).toContain("optika");
+    expect(kaFam).not.toContain("optika");
   });
 });

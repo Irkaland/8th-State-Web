@@ -231,17 +231,11 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
               <span className="dao-kicker" style={{ color: "rgba(19,18,16,.75)" }}>
                 {up(m.dao.nav.lab)}
               </span>
-              <span
-                style={{
-                  fontFamily: "var(--dao-f-display)",
-                  fontSize: 30,
-                  lineHeight: 1.1,
-                  color: "var(--dao-ink)",
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {R.labLines}
-              </span>
+              {/* §04: was a block of inline font declarations; it is now a named
+                  class so the type lives with the rest of the design system. The
+                  three-line structure is preserved by pre-line on the same
+                  newline-separated string. */}
+              <span className="dst__lablines">{R.labLines}</span>
               {/* §04: .dst__labpanel-inner is a column flex container, so this link
                   was stretching to the full panel width and .dao-cta::after (left:0
                   right:0) drew its rule all the way across the card. alignSelf

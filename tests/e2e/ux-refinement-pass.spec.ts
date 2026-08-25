@@ -343,33 +343,29 @@ test.describe("§06/§07 Studio Lab in the burger", () => {
     for (const c of others) expect(c).not.toBe("rgb(157, 171, 92)");
   });
 
-  test("the bloom sits between the two labels and touches neither", async ({ page }) => {
+  // SUPERSEDED: this pass positioned the bloom between the two labels; the
+  // typography/navigation cleanup pass removes the ornament outright, so what is
+  // asserted here is the removal and the clean gap it leaves behind. Full
+  // coverage of the removal lives in typography-cleanup.spec.ts.
+  test("the bloom is gone, leaving one clean gap between the labels", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/");
     await openBurger(page);
     const geo = await page.evaluate(() => {
       const row = document.querySelector(".dao-nav__row--lab")!;
-      const r = (s: string) => row.querySelector(s)!.getBoundingClientRect();
-      const link = r(".dao-nav__link--lab");
-      const ka = r(".dao-nav__ka");
-      const bloom = r(".dao-nav__bloom");
+      const link = row.querySelector(".dao-nav__link--lab")!.getBoundingClientRect();
+      const ka = row.querySelector(".dao-nav__ka")!.getBoundingClientRect();
       return {
-        gapStart: link.right,
-        gapEnd: ka.left,
-        bloomLeft: bloom.left,
-        bloomRight: bloom.right,
-        bloomMid: bloom.left + bloom.width / 2,
+        ornaments: row.querySelectorAll(".dao-nav__bloom, .dao-nav__bloomslot").length,
+        gap: +(ka.left - link.right).toFixed(1),
       };
     });
-    // strictly inside the gap - overlapping neither label
-    expect(geo.bloomLeft).toBeGreaterThan(geo.gapStart);
-    expect(geo.bloomRight).toBeLessThan(geo.gapEnd);
-    // and centred in it
-    const mid = (geo.gapStart + geo.gapEnd) / 2;
-    expect(Math.abs(geo.bloomMid - mid)).toBeLessThan(2);
+    expect(geo.ornaments).toBe(0);
+    // the row gap alone separates them, at the same 26px every other row uses
+    expect(geo.gap).toBe(26);
   });
 
-  test("the row spacing is unchanged by the new slot", async ({ page }) => {
+  test("the row spacing is uniform", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/");
     await openBurger(page);
@@ -388,12 +384,30 @@ test.describe("§06/§07 Studio Lab in the burger", () => {
     expect(new Set(gaps).size).toBe(1);
   });
 
-  test("keyboard focus reveals the bloom, not just hover", async ({ page }) => {
+  // SUPERSEDED: with the ornament removed there is nothing left for focus to
+  // reveal. What still matters is that keyboard focus reaches the Studio Lab
+  // link and that its own green rule - which the cleanup pass keeps - is drawn.
+  test("keyboard focus reaches the Studio Lab link and draws its rule", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/");
     await openBurger(page);
-    await page.locator(".dao-nav__link--lab").focus();
-    await expect(page.locator(".dao-nav__bloom")).toHaveCSS("opacity", "1");
+    const link = page.locator(".dao-nav__link--lab");
+    await expect(page.locator(".dao-nav__bloom")).toHaveCount(0);
+    // the link takes focus and is operable from the keyboard
+    await link.focus();
+    await expect(link).toBeFocused();
+    // and its own green rule is still there to be drawn. The reveal is asserted
+    // through hover, which is deterministic here: the rule is bound to
+    // :focus-visible, and neither Playwright's .focus() nor the burger's own
+    // Tab trap (which moves focus programmatically) reliably satisfies that in
+    // Chromium. The :focus-visible branch itself is covered in the CSS contract
+    // test, so nothing is left unverified.
+    const strike = link.locator(".dao-strike");
+    await expect(strike).toHaveCount(1);
+    await link.hover();
+    await expect
+      .poll(() => strike.evaluate((e) => getComputedStyle(e).transform), { timeout: 3000 })
+      .not.toBe("matrix(0, 0, 0, 1, 0, 0)");
   });
 });
 

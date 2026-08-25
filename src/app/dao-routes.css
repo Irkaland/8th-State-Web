@@ -1022,8 +1022,17 @@ html:has(.dlb) {
   letter-spacing: 0.26em;
   text-transform: uppercase;
 }
+/* §02: the nine capability titles. Every one of them resolves through this
+   single class - 01/02 in group I, 03-06 in the group II map, 07/08 in the film
+   carousel and 09 in group IV - so the face is set once here rather than patched
+   per instance. Optika ships 400/500/600 only, so 600 is the real heaviest
+   weight and nothing is synthesised. --dao-f-ui rather than --dao-f-latin
+   because these titles are translated and must follow the locale. Every
+   context-scoped font-size (.dsv__g1names / .dsv__g2grid / .dsv__g3names /
+   .dsv__g4) is left exactly as it was. */
 .dsv__name {
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   line-height: 1.05;
   color: inherit;
 }
@@ -1636,6 +1645,31 @@ html:has(.dlb) {
   flex-direction: column;
   gap: 12px;
 }
+/* §04: the green Studio Lab card copy. Strong Optika at the real heaviest
+   weight (600 - no Optika Bold file ships). Size, leading, ink colour and the
+   three-line break structure are exactly as before; the card colour, botanical
+   artwork, texture, dimensions, interaction and destination are untouched, and
+   so are the STUDIO LAB kicker and the ENTER THE LAB CTA. */
+.dst__lablines {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--dao-ink);
+  white-space: pre-line;
+}
+/* Optika sets wider than the display face at the same size. Between 721px and
+   ~1100px .dst__labpanel is a narrow absolutely-positioned column - about 178px
+   of inner width at 768 - and the longest line needs 181px in EN and 208px in
+   KA at 30px, so it clipped. Outside that band the panel is roomy (632px inner
+   at 720 and below, 237px+ from 1100 up) and the approved 30px stands. One
+   stepped size for the narrow band only; the three-line structure is unchanged.
+   Verified against the widest line, which is Georgian, not English. */
+@media (min-width: 721px) and (max-width: 1099px) {
+  .dst__lablines {
+    font-size: 24px;
+  }
+}
 .dst__labstem {
   position: absolute;
   right: 40px;
@@ -1684,8 +1718,11 @@ html:has(.dlb) {
   background: rgba(242, 237, 227, 0.06);
   --m: url("/assets/graphics/sun.webp");
 }
+/* §03: strong Optika at the real heaviest weight (600). Size, leading, colour,
+   the red full stop and the CTA beneath are untouched. */
 .dst__make {
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(28px, 3vw, 44px);
   line-height: 1;
   color: var(--dao-paper);
@@ -1947,8 +1984,12 @@ html:has(.dlb) {
   flex-direction: column;
   gap: 4px;
 }
+/* §05: the study card title. All three cards render through this one class in
+   LabFieldNotes, so this is the whole set - no per-card override. The LAB-0n
+   reference line (.dlb__noteid) and the card image are untouched. */
 .dlb__notename {
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   font-size: 15px;
   color: var(--dao-ink);
 }
@@ -2672,9 +2713,15 @@ html:has(.dlb) {
   padding: 0 0 10px;
   resize: vertical;
 }
+/* §06: placeholder text only - the textarea and both small inputs share this
+   class, so one rule covers every placeholder in the form. Optika at 400, and
+   deliberately NOT the editorial 600: this is helper text, not a heading. The
+   typed value keeps .dbr__write's own face, and labels, field numbers, section
+   titles and buttons are all untouched. The muted colour is unchanged. */
 .dbr__write::placeholder {
   color: rgba(19, 18, 16, 0.4);
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: 400;
 }
 .dbr__write:focus {
   outline: none;

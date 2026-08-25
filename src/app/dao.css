@@ -974,6 +974,8 @@ html[data-dao-nav-open] .dao-returntab {
   max-width: 1200px;
 }
 .dao-nav__row {
+  /* the single intentional gap between a label and its companion - the only
+     thing separating them now that the bloom slot is gone */
   --dao-nav-gap: 26px;
   display: flex;
   align-items: baseline;
@@ -1048,36 +1050,6 @@ html[data-dao-nav-open] .dao-returntab {
   .dao-nav__link--sm {
     font-size: clamp(16px, min(3.5vh, 4.6vw), 46px);
   }
-}
-/* §07: the bloom is no longer inside the label, so it answers to the ROW.
-   :focus-within is deliberate - it means the keyboard reaches the ornament on
-   the same terms as the pointer, rather than hover being the only way to see it. */
-.dao-nav__row--lab:hover .dao-nav__bloom,
-.dao-nav__row--lab:focus-within .dao-nav__bloom {
-  opacity: 1;
-}
-/* §07: a zero-width slot sitting BETWEEN the two labels. The two negative side
-   margins cancel exactly one row gap, so link -> companion stays 26px and this
-   slot centres itself at the midpoint - it adapts to whatever the two labels
-   measure, in either locale, with nothing positioned against the text. */
-.dao-nav__bloomslot {
-  width: 0;
-  margin-inline: calc(var(--dao-nav-gap) / -2);
-  align-self: center;
-  position: relative;
-  pointer-events: none;
-}
-.dao-nav__bloom {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  /* kept narrower than the gap so it never touches either label */
-  width: clamp(11px, 0.46em, 19px);
-  height: clamp(11px, 0.46em, 19px);
-  background: var(--dao-yellow);
-  opacity: 0;
-  transition: opacity 200ms var(--dao-ease-micro);
 }
 .dao-nav__link:hover,
 .dao-nav__link:focus-visible {
@@ -1294,12 +1266,6 @@ html[data-dao-nav-open] .dao-returntab {
   }
   .dao-nav__ka {
     grid-column: 2;
-  }
-  /* §07: the labels stack here, so there is no gap between them to sit in - and
-     no hover on touch either. The slot stands down rather than being parked at
-     an arbitrary spot. */
-  .dao-nav__bloomslot {
-    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
