@@ -96,47 +96,26 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
       <div className="dao-grain--strong" aria-hidden="true" />
       <div className="dao-weave" aria-hidden="true" />
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 24,
-          flexWrap: "wrap",
-          marginTop: 40,
-        }}
-      >
-        <h2 className="dao-svc__title dao-side" style={{ ["--x" as string]: "-60px" }}>
-          {up(m.title)}
-        </h2>
-        <p className="dao-svc__intro dao-fade" style={{ ["--d" as string]: "150ms" }}>
-          {m.intro}
-        </p>
-      </div>
+      {/* §02: the explanatory paragraph ("Nine capabilities, four kinds of
+          work...") is gone, and so is the row that reserved space beside the
+          title for it - the heading is now simply the heading, with no empty
+          second column left behind. */}
+      <h2 className="dao-svc__title dao-side" style={{ ["--x" as string]: "-60px", marginTop: 40 }}>
+        {up(m.title)}
+      </h2>
+
+      {/* §03: the separate left taxonomy column is gone. Each group now names
+          itself directly above the capabilities that belong to it - the
+          behaviour mobile already had - so the reading order is group, layer,
+          then that group's capabilities, at every width. */}
+      <span
+        className="dao-svc__ornament dao-mask"
+        style={{ ["--m" as string]: "url(/assets/graphics/symbols-50.webp)" }}
+        aria-hidden="true"
+      />
 
       <div className="dao-svc__grid">
-        {/* group rail - the four layers */}
-        <div className="dao-svc__rail">
-          {DAO_SERVICE_GROUPS.map((g, i) => (
-            <div
-              key={g.id}
-              className="dao-svc__group dao-fade"
-              style={{ ["--d" as string]: `${i * 90}ms` }}
-            >
-              <span className="dao-svc__groupname" style={{ color: g.onBlue }}>
-                {up(t(g.name, locale))}
-              </span>
-              <span className="dao-svc__groupdesc">{t(g.layer, locale)}</span>
-            </div>
-          ))}
-          <span
-            className="dao-svc__ornament dao-mask"
-            style={{ ["--m" as string]: "url(/assets/graphics/symbols-50.webp)" }}
-            aria-hidden="true"
-          />
-        </div>
-
-        {/* typographic index */}
+        {/* typographic index - groups interleaved with their capabilities */}
         <div className="dao-svc__list">
           {DAO_SERVICES.map((s, i) => {
             const g = groupOf(s.group);
@@ -145,12 +124,11 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
             return (
               <div key={s.n} style={{ display: "contents" }}>
                 {showGroupHead && (
-                  <div
-                    className="dao-svc__grouphead dao-svc__grouphead--inline"
-                    style={{ color: g.onBlue }}
-                    aria-hidden="true"
-                  >
-                    {up(t(g.name, locale))} - {up(t(g.layer, locale))}
+                  <div className="dao-svc__grouphead">
+                    <span className="dao-svc__groupname" style={{ color: g.onBlue }}>
+                      {up(t(g.name, locale))}
+                    </span>
+                    <span className="dao-svc__grouplayer">{t(g.layer, locale)}</span>
                   </div>
                 )}
                 <div

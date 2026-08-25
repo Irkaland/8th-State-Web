@@ -96,12 +96,15 @@ test.describe("§05 What We Make - the blue printed field", () => {
 
   test("every text layer is readable on the new ground", async ({ page }) => {
     await gotoRoute(page, "/");
+    // Structure updated by the content-architecture pass: .dao-svc__intro (the
+    // explanatory paragraph) and .dao-svc__groupdesc (the left rail's layer
+    // line) are gone; the layer line now renders as .dao-svc__grouplayer above
+    // each group's own capabilities. The contrast claim is unchanged.
     for (const sel of [
       ".dao-svc__title",
-      ".dao-svc__intro",
       ".dao-svc__name",
       ".dao-svc__groupname",
-      ".dao-svc__groupdesc",
+      ".dao-svc__grouplayer",
       ".dao-svc__desc",
       ".dao-svc__all",
     ]) {
@@ -237,10 +240,14 @@ test.describe("§06-§08 capability rows", () => {
 test.describe("§09 capability rows on a narrow viewport", () => {
   test.use({ viewport: { width: 390, height: 780 } });
 
-  test("the rail gives way to inline group heads and nothing overflows", async ({ page }) => {
+  test("group heads lead their capabilities and nothing overflows", async ({ page }) => {
+    // The content-architecture pass removed the desktop-only taxonomy rail and
+    // the mobile-only `--inline` variant with it: one group head now serves
+    // every width, which is what this used to check for mobile alone.
     await gotoRoute(page, "/");
-    await expect(page.locator(".dao-svc__rail")).toBeHidden();
-    await expect(page.locator(".dao-svc__grouphead--inline").first()).toBeVisible();
+    await expect(page.locator(".dao-svc__rail")).toHaveCount(0);
+    await expect(page.locator(".dao-svc__grouphead")).toHaveCount(4);
+    await expect(page.locator(".dao-svc__grouphead").first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const svc = document.querySelector(".dao-svc")!;

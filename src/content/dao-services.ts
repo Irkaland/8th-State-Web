@@ -1,9 +1,24 @@
-import type { LocalizedText } from "./types";
+import type { LocalizedText, Project } from "./types";
 
 // Approved services structure (handoff Act 04): nine capabilities in four
 // groups. Group colours are fixed brand hexes (red/orange/blue/green).
 // Descriptions are plain-language CMS placeholders derived from the existing
 // approved services content.
+//
+// THIS FILE IS THE CANONICAL CAPABILITY TAXONOMY.
+//
+// Four GROUPS contain nine CAPABILITIES. Homepage "What We Make", /services,
+// the Related Work links and the Work capability filter all read from here, so
+// the four surfaces cannot drift apart. Three older arrays still exist and are
+// deliberately NOT part of this taxonomy - they answer different questions:
+//
+//   content/services.ts      a legacy five-item service list with sub-bullets
+//   content/capabilities.ts  engagement models ("full campaign production")
+//   content/taxonomy.ts      the legacy CATEGORIES used by project.categories
+//
+// Work's four broad discipline filters live in content/dao-work.ts. A GROUP is
+// not a CATEGORY and neither is a CAPABILITY - see the taxonomy contract in
+// the pass notes.
 
 export type DaoServiceGroup = {
   id: string;
@@ -21,7 +36,21 @@ export type DaoServiceGroup = {
   layer: LocalizedText;
 };
 
+/** Canonical capability ids. Used in URLs (?capability=...), so kebab-case. */
+export type CapabilityId =
+  | "creative-direction"
+  | "art-direction"
+  | "production-design"
+  | "scenography"
+  | "costume-design"
+  | "decoration"
+  | "film-video-production"
+  | "photography"
+  | "post-production";
+
 export type DaoService = {
+  /** stable slug - the URL and the cross-surface join key */
+  id: CapabilityId;
   n: string;
   group: string;
   /**
@@ -81,6 +110,7 @@ export const DAO_SERVICE_GROUPS: DaoServiceGroup[] = [
 
 export const DAO_SERVICES: DaoService[] = [
   {
+    id: "creative-direction",
     n: "01",
     group: "creative",
     accent: "#fff9ab", // yellow
@@ -91,6 +121,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "art-direction",
     n: "02",
     group: "creative",
     accent: "#e16912", // orange
@@ -101,6 +132,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "production-design",
     n: "03",
     group: "spatial",
     accent: "#7ad4c9", // mint
@@ -111,6 +143,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "scenography",
     n: "04",
     group: "spatial",
     accent: "#6c3e13", // brown
@@ -121,6 +154,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "costume-design",
     n: "05",
     group: "spatial",
     accent: "#f2ede3", // paper
@@ -131,6 +165,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "decoration",
     n: "06",
     group: "spatial",
     accent: "#9dab5c", // green
@@ -141,6 +176,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "film-video-production",
     n: "07",
     group: "image",
     accent: "#131210", // ink
@@ -151,6 +187,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "photography",
     n: "08",
     group: "image",
     accent: "#f0ab11", // gold
@@ -161,6 +198,7 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
   {
+    id: "post-production",
     n: "09",
     group: "finishing",
     accent: "#126149", // ident green
@@ -171,3 +209,90 @@ export const DAO_SERVICES: DaoService[] = [
     },
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Capability lookups
+// ---------------------------------------------------------------------------
+
+export function isCapabilityId(v: string): v is CapabilityId {
+  return DAO_SERVICES.some((s) => s.id === v);
+}
+
+export function capabilityById(id: CapabilityId): DaoService {
+  return DAO_SERVICES.find((s) => s.id === id)!;
+}
+
+export function groupById(id: string): DaoServiceGroup {
+  return DAO_SERVICE_GROUPS.find((g) => g.id === id)!;
+}
+
+/** The capabilities of one group, in canonical order. */
+export function capabilitiesOfGroup(groupId: string): DaoService[] {
+  return DAO_SERVICES.filter((s) => s.group === groupId);
+}
+
+/** Where a capability's "Related Work" link points. */
+export function capabilityWorkHref(id: CapabilityId): string {
+  return `/work?capability=${id}`;
+}
+
+// ---------------------------------------------------------------------------
+// Project -> capability mapping
+// ---------------------------------------------------------------------------
+
+/**
+ * Projects already carry approved, credited role metadata in `project.services`
+ * ("Creative Direction", "Photography", "Set Design", ...). That is the only
+ * evidence this repository has for which capability a project demonstrates, so
+ * the mapping is DERIVED from it rather than duplicated into a second field
+ * that could drift.
+ *
+ * Across the twelve projects the credited roles are exactly seven strings. Five
+ * map onto a capability by name. The remaining two are mapped because the
+ * APPROVED CAPABILITY COPY itself names them, not because the imagery looks
+ * related:
+ *
+ *   "Set Design"        -> production-design
+ *      03's approved description reads "Designing the made world of a
+ *      production - sets, environments and the physical language of the frame."
+ *   "Styling Direction" -> costume-design
+ *      05's approved description reads "Costume and styling direction built
+ *      around the concept - sourced, made and fitted for the story being told."
+ *
+ * Anything not listed here is left unmapped on purpose. Four capabilities -
+ * Art Direction, Scenography, Decoration and Post-Production - are credited on
+ * no current project, so their filters legitimately return nothing. An accurate
+ * empty result is the requirement; quietly widening to ALL would misrepresent
+ * the work.
+ */
+export const CAPABILITY_ROLE_ALIASES: Record<string, CapabilityId> = {
+  "creative direction": "creative-direction",
+  "art direction": "art-direction",
+  "production design": "production-design",
+  "set design": "production-design",
+  scenography: "scenography",
+  "costume design": "costume-design",
+  "styling direction": "costume-design",
+  decoration: "decoration",
+  "film & video production": "film-video-production",
+  "video production": "film-video-production",
+  film: "film-video-production",
+  photography: "photography",
+  "post-production": "post-production",
+};
+
+/** Canonical capabilities a project is credited with, in taxonomy order. */
+export function capabilitiesOfProject(p: Project): CapabilityId[] {
+  const hit = new Set<CapabilityId>();
+  for (const role of p.services) {
+    const id = CAPABILITY_ROLE_ALIASES[role.en.trim().toLowerCase()];
+    if (id) hit.add(id);
+  }
+  // taxonomy order, not the order the roles happen to be credited in
+  return DAO_SERVICES.filter((s) => hit.has(s.id)).map((s) => s.id);
+}
+
+/** Does this project demonstrate the given capability? */
+export function projectHasCapability(p: Project, id: CapabilityId): boolean {
+  return capabilitiesOfProject(p).includes(id);
+}

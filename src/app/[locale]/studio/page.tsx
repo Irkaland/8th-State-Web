@@ -138,6 +138,24 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 </span>
                 <span style={{ fontSize: 13 }}>{m.common.tbilisi}</span>
               </div>
+              {/* §19: the route to the people, inside "who we are" rather than
+                  bolted on as a separate band - the team IS the studio, so it
+                  belongs to this paragraph. Uses the shared decorative text-CTA
+                  treatment, so it reads as editorial rather than as an HR link,
+                  and it sits above the Studio/Studio Lab split so that
+                  hierarchy is untouched. */}
+              <div className="dst__team dao-fade" style={{ ["--d" as string]: "300ms" }}>
+                <span className="dao-label" style={{ color: "var(--dao-brown)" }}>
+                  {up(R.thePeople)}
+                </span>
+                <Link
+                  href={localeHref(locale, "/team")}
+                  className="dao-textlink dst__teamcta"
+                  data-dao-team-cta
+                >
+                  {up(R.meetTheTeam)} <span aria-hidden="true">→</span>
+                </Link>
+              </div>
             </div>
           </InView>
         </div>

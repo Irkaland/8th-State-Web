@@ -1,5 +1,9 @@
 import type { Media, Project } from "./types";
 
+// Every project is status: "published". Nothing in the approved content marks
+// any of the twelve as unfinished, so none is flagged in-development - see the
+// note on projectStatus in content/types.ts.
+//
 // NOTE: Titles/clients marked as provisional are placeholder/editorial demo content derived from
 // the approved mockup (which flagged them with *). Imagery is editorial placeholder (see
 // DEMO_MEDIA_SOURCES.md). None of this implies a real completed 8th State client engagement.
@@ -120,6 +124,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "kitchen-living-gastronome",
     featured: true,
+    status: "published",
     order: 1,
     isVideo: false,
     verified: false,
@@ -167,6 +172,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "pure-royal-fragrance",
     featured: true,
+    status: "published",
     order: 2,
     isVideo: false,
     verified: false,
@@ -211,6 +217,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "kitchen-living-gastronome",
     featured: true,
+    status: "published",
     order: 3,
     isVideo: false,
     verified: false,
@@ -261,6 +268,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "iced-classic-meama",
     featured: true,
+    status: "published",
     order: 4,
     isVideo: false,
     verified: false,
@@ -309,6 +317,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "colors-of-leghvi",
     featured: true,
+    status: "published",
     order: 5,
     isVideo: true,
     verified: false,
@@ -360,6 +369,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "volvo-situationist",
     featured: true,
+    status: "published",
     order: 6,
     isVideo: false,
     verified: false,
@@ -404,6 +414,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "berlin-diary-editorial",
     featured: true,
+    status: "published",
     order: 7,
     isVideo: false,
     verified: false,
@@ -448,6 +459,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "bal-dafrique-still-life",
     featured: true,
+    status: "published",
     order: 8,
     isVideo: false,
     verified: false,
@@ -492,6 +504,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "florida-hospitality",
     featured: false,
+    status: "published",
     order: 9,
     isVideo: false,
     verified: false,
@@ -539,6 +552,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "glass-study-interiors",
     featured: false,
+    status: "published",
     order: 10,
     isVideo: false,
     verified: false,
@@ -583,6 +597,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "bal-dafrique-still-life",
     featured: false,
+    status: "published",
     order: 11,
     isVideo: false,
     verified: false,
@@ -624,6 +639,7 @@ export const PROJECTS: Project[] = [
     ],
     relatedSlug: "office-series-editorial",
     featured: false,
+    status: "published",
     order: 12,
     isVideo: false,
     verified: false,

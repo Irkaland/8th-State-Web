@@ -9,6 +9,7 @@ const PUBLIC_PATHS = [
   "/work",
   "/services",
   "/studio",
+  "/team",
   "/studio-lab",
   "/process",
   "/georgia-production",

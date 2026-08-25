@@ -450,6 +450,11 @@ const en = {
       caseStudy: "Case Study",
       end: "End of archive - {count} projects shown",
       startProduction: "Start a Production",
+      inDevelopment: "Projects in Development",
+      // shown when the archive was entered through a Services "Related Work"
+      // link, so the visitor can see why only some projects are listed
+      showing: "Showing",
+      clearFilter: "Show the full archive",
       emptyTitle: "Nothing in this room yet.",
       emptyDesc:
         "New work is added as productions are published. Meanwhile, browse the full archive.",
@@ -492,6 +497,23 @@ const en = {
       enterLab: "Enter the Lab",
       make: "Make something with us",
       startProduction: "Start a Production",
+      // §19: the Studio route into the people who run the productions.
+      // Editorial, not an HR label.
+      thePeople: "The people behind 8th State",
+      meetTheTeam: "Meet the team",
+    },
+    team: {
+      kicker: "The people behind 8th State",
+      title: "Production Team",
+      intro:
+        "Production, creative direction and the people who make the work happen - the studio is the crew that runs it.",
+      // shown until approved people content exists
+      pendingTitle: "Team profiles are being prepared.",
+      pendingDesc:
+        "The studio is assembling the credits properly - names, roles and the work each person carried. Until that is confirmed, the archive itself is the honest record of who does what.",
+      pendingCta: "See the work",
+      roleLabel: "Role",
+      countLabel: "{count} in the studio",
     },
     lab: {
       kicker: "The experimental room of 8th State",

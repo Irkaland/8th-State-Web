@@ -6,6 +6,7 @@ import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
 import { t } from "@/content/localized";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
+import { CapabilityWorkLink } from "@/components/dao/CapabilityWorkLink";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { ServicesFilmCarousel } from "@/components/dao/ServicesFilmCarousel";
@@ -109,13 +110,22 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
               <p className="dsv__desc dao-fade" style={{ ["--d" as string]: "200ms" }}>
                 {t(svc("01").desc, locale)} {t(svc("02").desc, locale)}
               </p>
-              <Link
-                href={localeHref(locale, "/work")}
-                className="dao-cta"
-                style={{ color: "var(--dao-ink)" }}
-              >
-                {up(R.relatedWork)} <span aria-hidden="true">→</span>
-              </Link>
+              {/* §13: one Related Work link PER capability. This group used to
+                  carry a single link to bare /work, which showed the whole
+                  archive to someone reading about Art Direction. */}
+              <div className="dsv__caplinks">
+                {[svc("01"), svc("02")].map((cap) => (
+                  <span key={cap.id} className="dsv__caplink">
+                    <span className="dsv__caplinkname">{t(cap.name, locale)}</span>
+                    <CapabilityWorkLink
+                      id={cap.id}
+                      locale={locale}
+                      messages={m}
+                      style={{ color: "var(--dao-ink)" }}
+                    />
+                  </span>
+                ))}
+              </div>
             </div>
             {/* E2: right-positioned fragment mirrors the direction */}
             <div
@@ -182,6 +192,14 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                   </span>
                   {worked && <span className="dsv__worked">{up(R.workedExample)} ✓</span>}
                   <span className="dsv__g2desc">{t(s.desc, locale)}</span>
+                  {/* §13: Scenography, Costume Design and Decoration had no
+                      Related Work route at all before this pass. */}
+                  <CapabilityWorkLink
+                    id={s.id}
+                    locale={locale}
+                    messages={m}
+                    style={{ color: "var(--dao-paper)", alignSelf: "flex-start" }}
+                  />
                 </div>
               );
             })}
@@ -210,13 +228,23 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
             <p className="dsv__desc" style={{ color: "var(--dao-paper)" }}>
               {t(svc("07").desc, locale)} {t(svc("08").desc, locale)}
             </p>
-            <Link
-              href={localeHref(locale, "/work?category=film-video")}
-              className="dao-cta"
-              style={{ color: "var(--dao-yellow)" }}
-            >
-              {up(R.relatedWork)} <span aria-hidden="true">→</span>
-            </Link>
+            {/* §13: was one link to the broad film-video category, which is not
+                the same question as "which projects show Photography". */}
+            <div className="dsv__caplinks">
+              {[svc("07"), svc("08")].map((cap) => (
+                <span key={cap.id} className="dsv__caplink">
+                  <span className="dsv__caplinkname" style={{ color: "var(--dao-paper)" }}>
+                    {t(cap.name, locale)}
+                  </span>
+                  <CapabilityWorkLink
+                    id={cap.id}
+                    locale={locale}
+                    messages={m}
+                    style={{ color: "var(--dao-yellow)" }}
+                  />
+                </span>
+              ))}
+            </div>
           </div>
         </InView>
 
@@ -240,13 +268,12 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                 {R.postDesc} {t(svc("09").desc, locale)}
               </p>
               <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-                <Link
-                  href={localeHref(locale, "/work")}
-                  className="dao-cta"
+                <CapabilityWorkLink
+                  id={svc("09").id}
+                  locale={locale}
+                  messages={m}
                   style={{ color: "var(--dao-ink)" }}
-                >
-                  {up(R.relatedWork)} <span aria-hidden="true">→</span>
-                </Link>
+                />
                 <span
                   className="dao-mask"
                   style={{

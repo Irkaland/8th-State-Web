@@ -51,6 +51,23 @@ export const creditSchema = z.object({
 });
 export type Credit = z.infer<typeof creditSchema>;
 
+/**
+ * Editorial lifecycle of a project. Deliberately two values: "published" is
+ * everything currently in the archive, "in-development" is work that exists but
+ * is not finished or not yet releasable.
+ *
+ * A STATUS is not a category and not a capability. It answers "is this
+ * finished?", which is why the Work filter for it is ?status=in-development
+ * rather than another entry in the discipline taxonomy.
+ *
+ * No project in the repository is marked in-development: nothing in the
+ * approved content says any of the twelve is unfinished, and inventing that
+ * would misrepresent the archive. The filter is wired and tested and currently
+ * returns an intentional empty state.
+ */
+export const projectStatus = z.enum(["published", "in-development"]);
+export type ProjectStatus = z.infer<typeof projectStatus>;
+
 export const projectSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/, "slug must be kebab-case"),
   title: z.string().min(1),
@@ -75,11 +92,45 @@ export const projectSchema = z.object({
   credits: z.array(creditSchema).default([]),
   relatedSlug: z.string().optional(),
   featured: z.boolean().default(false),
+  status: projectStatus.default("published"),
   order: z.number().int(),
   isVideo: z.boolean().default(false),
   verified: z.boolean().default(false),
 });
 export type Project = z.infer<typeof projectSchema>;
+
+// ---- Team -------------------------------------------------------------------
+
+/**
+ * One person who runs and produces the work.
+ *
+ * The repository contains NO approved people data - the only person-shaped
+ * content anywhere is `credits[].name: "Name Surname"` with provisional: true,
+ * an explicit placeholder. So this schema exists and the page is built, but
+ * TEAM is deliberately empty: inventing names, titles, biographies or portraits
+ * would put fabricated claims about real staff on a live production site.
+ *
+ * Everything a real entry will need is here, so adding people later is a data
+ * edit and nothing more:
+ *   name          not localised - a person's name is their name
+ *   role          localised job title
+ *   bio           localised short bio, optional until copy is approved
+ *   portrait      optional: absent renders the typographic placeholder frame
+ *   capabilities  optional link to the canonical capability taxonomy
+ *   link          optional single external link (site/profile)
+ *   order         explicit sort, same convention as projects
+ */
+export const teamMemberSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/, "id must be kebab-case"),
+  name: z.string().min(1),
+  role: localizedTextSchema,
+  bio: localizedTextSchema.optional(),
+  portrait: mediaSchema.optional(),
+  capabilities: z.array(z.string()).default([]),
+  link: z.string().url().optional(),
+  order: z.number().int(),
+});
+export type TeamMember = z.infer<typeof teamMemberSchema>;
 
 // ---- Structured lists -------------------------------------------------------
 

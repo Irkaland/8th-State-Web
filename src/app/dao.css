@@ -1035,8 +1035,18 @@ html[data-dao-nav-open] .dao-returntab {
   padding: 0;
   text-align: left;
 }
-.dao-nav__link--sm {
-  font-size: clamp(16px, min(3.5vh, 4.6vw), 46px);
+/* §07: GEORGIA PRODUCTION and START A PROJECT carry this class because they
+   are the two longest labels. It used to shrink them at EVERY width, so on a
+   desktop with room to spare they sat visibly smaller than the six labels
+   around them and broke the primary hierarchy.
+   The reduction now applies only where it is actually needed. Above the
+   breakpoint these two labels inherit .dao-nav__link untouched, so the desktop
+   menu is one consistent scale; below it they step down just enough to stay on
+   one line, which is verified for both locales at 430/390/375/360/320. */
+@media (max-width: 620px) {
+  .dao-nav__link--sm {
+    font-size: clamp(16px, min(3.5vh, 4.6vw), 46px);
+  }
 }
 .dao-nav__link--lab:hover [data-dao-bloom],
 .dao-nav__link--lab:focus-visible [data-dao-bloom] {
@@ -1077,23 +1087,41 @@ html[data-dao-nav-open] .dao-returntab {
   transform: translateY(0);
 }
 /* WORK categories accordion */
+/* §09: the collapsed categories block used to leave a 24px hole under WORK,
+   which is why WORK sat further from SERVICES than any other pair (28px against
+   2px everywhere else).
+   max-height: 0 collapses the CONTENT box - it does nothing about padding, and
+   this rule carried 6px top + 18px bottom. So the vertical padding now belongs
+   to the open state only; closed, the element contributes nothing at all and
+   the list's 2px rhythm is uniform. */
 .dao-nav__cats {
   display: flex;
   flex-wrap: wrap;
   gap: 22px 26px;
-  padding: 6px 0 18px 66px;
+  padding: 0 0 0 66px;
   font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.22em;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
+  /* The list is a 2px-gap flex column, so even a zero-height child still costs
+     a gap on each side - which left WORK 4px from SERVICES against everyone
+     else's 2px. Cancelling one gap makes the rhythm exactly uniform; it is
+     released the moment the block opens. */
+  margin-bottom: -2px;
   transition:
     max-height 350ms var(--dao-ease-out),
+    padding-top 350ms var(--dao-ease-out),
+    padding-bottom 350ms var(--dao-ease-out),
+    margin-bottom 350ms var(--dao-ease-out),
     opacity 300ms ease;
 }
 .dao-nav__cats.is-open {
   max-height: 240px;
+  padding-top: 6px;
+  padding-bottom: 18px;
+  margin-bottom: 0;
   opacity: 1;
 }
 .dao-nav__cat {
@@ -1216,8 +1244,12 @@ html[data-dao-nav-open] .dao-returntab {
    destroys the hierarchy the brief asks to keep.
    A two-column grid instead: the numeral keeps its column, and the label and
    its companion stack in the second one, so the label gets the whole remaining
-   width and the companion stays aligned under it rather than beside it. */
-@media (max-width: 620px) {
+   width and the companion stays aligned under it rather than beside it.
+   §07 raised this from 620 to 900: at 768 the labels are correctly all one
+   size, and the only thing still squeezing GEORGIA PRODUCTION onto two lines
+   was the companion sharing its line. Stacking it there fixes the wrap without
+   shrinking the label, which is what the brief asks for on a tablet. */
+@media (max-width: 900px) {
   .dao-nav__row {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -1997,9 +2029,19 @@ html[data-dao-nav-open] .dao-returntab {
   text-align: center;
   padding: 0 var(--dao-gutter);
 }
+/* §01: Selected Work project titles are STRONG OPTIKA, not the display face.
+   Optika ships Regular/Medium/SemiBold only - there is no Bold file - so this
+   takes the heaviest weight actually loaded (600, the established editorial
+   token). Asking for 700 would only produce a synthetic bold, which this
+   project deliberately never does.
+   Pinned to the locale-invariant Latin stack because a project title is a
+   single non-localised string ("AOM - Summer Collection") - it is the same
+   Latin text in both locales, so it should be the same face in both. Size,
+   colour, alignment, wrapping and the underline are untouched. */
 .dao-work__name {
   position: relative;
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-latin);
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(27px, 3.2vw, 46px);
   line-height: 1;
   color: var(--dao-paper);
@@ -2144,46 +2186,30 @@ html[data-dao-nav-open] .dao-returntab {
   line-height: 1;
   color: var(--dao-paper);
 }
-.dao-svc__intro {
-  font-size: 13px;
-  line-height: 1.6;
-  color: rgba(242, 237, 227, 0.78);
-  max-width: 300px;
-}
+/* §02: .dao-svc__intro is gone with the paragraph it styled. The /services
+   cover keeps its own intro under .dsv__intro - a different surface and a
+   different string, both untouched. */
+/* §03: a single column. The 300px left rail that carried the four group
+   descriptions is gone - each group now heads its own capabilities inline, at
+   every width, which is what mobile already did. */
 .dao-svc__grid {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 0 56px;
-  margin-top: 60px;
-}
-.dao-svc__rail {
-  display: flex;
-  flex-direction: column;
-  gap: 34px;
-  padding-top: 18px;
-  border-right: 1px solid rgba(242, 237, 227, 0.22);
-}
-.dao-svc__group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-right: 20px;
-}
-.dao-svc__groupname {
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.26em;
-}
-.dao-svc__groupdesc {
-  font-size: 11.5px;
-  color: rgba(242, 237, 227, 0.62);
+  display: block;
+  margin-top: 48px;
 }
 .dao-svc__ornament {
-  margin-top: auto;
-  width: 120px;
-  height: 120px;
+  /* was the rail's bottom ornament; now sits with the section heading */
+  display: block;
+  margin: 18px 0 0 auto;
+  width: 96px;
+  height: 96px;
   background: rgba(242, 237, 227, 0.18);
   --m: url("/assets/graphics/symbols-50.webp");
+}
+@media (max-width: 720px) {
+  .dao-svc__ornament {
+    width: 68px;
+    height: 68px;
+  }
 }
 .dao-svc__list {
   display: flex;
@@ -2223,7 +2249,10 @@ html[data-dao-nav-open] .dao-returntab {
   position: relative;
   font-family: var(--dao-f-ui);
   font-weight: var(--dao-w-editorial);
-  font-size: clamp(21px, 2.8vw, 40px);
+  /* §04: eased down from clamp(21px, 2.8vw, 40px) so the group label above it
+     leads. Deliberately still large - these are the primary navigation into
+     each capability, not a caption. */
+  font-size: clamp(18px, 2.15vw, 30px);
   line-height: 1;
 }
 /* §07: barely thicker than a pencil line. The stroke keeps its hand-drawn
@@ -2306,20 +2335,47 @@ html[data-dao-nav-open] .dao-returntab {
   height: 100%;
   object-fit: cover;
 }
+/* §04: the group heading now leads. It was a 10px caps rule above the rows -
+   quieter than the capabilities under it, which inverted the hierarchy the
+   taxonomy is supposed to express. It rises to roughly the size the capability
+   titles used to be, and the capability titles step down a little, so the read
+   is GROUP -> capability rather than two labels competing.
+   The layer line stays small supporting text underneath. */
 .dao-svc__grouphead {
-  padding: 14px 0 6px;
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.26em;
-  border-bottom: 1px solid rgba(242, 237, 227, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* the space above separates a group from the previous group's last
+     capability; the rule below ties it to its own capabilities */
+  padding: 46px 0 14px;
+  border-bottom: 1px solid rgba(242, 237, 227, 0.24);
 }
-/* Inline group heads replace the rail below 960 (handoff 2a/2b). */
-.dao-svc__grouphead--inline {
-  display: none;
+.dao-svc__row:first-child + .dao-svc__grouphead,
+.dao-svc__grouphead:first-child {
+  padding-top: 4px;
 }
-@media (max-width: 960px) {
-  .dao-svc__grouphead--inline {
-    display: block;
+.dao-svc__groupname {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  /* ~= the capability size before this pass (clamp(21px, 2.8vw, 40px)) */
+  font-size: clamp(19px, 2.5vw, 34px);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.dao-svc__grouplayer {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: rgba(242, 237, 227, 0.66);
+}
+@media (max-width: 560px) {
+  .dao-svc__grouphead {
+    padding: 32px 0 12px;
+  }
+  .dao-svc__grouplayer {
+    font-size: 11.5px;
   }
 }
 .dao-svc__foot {
@@ -2342,11 +2398,7 @@ html[data-dao-nav-open] .dao-returntab {
 }
 @media (max-width: 960px) {
   .dao-svc__grid {
-    grid-template-columns: 1fr;
     margin-top: 30px;
-  }
-  .dao-svc__rail {
-    display: none;
   }
   .dao-svc__frag {
     width: 120px;

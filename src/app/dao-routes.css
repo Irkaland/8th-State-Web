@@ -259,6 +259,40 @@ html:has(.dlb) {
   color: #fff;
   text-transform: uppercase;
 }
+/* §17: the contextual filter chip. Shown only when the archive was entered
+   through a capability or status filter - the broad category index cannot
+   express those, and marking ALL as active would be a lie. Editorial, not a
+   pill: a rule, a label and the way out, in the existing type scale. */
+.dwk__context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 14px;
+  padding-top: 12px;
+  margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.dwk__contextlabel {
+  color: rgba(255, 255, 255, 0.7);
+}
+.dwk__contextvalue {
+  color: var(--dao-gold);
+}
+.dwk__contextclear {
+  position: relative;
+  color: #fff;
+  margin-left: auto;
+}
+@media (max-width: 720px) {
+  .dwk__contextclear {
+    margin-left: 0;
+  }
+}
+
 /* editorial filter index - paint stroke marks the active line, no pills */
 .dwk__filters {
   display: flex;
@@ -988,6 +1022,29 @@ html:has(.dlb) {
   height: 100%;
   object-fit: cover;
 }
+/* §13: per-capability Related Work rows. Each capability names itself and
+   carries its own link, so the visitor knows which archive they are about to
+   see. Stacked, not a grid: two rows on a group is a list, not a layout. */
+.dsv__caplinks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+.dsv__caplink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 18px;
+}
+.dsv__caplinkname {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--dao-brown);
+}
+
 .dsv__rosette {
   position: absolute;
   left: -36px;
@@ -1318,6 +1375,23 @@ html:has(.dlb) {
   gap: 22px;
   padding-top: 20px;
 }
+/* §19: the Studio -> Team route. Same rhythm as .dst__scope above it, so it
+   reads as one more line of the studio's own description. */
+.dst__team {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  border-top: 1px solid rgba(19, 18, 16, 0.15);
+  padding-top: 16px;
+  flex-wrap: wrap;
+}
+.dst__teamcta {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.26em;
+  color: var(--dao-ink);
+}
+
 .dst__narrative {
   font-size: 15px;
   line-height: 1.85;
@@ -2692,4 +2766,144 @@ html:has(.dlb) {
 .d404__links a:hover .dao-strike,
 .d404__links a:focus-visible .dao-strike {
   transform: scaleX(1);
+}
+
+/* ============================================================
+   /team - the people who run and produce the work
+   ============================================================
+   Existing material language only: paper ground with grain, the shared cover
+   type scale, an irregular framed portrait. Deliberately not a card grid or an
+   employee directory - it reads as a page of the Studio narrative. */
+
+.dtm {
+  background: var(--dao-paper);
+  color: var(--dao-ink);
+}
+.dtm__cover {
+  position: relative;
+  padding: 26px var(--dao-gutter) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 900px;
+}
+.dtm__intro {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 600px;
+  text-wrap: pretty;
+}
+.dtm__count {
+  color: var(--dao-brown);
+}
+
+/* pre-content state */
+.dtm__pending {
+  position: relative;
+  padding: 0 var(--dao-gutter) 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  max-width: 680px;
+  overflow: clip;
+}
+.dtm__rule {
+  display: block;
+  width: 110px;
+  height: 6px;
+  background: var(--dao-red);
+  -webkit-mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+}
+.dtm__pendingtitle {
+  font-family: var(--dao-f-display);
+  font-size: clamp(24px, 3vw, 40px);
+  line-height: 1.05;
+  color: var(--dao-ink);
+}
+.dtm__pendingdesc {
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(19, 18, 16, 0.75);
+  text-wrap: pretty;
+}
+.dtm__pendingcta {
+  color: var(--dao-ink);
+}
+.dtm__mark {
+  position: absolute;
+  right: clamp(-90px, -6vw, -30px);
+  bottom: 40px;
+  width: clamp(150px, 22vw, 300px);
+  aspect-ratio: 1;
+  background: rgba(19, 18, 16, 0.07);
+  pointer-events: none;
+}
+@media (max-width: 720px) {
+  .dtm__mark {
+    display: none;
+  }
+}
+
+/* roster - renders as soon as content/team.ts has entries */
+.dtm__roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 56px 44px;
+  padding: 0 var(--dao-gutter) 120px;
+}
+.dtm__person {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dtm__portrait {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: #e6e0d4;
+  overflow: hidden;
+  /* the site's irregular frame language, not a rounded avatar */
+  transform: rotate(-1deg);
+  box-shadow: 0 16px 40px rgba(19, 18, 16, 0.22);
+  display: grid;
+  place-items: center;
+}
+.dtm__initials {
+  font-family: var(--dao-f-display);
+  font-size: clamp(38px, 5vw, 64px);
+  color: rgba(19, 18, 16, 0.28);
+}
+.dtm__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dtm__name {
+  font-family: var(--dao-f-latin);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(19px, 2vw, 26px);
+  line-height: 1.1;
+}
+.dtm__role {
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--dao-red);
+}
+.dtm__bio {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: rgba(19, 18, 16, 0.72);
+  text-wrap: pretty;
+}
+.dtm__caps {
+  font-family: var(--dao-f-numeral);
+  font-size: 11px;
+  color: var(--dao-brown);
+}
+.dtm__link {
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--dao-ink);
 }
