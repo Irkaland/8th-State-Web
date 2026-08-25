@@ -974,9 +974,10 @@ html[data-dao-nav-open] .dao-returntab {
   max-width: 1200px;
 }
 .dao-nav__row {
+  --dao-nav-gap: 26px;
   display: flex;
   align-items: baseline;
-  gap: 26px;
+  gap: var(--dao-nav-gap);
   padding: clamp(2px, 0.7vh, 8px) 0;
 }
 /* §05: the 01-08 numerals are brand red. Only the numerals - the labels and
@@ -1048,17 +1049,50 @@ html[data-dao-nav-open] .dao-returntab {
     font-size: clamp(16px, min(3.5vh, 4.6vw), 46px);
   }
 }
-.dao-nav__link--lab:hover [data-dao-bloom],
-.dao-nav__link--lab:focus-visible [data-dao-bloom] {
-  opacity: 1 !important;
+/* §07: the bloom is no longer inside the label, so it answers to the ROW.
+   :focus-within is deliberate - it means the keyboard reaches the ornament on
+   the same terms as the pointer, rather than hover being the only way to see it. */
+.dao-nav__row--lab:hover .dao-nav__bloom,
+.dao-nav__row--lab:focus-within .dao-nav__bloom {
+  opacity: 1;
+}
+/* §07: a zero-width slot sitting BETWEEN the two labels. The two negative side
+   margins cancel exactly one row gap, so link -> companion stays 26px and this
+   slot centres itself at the midpoint - it adapts to whatever the two labels
+   measure, in either locale, with nothing positioned against the text. */
+.dao-nav__bloomslot {
+  width: 0;
+  margin-inline: calc(var(--dao-nav-gap) / -2);
+  align-self: center;
+  position: relative;
+  pointer-events: none;
+}
+.dao-nav__bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* kept narrower than the gap so it never touches either label */
+  width: clamp(11px, 0.46em, 19px);
+  height: clamp(11px, 0.46em, 19px);
+  background: var(--dao-yellow);
+  opacity: 0;
+  transition: opacity 200ms var(--dao-ease-micro);
 }
 .dao-nav__link:hover,
 .dao-nav__link:focus-visible {
   color: var(--dao-blue);
 }
+/* §06: Studio Lab is the one item with its own colour pair, and the pair is
+   assigned by HIERARCHY, not by language: .dao-nav__link is always the primary
+   label and .dao-nav__ka always the secondary one, in both locales, so EN gets
+   STUDIO LAB green / სტუდიო ლაბი red and KA gets exactly the same relationship
+   the other way round. Green holds through hover and focus - the strike and the
+   bloom carry the interaction feedback, so the colour does not have to move. */
+.dao-nav__link--lab,
 .dao-nav__link--lab:hover,
 .dao-nav__link--lab:focus-visible {
-  color: var(--dao-mint);
+  color: var(--dao-green);
 }
 .dao-nav__link--lab:hover .dao-strike,
 .dao-nav__link--lab:focus-visible .dao-strike {
@@ -1070,7 +1104,7 @@ html[data-dao-nav-open] .dao-returntab {
   color: rgba(242, 237, 227, 0.45);
 }
 .dao-nav__row--lab .dao-nav__ka {
-  color: rgba(122, 212, 201, 0.7);
+  color: var(--dao-red);
 }
 /* masked rise of links, 60ms stagger */
 .dao-nav__mask {
@@ -1145,8 +1179,9 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-nav__row.is-dim .dao-nav__link {
   color: rgba(242, 237, 227, 0.55);
 }
+/* §06: dimmed while the WORK categories are open - still green, just quieter */
 .dao-nav__row.is-dim .dao-nav__link--lab {
-  color: rgba(122, 212, 201, 0.55);
+  color: rgba(157, 171, 92, 0.55);
 }
 /* v7 #4: hover preview - a framed photograph pinned INTO the serpent midground
    (right third, vertically centred on the hovered row). Secondary to type:
@@ -1259,6 +1294,12 @@ html[data-dao-nav-open] .dao-returntab {
   }
   .dao-nav__ka {
     grid-column: 2;
+  }
+  /* §07: the labels stack here, so there is no gap between them to sit in - and
+     no hover on touch either. The slot stands down rather than being parked at
+     an arbitrary spot. */
+  .dao-nav__bloomslot {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2306,8 +2347,13 @@ html[data-dao-nav-open] .dao-returntab {
   color: rgba(242, 237, 227, 0.82);
   max-width: 480px;
 }
+/* §02: the worked-example still is now a link into that capability's own
+   filtered archive, so it has to look and behave like a destination. The frame,
+   the tilt and the shadow are unchanged; what is added is a visible label, a
+   pointer, a hover/focus lift and a real focus ring. */
 .dao-svc__frag {
   margin-left: auto;
+  display: block;
   width: 200px;
   height: 120px;
   transform: rotate(2.5deg);
@@ -2315,13 +2361,92 @@ html[data-dao-nav-open] .dao-returntab {
   position: relative;
   overflow: hidden;
   flex: none;
-  /* Invisible (paper shows through) until the image has decoded - mobile
-     Safari/Chrome otherwise paint the undecoded area as a white box. */
-  opacity: 0;
-  transition: opacity 200ms var(--dao-ease-out);
+  color: var(--dao-paper);
+  transition:
+    transform 260ms var(--dao-ease-micro),
+    box-shadow 260ms var(--dao-ease-micro);
 }
-.dao-svc__frag.is-ready {
+@media (hover: hover) {
+  .dao-svc__frag:hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 0 18px 38px rgba(19, 18, 16, 0.36);
+  }
+}
+.dao-svc__frag:focus-visible {
+  outline: 2px solid var(--dao-yellow);
+  outline-offset: 3px;
+  transform: rotate(0deg) translateY(-3px);
+}
+/* the image itself carries the decode fade, so the link (and its label) stay
+   visible while the photograph is still resolving */
+.dao-svc__fragimg {
+  opacity: 0;
+  transition: opacity 320ms var(--dao-ease-micro);
+}
+.dao-svc__fragimg.is-ready {
   opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dao-svc__frag,
+  .dao-svc__fragimg {
+    transition: none;
+  }
+  .dao-svc__frag:hover,
+  .dao-svc__frag:focus-visible {
+    transform: rotate(2.5deg);
+  }
+}
+/* the label sits on its own scrim so it survives any still behind it */
+.dao-svc__fragcta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14px 10px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dao-paper);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0) 100%);
+}
+/* §02: a capability with no credited project borrows no photograph. It keeps the
+   route - the archive answers honestly - and says why the frame is empty. */
+.dao-svc__fragnone {
+  margin-left: auto;
+  width: 200px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed rgba(242, 237, 227, 0.3);
+  transform: rotate(2.5deg);
+}
+.dao-svc__fragnonetext {
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(242, 237, 227, 0.6);
+}
+.dao-svc__fragnonecta {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dao-yellow);
+}
+@media (max-width: 720px) {
+  .dao-svc__frag,
+  .dao-svc__fragnone {
+    margin-left: 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .dao-svc__frag {
@@ -2354,13 +2479,20 @@ html[data-dao-nav-open] .dao-returntab {
 .dao-svc__grouphead:first-child {
   padding-top: 4px;
 }
+/* §01: the four layer descriptors are kept - they are approved, already
+   translated brand copy, and "the completion layer" is lifted verbatim from the
+   approved Post-Production description, so the wording is not ours to rewrite.
+   What did need work was the hierarchy: heading and capability share family and
+   weight, and at the bottom of their clamps they were 19px against 18px, so the
+   heading barely led its own rows. The floor rises and the tracking opens, which
+   separates them at every width without shrinking the capabilities (those are
+   the primary navigation) and without touching a word of copy. */
 .dao-svc__groupname {
   font-family: var(--dao-f-ui);
   font-weight: var(--dao-w-editorial);
-  /* ~= the capability size before this pass (clamp(21px, 2.8vw, 40px)) */
-  font-size: clamp(19px, 2.5vw, 34px);
+  font-size: clamp(22px, 2.5vw, 34px);
   line-height: 1.05;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .dao-svc__grouplayer {

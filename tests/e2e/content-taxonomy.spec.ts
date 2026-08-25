@@ -320,19 +320,22 @@ test.describe("§07-§09 burger menu", () => {
     await page.waitForTimeout(400);
     const state = await page.evaluate(() => {
       const link = document.querySelector(".dao-nav__link")!;
-      const strike = link.querySelector(".dao-strike");
       return {
         text: (link.textContent || "").trim().slice(0, 8),
-        transform: strike ? getComputedStyle(strike).transform : "none",
+        strikes: link.querySelectorAll(".dao-strike").length,
+        decoration: getComputedStyle(link).textDecorationLine,
         catsHeight: Math.round(
           document.querySelector(".dao-nav__cats")!.getBoundingClientRect().height,
         ),
       };
     });
     expect(state.text).toMatch(/WORK|ნამუშევრები/);
-    // scaleX(0) - drawn only on hover or while the categories are expanded
-    expect(state.transform).toBe("matrix(0, 0, 0, 1, 0, 0)");
-    // and the collapsed categories block leaves no band under WORK
+    // §11 of the UX pass removed the rule outright: it used to be drawn while
+    // the categories were expanded, which read as a stray underline on the
+    // label. There is now no strike element on WORK at all, in any state.
+    expect(state.strikes).toBe(0);
+    expect(state.decoration).toBe("none");
+    // and the collapsed categories block still leaves no band under WORK
     expect(state.catsHeight).toBe(0);
   });
 
@@ -357,7 +360,7 @@ test.describe("§07-§09 burger menu", () => {
     expect(new Set(gaps).size, `gaps: ${gaps.join(",")}`).toBe(1);
   });
 
-  test("still opens the WORK categories, and marks WORK while they are open", async ({ page }) => {
+  test("still opens the WORK categories, and announces that state", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/");
     await openBurger(page);
@@ -373,13 +376,22 @@ test.describe("§07-§09 burger menu", () => {
         { timeout: 4000 },
       )
       .toBeGreaterThan(20);
-    // and the WORK label is marked while they are expanded
-    const marked = await page.evaluate(
-      () =>
-        getComputedStyle(document.querySelector(".dao-nav__link .dao-strike")!).transform !==
-        "matrix(0, 0, 0, 1, 0, 0)",
-    );
-    expect(marked).toBe(true);
+    // §11 of the UX pass: the expanded state is no longer signalled by painting
+    // a rule on the WORK label. It is carried by aria-expanded on the toggle and,
+    // visually, by the category list itself being open - so that is what is
+    // asserted here instead. The label must stay clean.
+    await expect(page.locator(".dao-nav__num--toggle")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator(".dao-nav__cats .dao-nav__cat").first()).toBeVisible();
+    // scoped to WORK only: Studio Lab keeps its own green rule, which §06/§07
+    // preserve. Note :first-of-type is useless here - every row is the only
+    // .dao-nav__row inside its own mask, so it matches all eight.
+    expect(
+      await page.evaluate(
+        () =>
+          document.querySelector(".dao-nav__row")!.querySelectorAll(".dao-nav__link .dao-strike")
+            .length,
+      ),
+    ).toBe(0);
   });
 
   for (const width of [430, 390, 375, 360, 320]) {

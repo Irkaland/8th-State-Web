@@ -3,34 +3,48 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import { format, type Messages } from "@/i18n";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { t } from "@/content/localized";
-import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
+import {
+  DAO_SERVICES,
+  DAO_SERVICE_GROUPS,
+  type CapabilityId,
+  capabilityWorkHref,
+} from "@/content/dao-services";
 import { cn, up } from "@/lib/cn";
 import { useInViewOnce } from "./hooks";
 
-// Worked-example fragments per service (editorial placeholder media).
-const FRAGMENTS: Record<string, string> = {
-  "01": "/media/aom-cover.jpg",
-  "02": "/media/berlin-editorial.jpg",
-  "03": "/media/georgia-set.jpg",
-  "04": "/media/glass-interiors.jpg",
-  "05": "/media/pure-royal.jpg",
-  "06": "/media/gastronome-kitchen.jpg",
-  "07": "/media/volvo-film.jpg",
-  "08": "/media/aom-gallery-1.jpg",
-  "09": "/media/aom-film-still.jpg",
+/**
+ * What a capability can honestly show of itself, resolved on the server from the
+ * credit data (see capabilityPreview in content/work-filters).
+ *
+ * `still` is null when no project is credited with the capability - the row then
+ * offers the route without borrowing a photograph from unrelated work.
+ */
+export type CapabilityStill = {
+  count: number;
+  still: { src: string; alt: string } | null;
 };
 
 /**
- * Worked-example fragment. The lazy row image must never paint before it is
- * fully decoded: mobile Safari/Chrome fill the undecoded area with opaque
- * white, which flashes inside the shadowed fragment box. The wrapper stays
- * transparent (paper shows through) until load + decode, then reveals.
+ * Worked-example still. The lazy row image must never paint before it is fully
+ * decoded: mobile Safari/Chrome fill the undecoded area with opaque white, which
+ * flashes inside the shadowed fragment box. The wrapper stays transparent (paper
+ * shows through) until load + decode, then reveals.
  */
-function FragImage({ src, ready, onReady }: { src: string; ready: boolean; onReady: () => void }) {
+function FragImage({
+  src,
+  alt,
+  ready,
+  onReady,
+}: {
+  src: string;
+  alt: string;
+  ready: boolean;
+  onReady: () => void;
+}) {
   const mark = (img: HTMLImageElement) => {
     // next/image also fires onLoad for failed loads (decode() rejection is
     // swallowed upstream) - a broken image must keep the paper visible.
@@ -42,46 +56,64 @@ function FragImage({ src, ready, onReady }: { src: string; ready: boolean; onRea
     }
   };
   return (
-    <div className={cn("dao-svc__frag", ready && "is-ready")} aria-hidden="true">
-      <Image
-        src={src}
-        alt=""
-        fill
-        sizes="200px"
-        unoptimized={src === "/media/aom-cover.jpg"}
-        className="object-cover"
-        // Cached images can finish before hydration attaches onLoad.
-        ref={(img) => {
-          if (img && !ready && img.complete) mark(img);
-        }}
-        onLoad={(e) => {
-          if (!ready) mark(e.currentTarget);
-        }}
-      />
-    </div>
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      sizes="200px"
+      unoptimized={src === "/media/aom-cover.jpg"}
+      className={cn("dao-svc__fragimg object-cover", ready && "is-ready")}
+      // Cached images can finish before hydration attaches onLoad.
+      ref={(img) => {
+        if (img && !ready && img.complete) mark(img);
+      }}
+      onLoad={(e) => {
+        if (!ready) mark(e.currentTarget);
+      }}
+    />
   );
 }
 
 /**
  * Act 04 - Services. Editorial typographic index on the brand-blue ground
- * (§05): group rail (four coloured layers) + nine capability rows set in the
+ * (§05): four group headings, each above its own capability rows, set in the
  * strong editorial face (§06). A row opens to a plain-language explanation and
- * a worked-example fragment; hover indents with a pencil-weight hand-drawn
- * underline in that capability's own palette colour (§07/§08).
+ * a worked example; hover indents with a pencil-weight hand-drawn underline in
+ * that capability's own palette colour (§07/§08).
+ *
+ * §02: the worked example is a route, not just a picture. Opening a row reveals
+ * the still, and the still is a link into that capability's own filtered
+ * archive - /work?capability=<id>, built from the canonical id, the same mapping
+ * the Services page uses. Three things make it behave:
+ *
+ *   - the row control is a <button> and the still is a <Link> in a SIBLING
+ *     element, never inside it, so there is no nested interactive content;
+ *   - the closed body is inert, so a collapsed row keeps its link out of the
+ *     tab order and out of the accessibility tree entirely;
+ *   - the row opens on click/Enter (aria-expanded), so nothing here depends on
+ *     hover, and the link carries its own visible label and focus ring.
+ *
+ * A capability with no credited projects shows no photograph and still links to
+ * its own archive, which answers honestly with nothing.
  */
-export function ServicesAct({ locale, messages }: { locale: Locale; messages: Messages }) {
+export function ServicesAct({
+  locale,
+  messages,
+  stills,
+}: {
+  locale: Locale;
+  messages: Messages;
+  stills: Partial<Record<CapabilityId, CapabilityStill>>;
+}) {
   const m = messages.dao.services;
   const sectionRef = useInViewOnce<HTMLElement>(0.12);
   const [open, setOpen] = useState<string | null>("03"); // hover state shown captured in 1a
-  // Fragments that have finished load + decode stay ready for the session,
-  // so revisiting a row reveals instantly without refetching.
+  // Stills that have finished load + decode stay ready for the session, so
+  // revisiting a row reveals instantly without refetching.
   const [ready, setReady] = useState<Record<string, boolean>>({});
   const markReady = (n: string) => setReady((r) => (r[n] ? r : { ...r, [n]: true }));
 
   const groupOf = (id: string) => DAO_SERVICE_GROUPS.find((g) => g.id === id)!;
-
-  // Rows are rendered grouped on narrow screens (group heading rows inline,
-  // 2a/2b) and as one continuous index with the rail on desktop.
 
   return (
     <section
@@ -96,18 +128,10 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
       <div className="dao-grain--strong" aria-hidden="true" />
       <div className="dao-weave" aria-hidden="true" />
 
-      {/* §02: the explanatory paragraph ("Nine capabilities, four kinds of
-          work...") is gone, and so is the row that reserved space beside the
-          title for it - the heading is now simply the heading, with no empty
-          second column left behind. */}
       <h2 className="dao-svc__title dao-side" style={{ ["--x" as string]: "-60px", marginTop: 40 }}>
         {up(m.title)}
       </h2>
 
-      {/* §03: the separate left taxonomy column is gone. Each group now names
-          itself directly above the capabilities that belong to it - the
-          behaviour mobile already had - so the reading order is group, layer,
-          then that group's capabilities, at every width. */}
       <span
         className="dao-svc__ornament dao-mask"
         style={{ ["--m" as string]: "url(/assets/graphics/symbols-50.webp)" }}
@@ -121,6 +145,12 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
             const g = groupOf(s.group);
             const isOpen = open === s.n;
             const showGroupHead = i === 0 || DAO_SERVICES[i - 1].group !== s.group;
+            const info = stills[s.id];
+            const href = localeHref(locale, capabilityWorkHref(s.id));
+            const name = t(s.name, locale);
+            const shown = format(messages.daoRoutes.work.projectsShown, {
+              count: info?.count ?? 0,
+            });
             return (
               <div key={s.n} style={{ display: "contents" }}>
                 {showGroupHead && (
@@ -149,19 +179,52 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
                       {s.n}
                     </span>
                     <span className="dao-svc__name">
-                      {t(s.name, locale)}
+                      {name}
                       <span className="dao-strike" aria-hidden="true" />
                     </span>
                   </button>
-                  <div className="dao-svc__body">
+                  {/* inert while collapsed: the body still occupies the grid at
+                      0fr, so without this the still's link stays tabbable and
+                      screen-reader reachable behind a closed row */}
+                  <div className="dao-svc__body" inert={!isOpen}>
                     <div className="dao-svc__bodyin">
                       <div className="dao-svc__detail">
                         <p className="dao-svc__desc">{t(s.desc, locale)}</p>
-                        <FragImage
-                          src={FRAGMENTS[s.n] ?? "/media/bts-set.jpg"}
-                          ready={!!ready[s.n]}
-                          onReady={() => markReady(s.n)}
-                        />
+                        {info?.still ? (
+                          <Link
+                            href={href}
+                            className={cn("dao-svc__frag", ready[s.n] && "is-ready")}
+                            data-dao-capability={s.id}
+                            aria-label={`${m.previewCta}: ${name} (${shown})`}
+                            title={info.still.alt}
+                          >
+                            <FragImage
+                              src={info.still.src}
+                              alt=""
+                              ready={!!ready[s.n]}
+                              onReady={() => markReady(s.n)}
+                            />
+                            {/* the still is a destination, and it says so -
+                                nothing here is hover-only */}
+                            <span className="dao-svc__fragcta" aria-hidden="true">
+                              {up(m.previewCta)} <span>&rarr;</span>
+                            </span>
+                          </Link>
+                        ) : (
+                          /* no credited project, so no photograph is borrowed -
+                             the route stays, and it is honest about the result */
+                          <span className="dao-svc__fragnone">
+                            <span className="dao-svc__fragnonetext">{m.previewEmpty}</span>
+                            <Link
+                              href={href}
+                              className="dao-cta dao-svc__fragnonecta"
+                              data-dao-capability={s.id}
+                              aria-label={`${m.previewCta}: ${name} (${shown})`}
+                            >
+                              {up(m.previewCta)} <span aria-hidden="true">&rarr;</span>
+                            </Link>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -177,7 +240,7 @@ export function ServicesAct({ locale, messages }: { locale: Locale; messages: Me
           {m.note}
         </span>
         <Link href={localeHref(locale, "/services")} className="dao-svc__all">
-          {up(m.all)} <span aria-hidden="true">→</span>
+          {up(m.all)} <span aria-hidden="true">&rarr;</span>
         </Link>
       </div>
     </section>

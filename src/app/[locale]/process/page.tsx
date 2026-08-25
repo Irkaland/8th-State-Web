@@ -143,17 +143,6 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
               />
             </div>
           </div>
-          <div className="dpr__frline">
-            <span
-              style={{
-                fontFamily: "var(--dao-f-numeral)",
-                fontSize: 12,
-                color: "rgba(242,237,227,.5)",
-              }}
-            >
-              FR 0001 - 0009
-            </span>
-          </div>
         </InView>
       </div>
     </DaoShell>

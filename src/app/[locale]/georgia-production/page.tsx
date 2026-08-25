@@ -97,23 +97,31 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
             <span>{R.coords}</span>
             <span>{up(R.city)}</span>
             <span>{R.tz}</span>
-            <span className="dgp__star dao-mask" aria-hidden="true" />
-            {/* v7 5g: official mark stamped beside the coordinates */}
-            <Image
-              src="/assets/brand/8th-state-logo-mark.png"
-              alt=""
-              width={176}
-              height={176}
-              aria-hidden="true"
-              style={{
-                width: 88,
-                height: "auto",
-                mixBlendMode: "multiply",
-                transform: "rotate(2deg)",
-                alignSelf: "flex-end",
-                marginTop: 10,
-              }}
-            />
+            {/* §09: star + official mark are one symbol group. The wrapper is
+                display:contents above 720px, so on desktop these two stay direct
+                flex children of .dgp__coords and the layout is untouched; on mobile
+                it becomes a row and the two read as a cluster instead of drifting to
+                opposite edges. align-self moved out of the inline style because an
+                inline value cannot be overridden by the mobile media query - that
+                was the actual cause of the split. */}
+            <span className="dgp__symbols">
+              <span className="dgp__star dao-mask" aria-hidden="true" />
+              <Image
+                className="dgp__mark"
+                src="/assets/brand/8th-state-logo-mark.png"
+                alt=""
+                width={176}
+                height={176}
+                aria-hidden="true"
+                style={{
+                  width: 88,
+                  height: "auto",
+                  mixBlendMode: "multiply",
+                  transform: "rotate(2deg)",
+                  marginTop: 10,
+                }}
+              />
+            </span>
           </div>
         </InView>
         <div className="dao-rule-h" style={{ margin: "0 var(--dao-gutter)" }} aria-hidden="true" />

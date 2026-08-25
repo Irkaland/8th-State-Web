@@ -8,6 +8,7 @@ import type { Messages } from "@/i18n";
 import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/locales";
 import { cn } from "@/lib/cn";
 import { NAV_OPEN_KEY, safeSession } from "@/lib/session-lifecycle";
+import { useLiveSearch } from "@/lib/use-live-search";
 
 /**
  * Persistent chrome (celestial-sun chip + EN/KA + burger paper chip) and the
@@ -18,6 +19,8 @@ import { NAV_OPEN_KEY, safeSession } from "@/lib/session-lifecycle";
 export function DaoChrome({ locale, messages }: { locale: Locale; messages: Messages }) {
   const m = messages.dao.nav;
   const pathname = usePathname() || "/";
+  // §15: the switcher must not drop an active Work filter
+  const search = useLiveSearch();
   // §14: a locale switch crosses the [locale] layout segment, so this
   // component remounts and React state is lost. The intent is handed over
   // through sessionStorage instead: set on the way out, consumed once on the
@@ -367,7 +370,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
         <div className="dao-chrome__right">
           <span className="dao-lang">
             <Link
-              href={switchLocalePath(pathname, "en")}
+              href={switchLocalePath(pathname, "en", search)}
               aria-current={locale === "en" ? "true" : undefined}
               aria-label={messages.common.switchToEnglish}
               onClick={onLang}
@@ -375,7 +378,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
               EN
             </Link>
             <Link
-              href={switchLocalePath(pathname, "ka")}
+              href={switchLocalePath(pathname, "ka", search)}
               aria-current={locale === "ka" ? "true" : undefined}
               aria-label={messages.common.switchToGeorgian}
               onClick={onLang}
@@ -436,13 +439,13 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
                 onClick={close}
                 style={{ position: "relative" }}
               >
+                {/* §11: the blue rule under WORK is gone. It painted whenever the
+                    categories were expanded, which read as a stray underline on the
+                    label rather than as state. Nothing is lost: the expanded state is
+                    carried by aria-expanded on the numeral toggle and, visually, by
+                    the category list itself appearing. No focus affordance was ever
+                    attached to it - focus is .dao-nav__link:focus-visible. */}
                 {m.work}
-                <span
-                  className={cn("dao-strike", workOpen && "dao-strike--on")}
-                  // §08: thinner with the shared .dao-strike base (12 -> 6)
-                  style={{ background: "var(--dao-blue)", bottom: "6px", height: "6px" }}
-                  aria-hidden="true"
-                />
               </Link>
               <span className="dao-nav__ka" aria-hidden="true">
                 {m.workKa}
@@ -681,25 +684,25 @@ function NavRow({
                 }}
                 aria-hidden="true"
               />
-              <span
-                className="dao-mask"
-                aria-hidden="true"
-                style={{
-                  ["--m" as string]: "url(/assets/graphics/bloom.webp)",
-                  position: "absolute",
-                  right: "-0.9em",
-                  top: "-0.14em",
-                  width: "0.72em",
-                  height: "0.72em",
-                  background: "var(--dao-yellow)",
-                  opacity: 0,
-                  transition: "opacity 200ms ease",
-                }}
-                data-dao-bloom
-              />
             </>
           )}
         </Link>
+        {/* §07: the bloom used to hang off the right edge of the primary label,
+            which tied it to that label and to its exact width. It is now its own
+            slot BETWEEN the two labels: a zero-width flex item whose negative side
+            margins cancel one row gap, so it centres itself in the space between
+            the labels at any width and in either locale with no hardcoded offset.
+            Below 900px the row becomes a two-column grid and the labels stack, so
+            the slot stands down there (see CSS). */}
+        {lab && (
+          <span className="dao-nav__bloomslot" aria-hidden="true">
+            <span
+              className="dao-nav__bloom dao-mask"
+              style={{ ["--m" as string]: "url(/assets/graphics/bloom.webp)" }}
+              data-dao-bloom
+            />
+          </span>
+        )}
         <span className="dao-nav__ka" lang={/[ა-ჰ]/.test(ka) ? "ka" : "en"} aria-hidden="true">
           {ka}
         </span>

@@ -377,6 +377,14 @@ html:has(.dlb) {
   opacity: 1;
   transform: none;
 }
+/* §12: the corner marks stay above the caption scrim. They sit at the top of
+   the frame and the scrim only covers the bottom, but pinning the order means
+   that stays true whatever the card aspect turns out to be. */
+.dwk__id,
+.dwk__badge,
+.dwk__bloom {
+  z-index: 2;
+}
 .dwk__id {
   position: absolute;
   left: 18px;
@@ -398,7 +406,34 @@ html:has(.dlb) {
   padding: 6px 10px;
   pointer-events: none;
 }
+/* §12: a local scrim behind the caption only. ::before (not ::after) so it is
+   generated before the caption and paints underneath it. Anchored to the bottom
+   and sized to the text zone - the image above it is untouched, so this reads as
+   a photographic falloff rather than a black UI panel laid over the picture. The
+   brand black token is reused; no new black is introduced. */
+.dwk__frame::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 44%;
+  /* --dao-black is #000000, so these are that token expressed with an alpha
+     ramp. Written literally rather than through rgb(from ...) / color-mix(),
+     which this project already avoids for Safari support. */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.6) 24%,
+    rgba(0, 0, 0, 0.28) 56%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  /* the img is an earlier absolutely-positioned sibling at z-index auto, so the
+     scrim needs a real index to sit ON the photograph; the text layers sit above
+     it in turn. Without this the gradient would paint under the image. */
+  z-index: 1;
+}
 .dwk__caption {
+  z-index: 2;
   position: absolute;
   left: 24px;
   bottom: 24px;
@@ -409,9 +444,16 @@ html:has(.dlb) {
   align-items: flex-start;
   pointer-events: none;
 }
+/* §13: the image-overlay title moves off the display face onto strong Optika.
+   Optika ships 400/500/600 only - there is no Bold file - so 600 is the real
+   heaviest weight and nothing is synthesised. Pinned to --dao-f-latin because a
+   project title is one Latin string that is not translated, so it must not swap
+   face between locales. Only this overlay system changes; the rest of the Work
+   page keeps its own typography, and .dwk__meta stays secondary. */
 .dwk__name {
   position: relative;
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-latin);
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(24px, 3.6vw, 52px);
   line-height: 1;
   color: var(--dao-paper);
@@ -1385,11 +1427,145 @@ html:has(.dlb) {
   padding-top: 16px;
   flex-wrap: wrap;
 }
-.dst__teamcta {
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.26em;
-  color: var(--dao-ink);
+/* §03: the production slate. A clapperboard reads as film production instantly,
+   and it is drawn here entirely from type, rule and brand tokens - no icon, no
+   stock graphic, no portrait. The board is one link; everything inside it is
+   presentational. */
+.dst__team {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+.dst__teamkicker {
+  align-self: flex-start;
+}
+.dst__slate {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 430px;
+  background: var(--dao-ink);
+  color: var(--dao-paper);
+  /* sits on the page like a physical object rather than a UI card */
+  transform: rotate(-0.7deg);
+  box-shadow: 0 16px 38px rgba(19, 18, 16, 0.3);
+  transition:
+    transform 300ms var(--dao-ease-micro),
+    box-shadow 300ms var(--dao-ease-micro);
+}
+/* the hinged bar. The diagonal stripes are the clapper; the gradient is drawn,
+   not an image, so it stays crisp at any size. transform-origin sits at the
+   hinge so it opens from the left like the real thing. */
+.dst__slateclap {
+  display: block;
+  height: 30px;
+  transform-origin: 0% 100%;
+  background: repeating-linear-gradient(114deg, var(--dao-paper) 0 22px, var(--dao-ink) 22px 44px);
+  transition: transform 320ms var(--dao-ease-editorial);
+}
+.dst__slatebody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px 20px;
+}
+.dst__slatefields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.dst__slatefield {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  border-top: 1px solid rgba(242, 237, 227, 0.28);
+  padding-top: 7px;
+}
+.dst__slatekey {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  color: rgba(242, 237, 227, 0.5);
+}
+/* the numeral face is what the rest of the site uses for slate/plate metadata */
+.dst__slateval {
+  font-family: var(--dao-f-numeral);
+  font-size: 12.5px;
+  line-height: 1.25;
+  color: var(--dao-paper);
+  overflow-wrap: anywhere;
+}
+.dst__slatecta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--dao-yellow);
+}
+/* ground-glass frame marks: four corners, nothing else */
+.dst__slatemarks::before,
+.dst__slatemarks::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(242, 237, 227, 0.4);
+  pointer-events: none;
+}
+.dst__slatemarks::before {
+  left: 8px;
+  bottom: 8px;
+  border-top: 0;
+  border-right: 0;
+}
+.dst__slatemarks::after {
+  right: 8px;
+  bottom: 8px;
+  border-top: 0;
+  border-left: 0;
+}
+@media (hover: hover) {
+  .dst__slate:hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 0 22px 48px rgba(19, 18, 16, 0.38);
+  }
+  .dst__slate:hover .dst__slateclap {
+    transform: rotate(-6deg);
+  }
+}
+/* keyboard parity: focus gets the same opening, plus a real ring */
+.dst__slate:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 4px;
+  transform: rotate(0deg) translateY(-3px);
+}
+.dst__slate:focus-visible .dst__slateclap {
+  transform: rotate(-6deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dst__slate,
+  .dst__slateclap {
+    transition: none;
+  }
+  .dst__slate:hover,
+  .dst__slate:focus-visible {
+    transform: rotate(-0.7deg);
+  }
+  .dst__slate:hover .dst__slateclap,
+  .dst__slate:focus-visible .dst__slateclap {
+    transform: none;
+  }
+}
+@media (max-width: 420px) {
+  .dst__slatefields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .dst__narrative {
@@ -1992,8 +2168,12 @@ html:has(.dlb) {
   font-size: 34px;
   color: var(--dao-orange);
 }
+/* §14: strong Optika at the real heaviest weight (600 - no Bold file ships).
+   --dao-f-ui, not --dao-f-latin: these are the nine capability names and they
+   ARE translated, so the Georgian face must follow the locale. */
 .dpr__stagename {
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   font-size: 26px;
   color: var(--dao-ink);
 }
@@ -2043,14 +2223,6 @@ html:has(.dlb) {
   height: 100%;
   object-fit: cover;
 }
-.dpr__frline {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  border-top: 1px solid rgba(242, 237, 227, 0.16);
-  padding-top: 24px;
-  margin-top: 60px;
-}
 @media (max-width: 960px) {
   .dpr__scatter {
     grid-template-columns: 1fr 1fr;
@@ -2095,6 +2267,15 @@ html:has(.dlb) {
   font-family: var(--dao-f-numeral);
   font-size: 14px;
   color: var(--dao-brown);
+}
+/* §09: a grouping wrapper that does nothing at all above 720px - the star and
+   the mark stay direct flex children of .dgp__coords, so desktop is unchanged. */
+.dgp__symbols {
+  display: contents;
+}
+/* carried inline until §09; it has to live in CSS so the mobile block can move it */
+.dgp__mark {
+  align-self: flex-end;
 }
 .dgp__star {
   align-self: flex-end;
@@ -2203,8 +2384,12 @@ html:has(.dlb) {
   font-size: 13px;
   color: var(--dao-blue);
 }
+/* §10: strong Optika at the real heaviest weight (600 - Optika ships no Bold).
+   Translated copy, so --dao-f-ui follows the locale. Scale is unchanged and
+   .dgp__indexdesc stays visually secondary. */
 .dgp__indexname {
-  font-family: var(--dao-f-display);
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(21px, 2.1vw, 30px);
   line-height: 1.2;
   color: var(--dao-ink);
@@ -2252,6 +2437,20 @@ html:has(.dlb) {
   }
   .dgp__star {
     align-self: flex-start;
+    margin-top: 0;
+  }
+  /* §09: the star and the official mark used to end up on opposite sides here -
+     the star moved left with the column while the mark was pinned right by an
+     inline align-self. They now share one row and read as a single symbol
+     group. display:contents above this breakpoint keeps desktop byte-identical. */
+  .dgp__symbols {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    margin-top: 8px;
+  }
+  .dgp__mark {
+    align-self: flex-end;
   }
   .dgp__platerow {
     display: flex;

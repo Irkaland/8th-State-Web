@@ -367,6 +367,8 @@ const en = {
         "Nine capabilities, four kinds of work. Groups describe kinds of work, not a required order - scope is determined per project.",
       all: "All Services",
       note: "Each row reveals a plain-language explanation and related work on open.",
+      previewCta: "See related work",
+      previewEmpty: "No projects credited to this capability yet",
     },
     lab: {
       act: "Another Room in the Same House",
@@ -501,6 +503,10 @@ const en = {
       // Editorial, not an HR label.
       thePeople: "The people behind 8th State",
       meetTheTeam: "Meet the team",
+      slateProd: "Prod.",
+      slateScene: "Scene",
+      slateLoc: "Loc.",
+      slateSceneValue: "The people",
     },
     team: {
       kicker: "The people behind 8th State",

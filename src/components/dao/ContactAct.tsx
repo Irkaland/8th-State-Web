@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref, switchLocalePath } from "@/i18n/locales";
+import { useLiveSearch } from "@/lib/use-live-search";
 import { useInViewOnce } from "./hooks";
 import { up } from "@/lib/cn";
 
@@ -18,6 +19,7 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
   const m = messages.dao.contact;
   const c = messages.dao.credits;
   const pathname = usePathname() || "/";
+  const search = useLiveSearch();
   const sectionRef = useInViewOnce<HTMLElement>(0.15);
 
   return (
@@ -164,13 +166,13 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
           <Link href={localeHref(locale, "/privacy")}>{up(c.legal)}</Link>
           <span className="dao-lang" style={{ gap: 14 }}>
             <Link
-              href={switchLocalePath(pathname, "en")}
+              href={switchLocalePath(pathname, "en", search)}
               aria-current={locale === "en" ? "true" : undefined}
             >
               EN
             </Link>
             <Link
-              href={switchLocalePath(pathname, "ka")}
+              href={switchLocalePath(pathname, "ka", search)}
               aria-current={locale === "ka" ? "true" : undefined}
             >
               KA

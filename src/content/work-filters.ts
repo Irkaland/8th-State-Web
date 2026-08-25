@@ -98,6 +98,45 @@ export function capabilityHasWork(projects: Project[], id: CapabilityId): boolea
   return projects.some((p) => projectHasCapability(p, id));
 }
 
+/** One credited project, offered as a capability's worked example. */
+export type CapabilityPreview = {
+  slug: string;
+  title: string;
+  cover: Project["cover"];
+};
+
+/**
+ * A still to stand for a capability - taken ONLY from a project that capability
+ * is actually credited on.
+ *
+ * The homepage used to pair each capability with a hand-picked file. Six of the
+ * nine pairings did not hold: Art Direction showed a project credited only with
+ * Photography, Post-Production showed a film still from a project it was never
+ * credited on, and one file belonged to no project at all. That was tolerable
+ * while the still was decorative (aria-hidden, empty alt, claiming nothing), but
+ * §02 turns it into a route INTO the archive, and at that point it becomes a
+ * claim - a photograph plus "related work" over an archive that answers with
+ * nothing. So the still is read from the credit data instead.
+ *
+ * A capability with no credited projects returns null. It still routes to its own
+ * filter and still lands on its own honest empty state; it just does not borrow
+ * another project's photograph to look furnished.
+ *
+ * `spread` only decides WHICH credited project is shown when there are several,
+ * so neighbouring rows do not all show the same cover. Every candidate is equally
+ * true, and the choice is deterministic - the server and the client must agree.
+ */
+export function capabilityPreview(
+  projects: Project[],
+  id: CapabilityId,
+  spread = 0,
+): CapabilityPreview | null {
+  const credited = projects.filter((p) => projectHasCapability(p, id));
+  if (credited.length === 0) return null;
+  const p = credited[Math.abs(spread) % credited.length];
+  return { slug: p.slug, title: p.title, cover: p.cover };
+}
+
 /**
  * A human label for the active filter, used by the contextual chip so a visitor
  * arriving from a Related Work link can see why the archive is narrowed.

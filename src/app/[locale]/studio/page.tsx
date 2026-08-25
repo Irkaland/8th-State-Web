@@ -144,16 +144,49 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                   treatment, so it reads as editorial rather than as an HR link,
                   and it sits above the Studio/Studio Lab split so that
                   hierarchy is untouched. */}
+              {/* §03: the route to the people was a single line of text and read as
+                  an afterthought. It is now a production slate - the hinged board
+                  that goes in front of the lens before a take - which says "these
+                  are the people who make the production happen" in the language of
+                  the work itself rather than in HR language. Built from type, rule
+                  and the brand tokens: no stock icon, no portrait, no invented
+                  person. The whole board is ONE link, so there is nothing nested
+                  inside it, and the fields carry only facts the site already
+                  states. */}
               <div className="dst__team dao-fade" style={{ ["--d" as string]: "300ms" }}>
-                <span className="dao-label" style={{ color: "var(--dao-brown)" }}>
+                <span className="dao-label dst__teamkicker" style={{ color: "var(--dao-brown)" }}>
                   {up(R.thePeople)}
                 </span>
                 <Link
                   href={localeHref(locale, "/team")}
-                  className="dao-textlink dst__teamcta"
+                  className="dst__slate"
                   data-dao-team-cta
+                  aria-label={`${R.meetTheTeam} - ${R.thePeople}`}
                 >
-                  {up(R.meetTheTeam)} <span aria-hidden="true">→</span>
+                  {/* the hinged clapper: it lifts on hover/focus, the way the real
+                      board is held open before the take */}
+                  <span className="dst__slateclap" aria-hidden="true" />
+                  <span className="dst__slatebody">
+                    <span className="dst__slatefields" aria-hidden="true">
+                      <span className="dst__slatefield">
+                        <span className="dst__slatekey">{up(R.slateProd)}</span>
+                        <span className="dst__slateval">8TH STATE</span>
+                      </span>
+                      <span className="dst__slatefield">
+                        <span className="dst__slatekey">{up(R.slateScene)}</span>
+                        <span className="dst__slateval">{up(R.slateSceneValue)}</span>
+                      </span>
+                      <span className="dst__slatefield">
+                        <span className="dst__slatekey">{up(R.slateLoc)}</span>
+                        <span className="dst__slateval">{up(m.common.tbilisi)}</span>
+                      </span>
+                    </span>
+                    <span className="dst__slatecta">
+                      {up(R.meetTheTeam)} <span aria-hidden="true">→</span>
+                    </span>
+                  </span>
+                  {/* frame/focus marks, as on a ground glass - four corners only */}
+                  <span className="dst__slatemarks" aria-hidden="true" />
                 </Link>
               </div>
             </div>
@@ -209,10 +242,21 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
               >
                 {R.labLines}
               </span>
+              {/* §04: .dst__labpanel-inner is a column flex container, so this link
+                  was stretching to the full panel width and .dao-cta::after (left:0
+                  right:0) drew its rule all the way across the card. alignSelf
+                  flex-start gives the link its intrinsic width, so the rule measures
+                  the words - and keeps measuring them when the label changes length
+                  between EN and KA. No width is hardcoded. */}
               <Link
                 href={localeHref(locale, "/studio-lab")}
                 className="dao-cta"
-                style={{ color: "var(--dao-ink)", fontSize: 10, marginTop: 10 }}
+                style={{
+                  color: "var(--dao-ink)",
+                  fontSize: 10,
+                  marginTop: 10,
+                  alignSelf: "flex-start",
+                }}
               >
                 {up(R.enterLab)} <span aria-hidden="true">→</span>
               </Link>

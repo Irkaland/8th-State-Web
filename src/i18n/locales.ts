@@ -49,6 +49,18 @@ export function localeFromPathname(pathname: string): Locale {
 }
 
 /** Map a real pathname to its equivalent in another locale (for the language switcher). */
-export function switchLocalePath(pathname: string, target: Locale): string {
-  return localeHref(target, stripLocale(pathname));
+/**
+ * The same route in the other locale.
+ *
+ * `search` carries the query string over. usePathname() drops it, so without
+ * this an EN->KA switch on /work?category=photography landed on /ka/work and
+ * silently reset the archive to ALL - the visitor lost the filter they were
+ * reading. Preserved generically rather than per-parameter: any query the Work
+ * archive (or anything else) uses survives the switch, and filter semantics are
+ * untouched, so a valid zero-result filter stays a zero-result filter.
+ */
+export function switchLocalePath(pathname: string, target: Locale, search = ""): string {
+  const base = localeHref(target, stripLocale(pathname));
+  const q = search.startsWith("?") ? search : search ? `?${search}` : "";
+  return q === "?" ? base : `${base}${q}`;
 }
