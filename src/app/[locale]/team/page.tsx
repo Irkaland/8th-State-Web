@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
-import { getMessages, format } from "@/i18n";
+import { getMessages } from "@/i18n";
 import { t } from "@/content/localized";
-import { teamSorted } from "@/content/team";
+import { hasConfirmedTeam, teamByDepartment, teamInSectionOrder } from "@/content/team";
+import { PROJECTS } from "@/content/projects";
 import { capabilityById, isCapabilityId } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
+import {
+  TeamContactSheet,
+  type TeamCard,
+  type TeamSection,
+  type TeamWorkCredit,
+} from "@/components/dao/TeamContactSheet";
 import { up } from "@/lib/cn";
 
 export async function generateMetadata({
@@ -22,20 +27,22 @@ export async function generateMetadata({
 }
 
 /**
- * /team - the people who run and produce the work.
+ * /team - the contact sheet (approved Direction 1A).
  *
- * Reached from the Studio narrative rather than the main navigation: it belongs
- * to "who we are", not to a ninth top-level destination.
+ * A photographic roster on paper: portraits in complete hand-drawn frames,
+ * grouped under editorial department headings, each opening into an editorial
+ * profile sheet laid INTO the grid without leaving the route.
  *
- * The roster is data-driven from content/team.ts, which is deliberately empty -
- * the repository holds no approved people content, and inventing names, roles or
- * portraits for a live production site is not something a placeholder justifies.
- * So the page renders an honest pre-content state that points at the archive,
- * and switches to the roster the moment real entries are added. No layout work
- * is needed at that point.
+ * This file is the data boundary. Everything the sheet needs is resolved here -
+ * localised, joined to the Work archive, and flattened to plain strings - so the
+ * client component never imports the content layer. Two rules are enforced at
+ * this boundary rather than in the UI:
  *
- * Material language is the existing one: paper ground, grain, the cover/kicker
- * type scale, irregular framed portraits. No cards, no directory grid.
+ *   - a project only reaches a profile through a CONFIRMED credit. selectedWork
+ *     is joined against PROJECTS by slug, and a slug with no matching project is
+ *     dropped rather than rendered as a dead link.
+ *   - every optional field is passed through only when it carries content, so the
+ *     sheet renders the blocks that exist and omits the rest entirely.
  */
 export default async function TeamPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
@@ -43,7 +50,86 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
   const locale = raw as Locale;
   const m = getMessages(locale);
   const R = m.daoRoutes.team;
-  const team = teamSorted();
+
+  const groups = teamByDepartment();
+
+  /** Join a person's credits to the real archive, dropping anything unmatched. */
+  const workOf = (slugs: { slug: string; role?: { en: string; ka: string } }[]): TeamWorkCredit[] =>
+    slugs
+      .map((c): TeamWorkCredit | null => {
+        const p = PROJECTS.find((x) => x.slug === c.slug);
+        if (!p) return null;
+        const media = p.hero ?? p.cover;
+        return {
+          slug: p.slug,
+          title: p.title,
+          client: p.client,
+          year: p.year,
+          cover: media.src,
+          alt: t(media.alt, locale),
+          ...(c.role ? { role: t(c.role, locale) } : {}),
+        };
+      })
+      .filter((x): x is TeamWorkCredit => x !== null);
+
+  const sections: TeamSection[] = groups.map((g) => ({
+    id: g.id,
+    name: t(g.name, locale),
+    people: g.people.map((p): TeamCard => {
+      /**
+       * The professional link row - only the platforms this person actually has.
+       *
+       * Deliberately excludes the portfolio and the email address: the portfolio
+       * is its own VIEW PORTFOLIO call to action (§10) and the email belongs to
+       * the CONTACT block (§09), so neither is duplicated in this row.
+       */
+      const links: TeamCard["links"] = [];
+      if (p.vimeoUrl) links.push({ key: "vimeo", label: "Vimeo", href: p.vimeoUrl });
+      if (p.instagramUrl)
+        links.push({ key: "instagram", label: "Instagram", href: p.instagramUrl });
+      if (p.linkedinUrl) links.push({ key: "linkedin", label: "LinkedIn", href: p.linkedinUrl });
+      if (p.imdbUrl) links.push({ key: "imdb", label: "IMDb", href: p.imdbUrl });
+      if (p.behanceUrl) links.push({ key: "behance", label: "Behance", href: p.behanceUrl });
+
+      return {
+        slug: p.slug,
+        name: p.name,
+        provisional: p.provisional,
+        department: g.id,
+        departmentName: t(g.name, locale),
+        role: p.role ? t(p.role, locale) : undefined,
+        secondaryRoles: p.secondaryRoles.map((r) => t(r, locale)),
+        portrait: p.portrait ? { src: p.portrait.src, alt: t(p.portrait.alt, locale) } : undefined,
+        shortStatement: p.shortStatement ? t(p.shortStatement, locale) : undefined,
+        bio: p.bio ? t(p.bio, locale) : undefined,
+        // practice speaks the Services vocabulary wherever the id is canonical
+        expertise: p.expertise.map((e) =>
+          isCapabilityId(e) ? t(capabilityById(e).name, locale) : e,
+        ),
+        experience: p.experience.map((x) => ({
+          role: t(x.role, locale),
+          ...(x.organization ? { organization: x.organization } : {}),
+          ...(x.period ? { period: x.period } : {}),
+          ...(x.location ? { location: t(x.location, locale) } : {}),
+          ...(x.description ? { description: t(x.description, locale) } : {}),
+        })),
+        selectedWork: workOf(p.selectedWork),
+        clients: p.clients,
+        awards: p.awards.map((x) => t(x, locale)),
+        credits: p.credits.map((x) => t(x, locale)),
+        education: p.education.map((x) => t(x, locale)),
+        languages: p.languages.map((x) => t(x, locale)),
+        location: p.location ? t(p.location, locale) : undefined,
+        email: p.email,
+        phone: p.phone,
+        portfolioUrl: p.portfolioUrl,
+        links,
+      };
+    }),
+  }));
+
+  const order = teamInSectionOrder().map((p) => p.slug);
+  const anyPeople = sections.length > 0;
 
   return (
     <DaoShell
@@ -59,90 +145,38 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
           <span className="dao-kicker dao-fade" style={{ color: "var(--dao-red)" }}>
             {up(R.kicker)}
           </span>
-          <h1 className="dao-cover__title dao-side" style={{ ["--x" as string]: "-60px" }}>
-            {up(R.title)}
+          {/* §03: the page states what it is over two lines, not "Meet the team" */}
+          <h1 className="dtm__title dao-side" style={{ ["--x" as string]: "-60px" }}>
+            {up(R.titleLine1)}
+            <em>{up(R.titleLine2)}</em>
           </h1>
           <p className="dtm__intro dao-fade" style={{ ["--d" as string]: "150ms" }}>
             {R.intro}
           </p>
-          {team.length > 0 && (
-            <span className="dao-label dtm__count dao-fade" style={{ ["--d" as string]: "220ms" }}>
-              {up(format(R.countLabel, { count: team.length }))}
-            </span>
-          )}
         </InView>
 
-        {team.length === 0 ? (
-          /* Pre-content state. Not an error and not a "coming soon" banner - it
-             says what is being prepared and sends the visitor to the archive,
-             which is the truthful record of who does what until the credits are
-             confirmed. */
+        {anyPeople ? (
+          <TeamContactSheet
+            locale={locale}
+            messages={m}
+            sections={sections}
+            order={order}
+            provisionalRoster={!hasConfirmedTeam()}
+          />
+        ) : (
+          /* no seats at all: the honest pre-content state, unchanged */
           <InView className="dtm__pending" threshold={0.1}>
             <span className="dtm__rule" aria-hidden="true" />
             <h2 className="dtm__pendingtitle">{R.pendingTitle}</h2>
             <p className="dtm__pendingdesc">{R.pendingDesc}</p>
-            <Link href={localeHref(locale, "/work")} className="dao-cta dtm__pendingcta">
+            <a href={localeHref(locale, "/work")} className="dao-cta dtm__pendingcta">
               {up(R.pendingCta)} <span aria-hidden="true">→</span>
-            </Link>
+            </a>
             <span
               className="dtm__mark dao-mask"
               style={{ ["--m" as string]: "url(/assets/graphics/wreath.webp)" }}
               aria-hidden="true"
             />
-          </InView>
-        ) : (
-          <InView className="dtm__roster" threshold={0.06}>
-            {team.map((person, i) => (
-              <article
-                key={person.id}
-                className="dtm__person dao-fade"
-                style={{ ["--d" as string]: `${i * 80}ms` }}
-              >
-                <div className="dtm__portrait">
-                  {person.portrait ? (
-                    <Image
-                      src={person.portrait.src}
-                      alt={t(person.portrait.alt, locale)}
-                      fill
-                      sizes="(max-width: 720px) 80vw, 320px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    /* no portrait yet: the frame stays, initials stand in */
-                    <span className="dtm__initials" aria-hidden="true">
-                      {person.name
-                        .split(" ")
-                        .map((w) => w[0])
-                        .join("")
-                        .slice(0, 2)}
-                    </span>
-                  )}
-                </div>
-                <div className="dtm__body">
-                  <h2 className="dtm__name">{person.name}</h2>
-                  <span className="dtm__role">{up(t(person.role, locale))}</span>
-                  {person.bio && <p className="dtm__bio">{t(person.bio, locale)}</p>}
-                  {person.capabilities.length > 0 && (
-                    <span className="dtm__caps">
-                      {person.capabilities
-                        .filter(isCapabilityId)
-                        .map((id) => t(capabilityById(id).name, locale))
-                        .join(" · ")}
-                    </span>
-                  )}
-                  {person.link && (
-                    <a
-                      className="dao-textlink dtm__link"
-                      href={person.link}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {person.link.replace(/^https?:\/\//, "")}
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))}
           </InView>
         )}
       </div>

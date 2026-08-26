@@ -509,10 +509,44 @@ const en = {
       slateSceneValue: "The people",
     },
     team: {
-      kicker: "The people behind 8th State",
-      title: "Production Team",
+      kicker: "Studio → The people",
+      title: "The People Behind The Work",
+      titleLine1: "The people",
+      titleLine2: "behind the work",
       intro:
-        "Production, creative direction and the people who make the work happen - the studio is the crew that runs it.",
+        "Not a directory. The crew that actually carries a production - who holds the brief, who lights it, who builds the set, who cuts it - listed the way a contact sheet lists frames.",
+      // stated above the roster while no person is confirmed, so the number of
+      // seats can never be read as a headcount claim
+      provisionalRoster:
+        "Roster pending confirmation. The seats below are placeholders - names, roles, portraits and credits are added once the studio confirms them.",
+      namePending: "Name pending",
+      rolePending: "Role pending",
+      portraitPending: "Portrait pending",
+      viewProfile: "View profile",
+      about: "About",
+      contact: "Contact",
+      links: "Professional links",
+      viewPortfolio: "View portfolio",
+      opensExternal: "opens an external site in a new tab",
+      selectedWorkNote: "8th State projects this person is credited on.",
+      profilePending:
+        "Profile content pending. This seat is reserved - the statement, biography, practice and credits publish once the studio confirms them.",
+      profile: "Profile",
+      close: "Close",
+      previous: "Previous",
+      nextPerson: "Next person",
+      biography: "Biography",
+      practice: "Practice / expertise",
+      experience: "Experience",
+      credits: "Filmography / credits",
+      clients: "Selected clients",
+      awards: "Awards",
+      education: "Education",
+      languages: "Languages",
+      basedIn: "Based in",
+      selectedWork: "Selected work",
+      portfolio: "Portfolio",
+      email: "Email",
       // shown until approved people content exists
       pendingTitle: "Team profiles are being prepared.",
       pendingDesc:

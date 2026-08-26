@@ -3022,134 +3022,1099 @@ html:has(.dlb) {
    employee directory - it reads as a page of the Studio narrative. */
 
 .dtm {
-  background: var(--dao-paper);
-  color: var(--dao-ink);
+  position: relative;
+  padding-bottom: 90px;
 }
 .dtm__cover {
   position: relative;
-  padding: 26px var(--dao-gutter) 40px;
+  padding: 96px var(--dao-gutter) 30px;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  max-width: 900px;
+  max-width: 940px;
+}
+/* §03/§06: the page states what it is over two lines. Display face, held to the
+   cover scale the rest of the site uses - not a "Meet the team" banner. */
+.dtm__title {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-size: clamp(42px, 7vw, 104px);
+  line-height: 0.94;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+.dtm__title em {
+  font-style: normal;
+  display: block;
 }
 .dtm__intro {
   font-size: 16px;
-  line-height: 1.7;
-  max-width: 600px;
+  line-height: 1.72;
+  max-width: 58ch;
   text-wrap: pretty;
 }
 .dtm__count {
+  align-self: flex-start;
   color: var(--dao-brown);
 }
 
-/* pre-content state */
-.dtm__pending {
+/* ============================================================
+   THE FRAME (§01)
+
+   A COMPLETE four-sided hand-drawn perimeter, composed from four mask layers:
+   two horizontal pen runs (top, bottom) and two vertical ones (left, right).
+
+   Why not one frame asset: ink-frame.svg is a single 300x190 mask, and its own
+   generator notes that it only holds its line weight at that aspect. A portrait
+   is 4:5, so stretching it there scales the axes by very different factors - the
+   top and bottom come out about twice the weight of the sides, which reads as a
+   pair of rules rather than a frame. Composing per-edge means each layer is
+   stretched along its own length ONLY and pinned to a fixed 6px band, so all
+   four sides carry the same thin weight at any card aspect and the rectangle
+   closes by construction. Each run overshoots its ends, so the corners cross the
+   way a hand-ruled box does.
+
+   Nothing here casts a shadow - the frame is the whole treatment.
+   ============================================================ */
+.dtm__frame {
   position: relative;
-  padding: 0 var(--dao-gutter) 110px;
+  display: block;
+  aspect-ratio: 4 / 5;
+}
+.dtm__framein {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #e6e0d4;
+  display: grid;
+  place-items: center;
+}
+.dtm__framein img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dtm__frame::after,
+.dtm__wframe::after {
+  content: "";
+  position: absolute;
+  /* a touch outside the photo, the way a drawn frame overlaps its subject */
+  inset: -5px;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(19, 18, 16, 0.62);
+  transition: background 220ms var(--dao-ease-micro);
+  -webkit-mask-image:
+    url("/assets/graphics/ink-rule-h.svg"), url("/assets/graphics/ink-rule-h.svg"),
+    url("/assets/graphics/ink-rule-v.svg"), url("/assets/graphics/ink-rule-v.svg");
+  mask-image:
+    url("/assets/graphics/ink-rule-h.svg"), url("/assets/graphics/ink-rule-h.svg"),
+    url("/assets/graphics/ink-rule-v.svg"), url("/assets/graphics/ink-rule-v.svg");
+  -webkit-mask-position:
+    left top,
+    left bottom,
+    left top,
+    right top;
+  mask-position:
+    left top,
+    left bottom,
+    left top,
+    right top;
+  -webkit-mask-size:
+    100% 6px,
+    100% 6px,
+    6px 100%,
+    6px 100%;
+  mask-size:
+    100% 6px,
+    100% 6px,
+    6px 100%,
+    6px 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.dtm__initials {
+  font-family: var(--dao-f-display);
+  font-size: clamp(34px, 4.2vw, 58px);
+  color: rgba(19, 18, 16, 0.2);
+}
+.dtm__pendingmark {
+  position: absolute;
+  left: 11px;
+  bottom: 9px;
+  font-family: var(--dao-f-numeral);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  color: rgba(19, 18, 16, 0.4);
+}
+
+/* ---------- roster ---------- */
+.dtm__sheet {
+  position: relative;
+}
+/* §04/§11: the roster declares itself provisional, so the number of seats can
+   never be read as a headcount */
+.dtm__provisional {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  margin: 0 var(--dao-gutter) 8px;
+  padding: 14px 0 0;
+  max-width: 70ch;
+  font-family: var(--dao-f-numeral);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--dao-brown);
+}
+.dtm__section {
+  position: relative;
+}
+.dtm__depthead {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 52px var(--dao-gutter) 14px;
+}
+.dtm__deptno {
+  font-family: var(--dao-f-numeral);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--dao-brown);
+}
+.dtm__deptname {
+  margin: 0;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(19px, 2vw, 26px);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.dtm__deptc {
+  margin-left: auto;
+  font-family: var(--dao-f-numeral);
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  color: rgba(19, 18, 16, 0.45);
+}
+/* the department rule is the same 2px pencil stroke the site uses under type */
+.dtm__deptrule {
+  display: block;
+  height: 2px;
+  margin: 0 var(--dao-gutter);
+  background: rgba(19, 18, 16, 0.55);
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+}
+/* §02: the footprint comes down about a third. Four frames to a row instead of
+   three, and the frame itself is capped, so the reduction is real layout rather
+   than a smaller picture inside the same box. The freed width goes to the
+   contact-sheet reading - more frames per row - and to the profile sheet. */
+.dtm__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 40px 40px;
+  padding: 24px var(--dao-gutter) 32px;
+}
+.dtm__grid .dtm__frame {
+  max-width: 286px;
+}
+.dtm__person {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 18px;
-  max-width: 680px;
-  overflow: clip;
+  gap: 13px;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 240ms var(--dao-ease-micro);
+}
+.dtm__person:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 8px;
+}
+/* the drawn frame carries the irregularity, so the tilt is only enough that no
+   two frames sit on the same axis - not a scatter effect */
+.dtm__person:nth-child(3n + 1) .dtm__frame {
+  transform: rotate(-0.45deg);
+}
+.dtm__person:nth-child(3n + 2) .dtm__frame {
+  transform: rotate(0.3deg);
+}
+.dtm__person:nth-child(3n + 3) .dtm__frame {
+  transform: rotate(-0.2deg);
+}
+.dtm__pbody {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.dtm__pno {
+  font-family: var(--dao-f-numeral);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(19, 18, 16, 0.45);
+}
+.dtm__pname {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.12;
+}
+/* §04: an unmistakably temporary name slot. Reads as a marked blank, never a person. */
+.dtm__slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--dao-f-numeral);
+  font-weight: 400;
+  font-size: 0.62em;
+  letter-spacing: 0.1em;
+  color: rgba(19, 18, 16, 0.55);
+}
+.dtm__slot b {
+  font-weight: 400;
+  color: var(--dao-brown);
+}
+/* §06: roles in the functional face, with the thin pencil rule - never the old
+   thick paint stroke */
+.dtm__role {
+  position: relative;
+  align-self: flex-start;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--dao-red);
+  padding-bottom: 7px;
+}
+.dtm__role::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  clip-path: inset(0 40% 0 0);
+  transition: clip-path 340ms var(--dao-ease-editorial);
+}
+.dtm__role--2,
+.dtm__role--pending {
+  color: rgba(19, 18, 16, 0.6);
+  font-weight: var(--dao-w-copy);
+  letter-spacing: 0.2em;
+}
+.dtm__role--2::after,
+.dtm__role--pending::after {
+  display: none;
+}
+.dtm__view {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dao-ink);
+  opacity: 0;
+  transform: translateY(3px);
+  transition:
+    opacity 220ms var(--dao-ease-micro),
+    transform 220ms var(--dao-ease-micro);
+}
+
+/* §07: restrained hover. The frame inks in, the print gains a shade, the rule
+   completes, the label fades up, siblings step back. No lift, no zoom, no shadow. */
+.dtm__grid.is-open .dtm__person.is-dim {
+  opacity: 0.5;
+}
+@media (hover: hover) {
+  .dtm__person:hover .dtm__frame::after {
+    background: var(--dao-red);
+  }
+  .dtm__person:hover .dtm__framein {
+    filter: contrast(1.04) saturate(0.95);
+  }
+  .dtm__person:hover .dtm__role::after {
+    clip-path: inset(0 0 0 0);
+  }
+  .dtm__person:hover .dtm__view {
+    opacity: 0.78;
+    transform: none;
+  }
+}
+.dtm__person:focus-visible .dtm__frame::after,
+.dtm__person.is-active .dtm__frame::after {
+  background: var(--dao-red);
+}
+.dtm__person:focus-visible .dtm__view {
+  opacity: 0.78;
+  transform: none;
+}
+
+/* -- the expanded profile: one object grown out of the card it came from ----- */
+
+/* §06: the seat keeps its size in the grid, so the roster never reflows. Only
+   the card's own ink goes - visibility, not display, and no collapse. */
+.dtm__person.is-lifted {
+  visibility: hidden;
+}
+
+/* §02/§04: the stage sits over the Team page, against the viewport. It is not a
+   generic modal: the roster stays readable underneath, only stepped back. */
+.dtm__stage {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  /* the backdrop and sheet are the only things that take pointer events, so the
+     stage itself never intercepts a click meant for either */
+  pointer-events: none;
+}
+.dtm__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+  cursor: default;
+  border: 0;
+  padding: 0;
+  /* §04: a light ink wash - the page recedes but is still there. No blur, no
+     near-black scrim. */
+  background: rgba(19, 18, 16, 0.22);
+  opacity: 0;
+  transition: opacity 420ms var(--dao-ease-scene);
+}
+.dtm__stage[data-dtm-phase="settling"] .dtm__backdrop,
+.dtm__stage[data-dtm-phase="open"] .dtm__backdrop {
+  opacity: 1;
+}
+
+/* §03/§04: the morphing element. In the travelling phases its left/top/width/
+   height are set inline to the clicked card's box; at rest it is the centred
+   sheet. Interpolating the box rather than a scale keeps the portrait's
+   proportions honest across a 4:5 card and a landscape sheet. */
+.dtm__morph {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  /* §04: a wide sheet, and a HEIGHT CAP rather than a fixed height - a short
+     profile gets a short sheet, a long one stops at the cap and scrolls. The
+     flex column is what gives the dossier a definite box to scroll inside while
+     the sheet itself is still content-sized. */
+  width: min(86vw, 1180px);
+  height: auto;
+  max-height: min(86vh, 900px);
+  display: flex;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: auto;
+  overflow: hidden;
+  /* §03: the PAPER travels, and only the printing arrives late. Leaving the
+     ground on the content meant the thing crossing the screen was transparent -
+     there was a morph, but nothing to see morphing. */
+  background: #fff;
+  transition:
+    left 520ms var(--dao-ease-scene),
+    top 520ms var(--dao-ease-scene),
+    width 520ms var(--dao-ease-scene),
+    height 520ms var(--dao-ease-scene),
+    transform 520ms var(--dao-ease-scene);
+}
+/* Through the travel the dossier is pinned to the sheet's own measured box by
+   inline style and taken out of flex sizing, so the morph's shrinking height
+   clips it instead of reflowing it. Reflowing an editorial sheet on every frame
+   would both cost layout and shuffle the text; holding it still means the card
+   box is a window opening onto the sheet, which is what "one object" has to
+   look like. */
+/* §07: closing is a sequence, not a crossfade - the content goes first, then the
+   geometry follows it back to the card. */
+.dtm__stage[data-dtm-phase="closing"] .dtm__morph {
+  transition-delay: 140ms;
+}
+/* the sheet's grain, on the sheet itself, so it crops and grows with the travel */
+.dtm__morph::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url("/assets/textures/paper-grain.webp");
+  background-size: 240px;
+  opacity: 0.42;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.dtm__dossier {
+  position: relative;
+  z-index: 1;
+  padding: 34px 34px 28px;
+  /* §04: a clean rectangular edge - no radius, no torn top, no drop shadow */
+  flex: 1 1 auto;
+  min-width: 0;
+  /* min-height: 0 is what lets a flex item shrink below its content and scroll */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* §03/§07: the content is revealed as the geometry settles and retracts before
+   it travels back, which is what makes the two read as one object rather than a
+   panel that fades in over a card. */
+.dtm__morph > .dtm__dossier {
+  opacity: 0;
+  transition: opacity 200ms var(--dao-ease-exit);
+}
+.dtm__stage[data-dtm-phase="settling"] .dtm__morph > .dtm__dossier,
+.dtm__stage[data-dtm-phase="open"] .dtm__morph > .dtm__dossier {
+  opacity: 1;
+  transition: opacity 300ms 180ms var(--dao-ease-editorial);
+}
+.dtm__dossier:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 4px;
+}
+.dtm__slug {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(19, 18, 16, 0.14);
+}
+.dtm__no {
+  font-family: var(--dao-f-numeral);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--dao-brown);
+}
+.dtm__dept {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--dao-red);
+}
+.dtm__nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+/* §11: the site's own text CTA with its pencil rule - not modal buttons */
+.dtm__tcta {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 0 0 6px;
+  font: inherit;
+  cursor: pointer;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dao-ink);
+}
+.dtm__tcta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 320ms var(--dao-ease-editorial);
+}
+.dtm__tcta:hover::after,
+.dtm__tcta:focus-visible::after {
+  clip-path: inset(0 0 0 0);
+}
+.dtm__tcta:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 4px;
+}
+.dtm__tcta--muted {
+  color: rgba(19, 18, 16, 0.38);
+  cursor: default;
+}
+.dtm__tcta--muted::after {
+  display: none;
+}
+.dtm__dtop {
+  position: relative;
+  display: grid;
+  /* §02: 392 -> 264, the same ~two-thirds reduction as the roster */
+  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 36px;
+  padding-top: 24px;
+}
+.dtm__bigframe {
+  position: relative;
+}
+.dtm__bigframe .dtm__frame {
+  transform: rotate(-0.35deg);
+}
+.dtm__id {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.dtm__dname {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1;
+  letter-spacing: 0.004em;
+}
+.dtm__statement {
+  margin: 0;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 17px;
+  line-height: 1.62;
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+/* the reserved-seat notice - fills the column honestly instead of leaving a void */
+.dtm__awaiting {
+  margin: 0;
+  max-width: 46ch;
+  font-family: var(--dao-f-numeral);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--dao-brown);
+  padding: 14px 0 2px;
+  border-top: 1px solid rgba(19, 18, 16, 0.14);
+}
+.dtm__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 34px;
+  padding-top: 8px;
+}
+.dtm__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.dtm__field--wide {
+  grid-column: 1 / -1;
+}
+.dtm__fieldk {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--dao-brown);
+}
+.dtm__fieldv {
+  font-family: var(--dao-f-numeral);
+  font-size: 13px;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+}
+.dtm__fieldv p {
+  margin: 0 0 9px;
+}
+.dtm__bio {
+  margin: 0;
+  font-family: var(--dao-f-ui);
+  font-weight: 400;
+  font-size: 14.5px;
+  line-height: 1.78;
+  max-width: 70ch;
+}
+.dtm__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  padding-top: 4px;
+}
+.dtm__links a {
+  position: relative;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dao-ink);
+  text-decoration: none;
+  padding-bottom: 5px;
+}
+.dtm__links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 320ms var(--dao-ease-editorial);
+}
+.dtm__links a:hover::after,
+.dtm__links a:focus-visible::after {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ============================================================
+   §03-§12 the profile sheet, as sections
+
+   The sheet is a stack of ruled blocks rather than one grid of labelled cells.
+   Each block is present only when its data is, so a thin profile is short and a
+   full one reads as a dossier - and neither shows a labelled blank.
+   ============================================================ */
+.dtm__block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(19, 18, 16, 0.14);
+}
+/* two editorial columns - EXPERIENCE against PRACTICE, CONTACT against LINKS */
+.dtm__block--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 26px 44px;
+  align-items: start;
+}
+/* the shorter facts sit in a row of narrow fields rather than a wide grid */
+.dtm__block--record {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 22px 34px;
+}
+.dtm__col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.dtm__blockk {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--dao-red);
+}
+.dtm__blocknote {
+  font-family: var(--dao-f-numeral);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--dao-brown);
+  margin-top: -4px;
+}
+
+/* §04 the header actions: the person's own site, and a jump to CONTACT */
+.dtm__actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}
+/* §10: VIEW PORTFOLIO is the one emphasised control in the sheet - it leaves the
+   site, so it is deliberately not styled like the internal Work links. */
+.dtm__portfolio,
+.dtm__jump {
+  position: relative;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--dao-ink);
+  padding-bottom: 6px;
+}
+.dtm__jump {
+  font-weight: var(--dao-w-copy);
+  color: rgba(19, 18, 16, 0.62);
+}
+.dtm__portfolio::after,
+.dtm__jump::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  transition: clip-path 320ms var(--dao-ease-editorial);
+}
+/* the portfolio rule is drawn at rest, so the one outbound action reads as the
+   emphasis of the sheet; everything else draws its rule on interaction */
+.dtm__portfolio::after {
+  clip-path: inset(0 0 0 0);
+  background: var(--dao-red);
+}
+.dtm__jump::after {
+  clip-path: inset(0 100% 0 0);
+}
+.dtm__jump:hover::after,
+.dtm__jump:focus-visible::after {
+  clip-path: inset(0 0 0 0);
+}
+.dtm__portfolio:focus-visible,
+.dtm__jump:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 4px;
+}
+
+/* §06 EXPERIENCE as a record, at any count */
+.dtm__exp {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dtm__exprow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(19, 18, 16, 0.18);
+}
+.dtm__exprole {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: 14px;
+  line-height: 1.25;
+}
+.dtm__exporg {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 12.5px;
+  color: rgba(19, 18, 16, 0.78);
+}
+.dtm__expmeta {
+  font-family: var(--dao-f-numeral);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--dao-brown);
+}
+.dtm__expdesc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(19, 18, 16, 0.72);
+  max-width: 52ch;
+  padding-top: 2px;
+}
+
+/* §07 PRACTICE as a list of disciplines, not chips */
+.dtm__tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.dtm__tags li {
+  font-family: var(--dao-f-numeral);
+  font-size: 13px;
+  line-height: 1.5;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(19, 18, 16, 0.12);
+}
+.dtm__tags li:last-child {
+  border-bottom: 0;
+}
+
+/* §09 CONTACT */
+.dtm__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: var(--dao-f-numeral);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.dtm__contact a {
+  color: var(--dao-ink);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(19, 18, 16, 0.25);
+  align-self: flex-start;
+  padding-bottom: 2px;
+}
+.dtm__contact a:hover,
+.dtm__contact a:focus-visible {
+  border-bottom-color: var(--dao-red);
+}
+.dtm__where {
+  color: var(--dao-brown);
+}
+
+/* §10 Selected Work - the Work archive's own frame and caption language */
+.dtm__work {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 30px;
+}
+.dtm__workrow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.dtm__wcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  text-decoration: none;
+  color: inherit;
+}
+.dtm__wcard:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 6px;
+}
+.dtm__wframe {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+}
+.dtm__wframe .dtm__framein {
+  background: #2f2d2a;
+}
+.dtm__wcard:hover .dtm__wframe::after,
+.dtm__wcard:focus-visible .dtm__wframe::after {
+  background: var(--dao-red);
+}
+.dtm__wno {
+  position: absolute;
+  left: 9px;
+  top: 7px;
+  z-index: 3;
+  font-family: var(--dao-f-numeral);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: rgba(242, 237, 227, 0.75);
+}
+.dtm__wtitle {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: 14px;
+  line-height: 1.2;
+}
+.dtm__wmeta {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dao-brown);
+}
+
+/* ---------- pre-content state (no seats at all) ---------- */
+.dtm__pending {
+  position: relative;
+  margin: 30px var(--dao-gutter) 0;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .dtm__rule {
   display: block;
-  width: 110px;
-  height: 6px;
+  width: 120px;
+  height: 2px;
   background: var(--dao-red);
-  -webkit-mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
-  mask: url("/assets/textures/paint-stroke.webp") center / cover no-repeat;
+  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
+  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
 }
 .dtm__pendingtitle {
-  font-family: var(--dao-f-display);
-  font-size: clamp(24px, 3vw, 40px);
-  line-height: 1.05;
-  color: var(--dao-ink);
+  margin: 0;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(20px, 2.4vw, 30px);
+  line-height: 1.16;
 }
 .dtm__pendingdesc {
+  margin: 0;
   font-size: 15px;
-  line-height: 1.75;
-  color: rgba(19, 18, 16, 0.75);
+  line-height: 1.76;
+  color: rgba(19, 18, 16, 0.7);
   text-wrap: pretty;
 }
 .dtm__pendingcta {
+  align-self: flex-start;
   color: var(--dao-ink);
 }
 .dtm__mark {
   position: absolute;
-  right: clamp(-90px, -6vw, -30px);
-  bottom: 40px;
-  width: clamp(150px, 22vw, 300px);
-  aspect-ratio: 1;
-  background: rgba(19, 18, 16, 0.07);
+  right: -10px;
+  bottom: -30px;
+  width: 120px;
+  height: 120px;
+  background: rgba(86, 98, 46, 0.4);
   pointer-events: none;
 }
-@media (max-width: 720px) {
-  .dtm__mark {
-    display: none;
+
+/* ---------- §12 mobile: one person per row, portrait first ---------- */
+@media (max-width: 900px) {
+  .dtm__dtop {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  .dtm__bigframe {
+    max-width: 264px;
+  }
+  .dtm__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dtm__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dtm__workrow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-/* roster - renders as soon as content/team.ts has entries */
-.dtm__roster {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 56px 44px;
-  padding: 0 var(--dao-gutter) 120px;
+@media (max-width: 720px) {
+  .dtm__cover {
+    padding-top: 74px;
+  }
+  /* one person per row: portrait left, name and role beside it, rules between */
+  .dtm__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 6px var(--dao-gutter) 20px;
+  }
+  .dtm__person {
+    display: grid;
+    /* §02/§15: 118 -> 80 */
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    padding: 17px 0;
+    border-bottom: 1px solid rgba(19, 18, 16, 0.13);
+    min-height: 44px;
+  }
+  .dtm__person .dtm__frame,
+  .dtm__person:nth-child(3n + 1) .dtm__frame,
+  .dtm__person:nth-child(3n + 2) .dtm__frame,
+  .dtm__person:nth-child(3n + 3) .dtm__frame {
+    transform: rotate(-0.4deg);
+  }
+  .dtm__person:nth-child(even) .dtm__frame {
+    transform: rotate(0.35deg);
+  }
+  .dtm__pname {
+    font-size: 17px;
+  }
+  /* the label is a hover affordance; on touch the whole row is the target */
+  .dtm__view {
+    display: none;
+  }
+  /* §12: same interaction, sized for the hand - near-full-screen with a margin
+     that keeps the page edge visible, so it still reads as a sheet over Team. */
+  .dtm__morph {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+  }
+  .dtm__dossier {
+    padding: 20px 18px 22px;
+  }
+  /* §02/§15: the portrait comes down on phones too - 320 -> 214 */
+  .dtm__bigframe {
+    max-width: 214px;
+  }
+  /* close stays reachable however far the sheet scrolls */
+  .dtm__slug {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: #fff;
+    padding-top: 12px;
+  }
+  .dtm__nav {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .dtm__nav .dtm__tcta,
+  .dtm__portfolio,
+  .dtm__jump,
+  .dtm__contact a,
+  .dtm__links a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .dtm__workrow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .dtm__wcard {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 13px;
+    align-items: center;
+    min-height: 44px;
+  }
+  .dtm__wframe {
+    aspect-ratio: 4 / 3;
+  }
+  .dtm__statement {
+    font-size: 15.5px;
+  }
 }
-.dtm__person {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+@media (max-width: 380px) {
+  .dtm__person {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 13px;
+  }
+  .dtm__wcard {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
 }
-.dtm__portrait {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  background: #e6e0d4;
-  overflow: hidden;
-  /* the site's irregular frame language, not a rounded avatar */
-  transform: rotate(-1deg);
-  box-shadow: 0 16px 40px rgba(19, 18, 16, 0.22);
-  display: grid;
-  place-items: center;
-}
-.dtm__initials {
-  font-family: var(--dao-f-display);
-  font-size: clamp(38px, 5vw, 64px);
-  color: rgba(19, 18, 16, 0.28);
-}
-.dtm__body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.dtm__name {
-  font-family: var(--dao-f-latin);
-  font-weight: var(--dao-w-editorial);
-  font-size: clamp(19px, 2vw, 26px);
-  line-height: 1.1;
-}
-.dtm__role {
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.24em;
-  color: var(--dao-red);
-}
-.dtm__bio {
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: rgba(19, 18, 16, 0.72);
-  text-wrap: pretty;
-}
-.dtm__caps {
-  font-family: var(--dao-f-numeral);
-  font-size: 11px;
-  color: var(--dao-brown);
-}
-.dtm__link {
-  align-self: flex-start;
-  font-size: 12px;
-  color: var(--dao-ink);
+@media (prefers-reduced-motion: reduce) {
+  .dtm__person,
+  .dtm__frame::after,
+  .dtm__wframe::after,
+  .dtm__role::after,
+  .dtm__tcta::after,
+  .dtm__links a::after,
+  .dtm__view {
+    transition: none;
+  }
+  /* §11: no travel at all. The shell already skips the morph phases, so the
+     sheet is simply present at its centred geometry - the whole interaction
+     still works, it just does not move. */
+  .dtm__morph,
+  .dtm__backdrop {
+    transition: none;
+  }
+  .dtm__morph > .dtm__dossier,
+  .dtm__stage[data-dtm-phase="open"] .dtm__morph > .dtm__dossier {
+    /* a short fade is the one motion that stays - it is opacity, not geometry */
+    transition: opacity 120ms linear;
+  }
 }

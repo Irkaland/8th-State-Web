@@ -102,33 +102,93 @@ export type Project = z.infer<typeof projectSchema>;
 // ---- Team -------------------------------------------------------------------
 
 /**
- * One person who runs and produces the work.
+ * The departments a person can belong to, in the approved display order.
+ * A section renders only when it has members, so this is an ordering contract
+ * rather than a set of headings that must all appear.
+ */
+export const teamDepartment = z.enum([
+  "production",
+  "direction",
+  "creative",
+  "photography",
+  "art-department",
+  "post-production",
+  "studio-lab",
+]);
+export type TeamDepartment = z.infer<typeof teamDepartment>;
+
+/**
+ * One post in a person's professional history.
  *
- * The repository contains NO approved people data - the only person-shaped
- * content anywhere is `credits[].name: "Name Surname"` with provisional: true,
- * an explicit placeholder. So this schema exists and the page is built, but
- * TEAM is deliberately empty: inventing names, titles, biographies or portraits
- * would put fabricated claims about real staff on a live production site.
+ * Structured rather than a string so EXPERIENCE can be laid out as a record -
+ * role against organisation, with the period and place set as metadata - and so
+ * the section works with 0, 1 or many entries without the layout assuming a
+ * count. Only `role` is required; a half-known post renders the parts it has.
+ */
+export const teamExperienceSchema = z.object({
+  role: localizedTextSchema,
+  organization: z.string().min(1).optional(),
+  period: z.string().min(1).optional(),
+  location: localizedTextSchema.optional(),
+  description: localizedTextSchema.optional(),
+});
+export type TeamExperience = z.infer<typeof teamExperienceSchema>;
+
+/** One credited project on a person's profile - joins to the Work archive. */
+export const teamCreditSchema = z.object({
+  /** must be a real slug in content/projects.ts; the contract test enforces it */
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  /** what this person did on it, in their own credit language */
+  role: localizedTextSchema.optional(),
+});
+export type TeamCredit = z.infer<typeof teamCreditSchema>;
+
+/**
+ * A person.
  *
- * Everything a real entry will need is here, so adding people later is a data
- * edit and nothing more:
- *   name          not localised - a person's name is their name
- *   role          localised job title
- *   bio           localised short bio, optional until copy is approved
- *   portrait      optional: absent renders the typographic placeholder frame
- *   capabilities  optional link to the canonical capability taxonomy
- *   link          optional single external link (site/profile)
- *   order         explicit sort, same convention as projects
+ * Everything after the department is optional on purpose: the profile sheet
+ * renders a block only when its field carries real content, so a half-confirmed
+ * person shows a shorter sheet rather than a row of labelled blanks.
+ *
+ * The provisional flag marks a placeholder slot - a seat the studio has said
+ * exists but has not yet supplied a person for. Those render as an explicit
+ * marked blank and never as a name.
  */
 export const teamMemberSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/, "id must be kebab-case"),
-  name: z.string().min(1),
-  role: localizedTextSchema,
-  bio: localizedTextSchema.optional(),
+  /** the URL key for ?person= - kebab-case, stable */
+  slug: z.string().regex(/^[a-z0-9-]+$/, "slug must be kebab-case"),
+  /** omitted while the seat is provisional; the UI shows a marked blank */
+  name: z.string().min(1).optional(),
+  provisional: z.boolean().default(false),
+  department: teamDepartment,
+  role: localizedTextSchema.optional(),
+  secondaryRoles: z.array(localizedTextSchema).default([]),
   portrait: mediaSchema.optional(),
-  capabilities: z.array(z.string()).default([]),
-  link: z.string().url().optional(),
+  shortStatement: localizedTextSchema.optional(),
+  bio: localizedTextSchema.optional(),
+  /** canonical capability ids where possible, so practice and Services agree */
+  expertise: z.array(z.string()).default([]),
+  experience: z.array(teamExperienceSchema).default([]),
+  /** only projects this person is actually credited on */
+  selectedWork: z.array(teamCreditSchema).default([]),
+  clients: z.array(z.string()).default([]),
+  awards: z.array(localizedTextSchema).default([]),
+  credits: z.array(localizedTextSchema).default([]),
+  education: z.array(localizedTextSchema).default([]),
+  languages: z.array(localizedTextSchema).default([]),
+  location: localizedTextSchema.optional(),
+  portfolioUrl: z.string().url().optional(),
+  instagramUrl: z.string().url().optional(),
+  vimeoUrl: z.string().url().optional(),
+  linkedinUrl: z.string().url().optional(),
+  imdbUrl: z.string().url().optional(),
+  behanceUrl: z.string().url().optional(),
+  email: z.string().email().optional(),
+  /** free-form so international formats survive; never invented */
+  phone: z.string().min(1).optional(),
   order: z.number().int(),
+  featured: z.boolean().default(false),
 });
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 

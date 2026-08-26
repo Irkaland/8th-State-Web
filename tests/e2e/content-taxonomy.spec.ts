@@ -551,16 +551,23 @@ test.describe("§18-§23 Team", () => {
     await expect(page.locator("[data-dao-team-cta]")).toHaveAttribute("href", "/ka/team");
   });
 
+  // SUPERSEDED: /team used to be a pre-content notice with no roster, so this
+  // asserted a .dtm__pending block and zero cards. The approved contact-sheet
+  // implementation builds the roster from provisional SEATS, so the claim that
+  // has to hold is no longer "there are no people" but the stronger "no seat
+  // carries a fabricated person" - which is what is asserted now.
   test("loads in EN and KA with no fabricated people", async ({ page }) => {
     for (const route of ["/team", "/ka/team"]) {
       await gotoRoute(page, route);
       await expect(page.locator(".dtm__cover")).toBeVisible();
-      // pre-content state, because no approved team data exists
-      await expect(page.locator(".dtm__pending")).toHaveCount(1);
-      await expect(page.locator(".dtm__person")).toHaveCount(0);
-      // and it offers the archive as the honest record instead
-      const href = await page.locator(".dtm__pendingcta").getAttribute("href");
-      expect(href).toMatch(route.startsWith("/ka") ? /^\/ka\/work$/ : /^\/work$/);
+      const cards = await page.locator(".dtm__person").count();
+      expect(cards).toBeGreaterThan(0);
+      // every seat is a marked blank, never a name
+      await expect(page.locator(".dtm__slot")).toHaveCount(cards);
+      // and the roster says of itself that it is unconfirmed
+      await expect(page.locator(".dtm__provisional")).toHaveCount(1);
+      // no portrait is invented either
+      expect(await page.locator(".dtm__framein img").count()).toBe(0);
     }
   });
 

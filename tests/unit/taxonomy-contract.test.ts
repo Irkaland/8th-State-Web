@@ -290,15 +290,30 @@ describe("work filter state", () => {
 });
 
 describe("team content", () => {
+  // SUPERSEDED: the roster used to be empty, so this asserted length 0. The
+  // approved contact-sheet implementation builds the roster from provisional
+  // SEATS, so what has to hold now is that no seat carries a fabricated person -
+  // which is a stronger claim than "there are none". Full coverage of the seats,
+  // the department order and the credit join lives in team-contact-sheet.test.ts.
   it("ships no fabricated people", () => {
-    expect(TEAM).toHaveLength(0);
-    expect(hasTeam()).toBe(false);
+    for (const person of TEAM) {
+      if (person.provisional) {
+        expect(person.name, `${person.slug} is a seat and must carry no name`).toBeUndefined();
+      } else {
+        expect(person.name, `${person.slug} is confirmed and must be named`).toBeTruthy();
+      }
+    }
+    expect(hasTeam()).toBe(true);
   });
 
-  it("declares capability links against the canonical ids", () => {
-    // guards a future data edit: any capability a member claims must be real
+  it("declares practice against the canonical capability ids", () => {
+    // guards a future data edit: a capability a member claims must be real.
+    // Free-text expertise is allowed, but anything that LOOKS like a capability
+    // id has to actually be one.
     for (const person of TEAM) {
-      for (const id of person.capabilities) expect(isCapabilityId(id)).toBe(true);
+      for (const id of person.expertise) {
+        if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id)) expect(isCapabilityId(id)).toBe(true);
+      }
     }
   });
 });
