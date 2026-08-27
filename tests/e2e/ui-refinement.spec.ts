@@ -8,7 +8,8 @@ import { gotoRoute } from "./helpers";
  * tests/unit/ui-refinement.test.ts instead.
  *
  *   01  the Studio Lab card: calmer, a third smaller, still across the seam
- *   02  the closing sun: complete, and clear of the statement
+ *   02  the closing sun: top rays intact, and it does not stretch the band
+ *   03  the two dark Studio surfaces: one material, no gap and no seam
  *   03  the Start a Project bird: vector, so never drawn past its own source
  *   04  the three major service headings: the display face
  *   05  the favicon: the red brandbook sun, with no stale path
@@ -59,9 +60,9 @@ test.describe("01 the Studio Lab card", () => {
     // still the business-card proportion, never squared up
     expect(m.w / m.h).toBeGreaterThan(1.5);
     expect(m.w / m.h).toBeLessThan(1.75);
-    // it was 23deg; still unmistakably turned, never a level UI card
-    expect(m.deg).toBeGreaterThan(11);
-    expect(m.deg).toBeLessThan(19);
+    // 23 -> 15 -> 7.5: a real turn, never a level UI card (see the Studio pass)
+    expect(m.deg).toBeGreaterThan(5);
+    expect(m.deg).toBeLessThan(11);
     // and the intentional overlap across the light/dark boundary survives
     expect(m.top).toBeLessThan(m.roomsTop - 8);
   });
@@ -104,8 +105,9 @@ test.describe("01 the Studio Lab card", () => {
       });
       // 340 -> 300, not 340 -> 227: moderately smaller, still a statement
       expect(m.card, "width").toBeGreaterThan(Math.min(255, w * 0.7));
-      expect(m.deg, "tilt").toBeGreaterThan(5);
-      expect(m.deg, "tilt").toBeLessThan(11);
+      // 12 -> 8 -> 4: halved with the desktop card, step for step
+      expect(m.deg, "tilt").toBeGreaterThan(2);
+      expect(m.deg, "tilt").toBeLessThan(6);
       // the ROTATED box keeps a real margin on both sides and never clips
       expect(m.left, "left margin").toBeGreaterThan(6);
       expect(m.right, "right margin").toBeGreaterThan(6);
@@ -117,39 +119,118 @@ test.describe("01 the Studio Lab card", () => {
 
 /* ------------------------------------------------------------ 02 the sun -- */
 
+/**
+ * SUPERSEDES "02 the closing sun renders whole and clear of the statement".
+ *
+ * Requiring the WHOLE mark inside the band meant the mark set the band's
+ * height: 634px at 1440, against ~250px of actual content, which put a long
+ * stretch of empty ink between "Nine capabilities..." and "Make something with
+ * us." The approved trade is explicit and is now what this asserts:
+ *
+ *   - the TOP of the sun is protected - no upper ray may ever be sheared;
+ *   - the band is the height of its OWN content, not of the graphic;
+ *   - the sun's lower edge may therefore be cropped by the section boundary,
+ *     deliberately, and that is fine;
+ *   - and on desktop it still keeps clear of the statement, which is where
+ *     there is room for it to.
+ *
+ * That is a stricter test than the version it replaces, because it pins both
+ * halves of the trade rather than only the graphic.
+ */
 test.describe("02 the closing sun", () => {
   for (const w of ALL) {
-    test(`renders whole and clear of the statement @${w}`, async ({ page }) => {
+    test(`keeps its top rays and does not stretch the band @${w}`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: 900 });
       await gotoRoute(page, "/studio");
-      const m = await page.locator(".dst__handoffsun").evaluate((el) => {
-        const band = el.closest(".dst__handoff")!.getBoundingClientRect();
+      const m = await page.evaluate(() => {
+        const band = document.querySelector(".dst__handoff")!.getBoundingClientRect();
+        const el = document.querySelector(".dst__handoffsun")!;
         const r = el.getBoundingClientRect();
-        const hits = [".dst__make", ".dst__handoffbody .dao-cta"]
-          .map((s) => document.querySelector(s)!.getBoundingClientRect())
-          .filter(
-            (b) =>
-              !(b.right <= r.left || b.left >= r.right || b.bottom <= r.top || b.top >= r.bottom),
-          );
+        const make = document.querySelector(".dst__make")!.getBoundingClientRect();
+        const cta = document.querySelector(".dst__handoffbody .dao-cta")!.getBoundingClientRect();
+        const hit = (b: DOMRect) =>
+          !(b.right <= r.left || b.left >= r.right || b.bottom <= r.top || b.top >= r.bottom);
         return {
           h: r.height,
-          inset: [
-            r.top - band.top,
-            band.bottom - r.bottom,
-            r.left - band.left,
-            band.right - r.right,
-          ],
-          collisions: hits.length,
+          top: r.top - band.top,
+          left: r.left - band.left,
+          right: band.right - r.right,
+          bandH: band.height,
+          // where the statement sits INSIDE the band - 90px of padding-top, as
+          // it always did, rather than floating in the middle of a tall box
+          makeTop: make.top - band.top,
+          // and where the band ends relative to the last line of content
+          tail: band.bottom - cta.bottom,
+          collides: hit(make) || hit(cta),
+          alpha: getComputedStyle(el).backgroundColor,
         };
       });
-      // §11 put `overflow: clip` on this band, so anything outside it is CROPPED
-      const sides = ["top", "bottom", "left", "right"];
-      m.inset.forEach((side, i) => {
-        expect(side, `${sides[i]} ray inside the band`).toBeGreaterThan(0);
-      });
+      // the three sides that must never be sheared
+      expect(m.top, "top rays inside the band").toBeGreaterThan(0);
+      expect(m.left, "left inside the band").toBeGreaterThanOrEqual(0);
+      expect(m.right, "right inside the band").toBeGreaterThanOrEqual(0);
       // still an atmospheric print rather than an icon
       expect(m.h, "still large").toBeGreaterThan(200);
-      expect(m.collisions, "clear of the statement and the CTA").toBe(0);
+      // the band is its own content's height: the statement sits at the top
+      // padding and the band ends just after the CTA
+      expect(m.makeTop, "statement at the top of the band").toBeLessThan(110);
+      expect(m.tail, "band ends just after the CTA").toBeLessThan(130);
+      expect(m.bandH, "band not stretched to fit the graphic").toBeLessThan(320);
+      if (w > 720) {
+        // on desktop there is room beside the statement, so it is kept clear
+        expect(m.collides, "clear of the statement and the CTA").toBe(false);
+      } else {
+        // on a phone there is not, so it sits BEHIND as one composition - which
+        // is only acceptable because it is a 7%-cream print, not a fill
+        const a = Number(/rgba?\([^)]*,\s*([\d.]+)\)/.exec(m.alpha)?.[1] ?? "1");
+        expect(a, "a print behind the type, never a fill").toBeLessThanOrEqual(0.09);
+      }
+    });
+  }
+});
+
+/* ------------------------------------------- the two blacks meet cleanly -- */
+
+test.describe("03 the dark Studio surfaces are one material", () => {
+  for (const w of ALL) {
+    test(`no gap and no seam between them @${w}`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: 900 });
+      await gotoRoute(page, "/studio");
+      const m = await page.evaluate(() => {
+        const rooms = document.querySelector(".dst__rooms")!;
+        const handoff = document.querySelector(".dst__handoff")!;
+        const R = rooms.getBoundingClientRect();
+        const H = handoff.getBoundingClientRect();
+        const card = document.querySelector(".dst__labpanel") as HTMLElement;
+        return {
+          // the actual defect: the phone card's 34px bottom margin collapsed
+          // THROUGH the section and left a band of untextured page ink between
+          // the two, with a hard edge either side of it
+          gap: Math.round(H.top - R.bottom),
+          sameGround:
+            getComputedStyle(rooms).backgroundColor === getComputedStyle(handoff).backgroundColor,
+          bothWeave:
+            !!rooms.querySelector(":scope > .dao-weave") &&
+            !!handoff.querySelector(":scope > .dao-weave"),
+          // and the card's shadow must finish inside its own section rather
+          // than being occluded by the next one, which drew the same edge.
+          // Measured off the card's LAYOUT box, which is what box-shadow is
+          // specified against - its rotated envelope reaches ~10px lower.
+          shadowRoom:
+            card.offsetParent === rooms
+              ? Math.round(rooms.clientHeight - (card.offsetTop + card.offsetHeight))
+              : null,
+          contained: getComputedStyle(rooms).display,
+        };
+      });
+      expect(m.gap, "the sections must meet, with nothing between them").toBe(0);
+      expect(m.sameGround, "same ink").toBe(true);
+      expect(m.bothWeave, "same material").toBe(true);
+      if (w <= 720) {
+        // the phone card is in flow; its drop shadow reaches ~45px below it
+        expect(m.contained, "the section contains its last child's margin").toBe("flow-root");
+        expect(m.shadowRoom, "room for the shadow to finish").toBeGreaterThanOrEqual(45);
+      }
     });
   }
 });

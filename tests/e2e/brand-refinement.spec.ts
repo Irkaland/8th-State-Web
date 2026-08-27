@@ -392,12 +392,13 @@ test.describe("§10-§12 Studio", () => {
    * now a landscape card laid across the boundary, and the studio asked for a
    * deliberate clockwise turn.
    *
-   * The 20-30deg window this test used to hold is itself superseded: the
-   * refinement pass eased the turn by a third, to 15deg, because at 23 the
-   * card fought the reading angle of its own three lines. What the test is
-   * for is unchanged - the turn must stay a deliberate, clearly visible
-   * clockwise placement and must never flatten into an ordinary UI card - so
-   * the window moves with the decision and the claim does not.
+   * The 20-30deg window this test used to hold is itself superseded twice: the
+   * first refinement pass eased the turn to 15deg, and the Studio pass halved
+   * that again to 7.5, because the studio wants a card LAID on the composition
+   * rather than one pinned to it at an angle. What the test is for is unchanged
+   * - the turn must stay a real, deliberate clockwise placement and must never
+   * reach zero, where the card would read as an ordinary UI panel - so the
+   * window moves with the decision and the claim does not.
    */
   test("the tilt is a deliberate clockwise turn", async ({ page }) => {
     await gotoRoute(page, "/studio");
@@ -410,8 +411,8 @@ test.describe("§10-§12 Studio", () => {
       .split(",")
       .map(Number);
     const deg = (Math.atan2(parts[1]!, parts[0]!) * 180) / Math.PI;
-    expect(deg, "clockwise, and never mistakable for a level card").toBeGreaterThan(11);
-    expect(deg, "placed, not gimmicky").toBeLessThan(19);
+    expect(deg, "clockwise, and never a level UI panel").toBeGreaterThan(5);
+    expect(deg, "laid on the composition, not pinned at an angle").toBeLessThan(11);
   });
 
   test("the Lab card text is fully readable and uncropped", async ({ page }) => {
@@ -473,12 +474,21 @@ test.describe("§10-§12 Studio", () => {
    * missing. It is now measured against the band, which is the thing it has
    * to fit inside.
    *
-   * So the assertion moves from "wider than 700px" - a proxy that could only
+   * So the assertion moved from "wider than 700px" - a proxy that could only
    * ever be satisfied by cropping - to the two things actually wanted: the
-   * WHOLE symbol renders, and it is still a large atmospheric print rather
-   * than an icon. Both are stronger than what they replace.
+   * symbol's rays render, and it is still a large atmospheric print.
+   *
+   * SUPERSEDED AGAIN by the Studio pass. Fitting the WHOLE mark meant the mark
+   * dictated the band's height, and a 634px band left a long stretch of empty
+   * black between the two statements. The approved trade is explicit: protect
+   * the TOP of the sun, and let the band's own bottom edge crop it. So the
+   * four-sided containment check becomes a three-sided one plus a height
+   * ceiling - which is a stricter test of the actual intent than either
+   * version before it, because it now pins BOTH halves of the trade.
    */
-  test("§12 the sun is the brandbook symbol, whole, large and still quiet", async ({ page }) => {
+  test("§12 the sun is the brandbook symbol, uncropped at the top, still quiet", async ({
+    page,
+  }) => {
     await gotoRoute(page, "/studio");
     const got = await page.evaluate(() => {
       const el = document.querySelector(".dst__handoffsun")!;
@@ -493,17 +503,20 @@ test.describe("§10-§12 Studio", () => {
         bottom: b.bottom - r.bottom,
         left: r.left - b.left,
         right: b.right - r.right,
+        bandH: b.height,
         statement: document.querySelector(".dst__make")!.getBoundingClientRect().height,
         bg: cs.backgroundColor,
         mask: cs.maskImage || cs.webkitMaskImage,
       };
     });
     expect(got.mask).toContain("bb-sun-symbol");
-    // nothing is cropped: every edge of the mark is inside the band that clips it
+    // the top is protected: not one upper ray is sheared by the containment
     expect(got.top, "top rays inside the band").toBeGreaterThan(0);
-    expect(got.bottom, "bottom inside the band").toBeGreaterThan(0);
     expect(got.left, "left inside the band").toBeGreaterThan(0);
     expect(got.right, "right inside the band").toBeGreaterThan(0);
+    // the bottom may be cropped by the band - that is the approved trade, and
+    // the other half of it is that the band stays the height of its own content
+    expect(got.bandH, "the sun must not dictate the band's height").toBeLessThan(320);
     // still a background graphic, not an icon: taller than the closing statement
     expect(got.h).toBeGreaterThan(got.statement * 3);
     // still a print: nowhere near a visible fill

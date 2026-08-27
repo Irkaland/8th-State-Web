@@ -30,16 +30,20 @@ function rule(css: string, selector: string): string {
   return css.slice(open, close);
 }
 
+/** a rule body with its comments removed - these rules carry long rationale */
+const decls = (body: string) => body.replace(/\/\*[\s\S]*?\*\//g, "");
+
 /* ------------------------------------------------- 01 the Studio Lab card -- */
 
 describe("01 the Studio Lab card is calmer and a third smaller", () => {
   const card = rule(routes, ".dst__labpanel {");
 
-  it("keeps the tilted-card concept but eases the turn by a third", () => {
+  it("keeps the tilted-card concept but eases the turn", () => {
     const deg = Number(/transform:\s*rotate\((-?[\d.]+)deg\)/.exec(card)![1]);
-    // 23 -> 15: a third of the way back to level, and nothing like level
-    expect(deg).toBeGreaterThan(11);
-    expect(deg).toBeLessThan(19);
+    // 23 -> 15 (first pass) -> 7.5 (Studio pass): a card laid on the
+    // composition rather than pinned to it, and still never level
+    expect(deg).toBeGreaterThan(5);
+    expect(deg).toBeLessThan(11);
   });
 
   it("is about a third smaller, and still landscape", () => {
@@ -71,24 +75,84 @@ describe("01 the Studio Lab card is calmer and a third smaller", () => {
     // small for three lines of copy to still be a statement.
     expect(px).toBeGreaterThan(280);
     expect(px).toBeLessThan(330);
+    // 12 -> 8 -> 4, halved with the desktop card step for step
     const deg = Number(/transform:\s*rotate\((-?[\d.]+)deg\)/.exec(phone)![1]);
-    expect(deg).toBeGreaterThan(5);
-    expect(deg).toBeLessThan(11);
+    expect(deg).toBeGreaterThan(2);
+    expect(deg).toBeLessThan(6);
   });
 });
 
 /* ------------------------------------------------------------ 02 the sun -- */
 
-describe("02 the closing sun is sized to fit the band it is clipped by", () => {
-  it("is measured by height against a band with a minimum height", () => {
-    const band = rule(routes, ".dst__handoff {");
+/**
+ * SUPERSEDES "02 the closing sun is sized to fit the band it is clipped by",
+ * which required the band to carry a `min-height` large enough for the whole
+ * mark. That is exactly what put 390px of empty ink into the closing act; the
+ * Studio pass reverses the dependency, so the assertion inverts with it.
+ */
+describe("02 the closing band is sized by its content, not by the sun", () => {
+  it("carries no minimum height of its own", () => {
+    // declarations only - these rules carry long rationale comments, and the
+    // word "min-height" appears in the one explaining why it is gone
+    const band = decls(rule(routes, ".dst__handoff {"));
     expect(band, "still clips, so nothing can lengthen the page").toContain("overflow: clip");
-    expect(band).toContain("min-height:");
+    expect(band, "the graphic must not set the section's height").not.toContain("min-height");
+    // and it is back to ordinary flow - no grid centring the statement in a box
+    expect(band).not.toContain("align-content");
+  });
+
+  it("anchors the sun by its TOP so no upper ray can be sheared", () => {
     const sun = rule(routes, ".dst__handoffsun {");
     // height-first: the old `width: 62vw` never looked at the band at all
     expect(sun).toMatch(/height:\s*clamp\(/);
     expect(sun).toContain("width: auto");
     expect(sun).toContain("bb-sun-symbol.webp");
+    // a POSITIVE top inset - the whole point. `top: -60px` was the original
+    // defect and `top: 50%` was the version that needed a taller band.
+    const top = /top:\s*clamp\((\d+)px/.exec(sun);
+    expect(top, "top is a positive clamp").not.toBeNull();
+    expect(Number(top![1])).toBeGreaterThan(0);
+    expect(sun, "no vertical centring to re-introduce the height dependency").not.toContain(
+      "translateY(-50%)",
+    );
+  });
+
+  it("puts the phone sun behind the statement rather than under it", () => {
+    const phone = /\.dst__handoffsun \{([\s\S]*?)\n {2}\}/.exec(
+      routes.slice(routes.indexOf("@media (max-width: 720px)")),
+    )![1];
+    // §Refinement 02 bought the mark its own zone with ~300px of extra lower
+    // padding; that dead space is what the Studio pass removes
+    expect(phone).not.toContain("bottom:");
+    expect(routes).not.toContain("padding-bottom: clamp(300px, 72vw, 420px)");
+  });
+});
+
+/* ------------------------------------------------- 03 the two dark blacks -- */
+
+describe("03 the dark Studio surfaces are one material", () => {
+  it("contains the phone card's collapsing bottom margin", () => {
+    const rooms = rule(routes, ".dst__rooms {");
+    // `overflow-x: clip` does NOT establish a block formatting context, so the
+    // in-flow card's 34px bottom margin collapsed straight through the section
+    // and became a band of untextured page ink between the two dark surfaces
+    expect(rooms).toContain("overflow-x: clip");
+    expect(rooms).toContain("display: flow-root");
+  });
+
+  it("gives the card's drop shadow room to finish inside its own section", () => {
+    const phone = routes.slice(routes.indexOf("@media (max-width: 720px)"));
+    const block = /\n {2}\.dst__rooms \{([\s\S]*?)\n {2}\}/.exec(phone)![1];
+    const pad = Number(/padding-bottom:\s*(\d+)px/.exec(block)![1]);
+    // 34px of margin + this padding must clear the shadow's ~45px reach, or
+    // the next section occludes its tail and redraws the same hard edge
+    expect(pad + 34).toBeGreaterThanOrEqual(45);
+  });
+
+  it("never states a second black - both sections use the one ink token", () => {
+    for (const sel of [".dst__rooms {", ".dst__handoff {"]) {
+      expect(rule(routes, sel), sel).toContain("background: var(--dao-ink)");
+    }
   });
 });
 

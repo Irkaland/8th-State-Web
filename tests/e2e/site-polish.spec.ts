@@ -217,12 +217,12 @@ test.describe("§04-§06 the Studio Lab card is an object, not a section", () =>
       const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
       return (Math.atan2(m.b, m.a) * 180) / Math.PI;
     });
-    // Positive is clockwise in CSS. The window was 20-30; the refinement pass
-    // eased the turn by a third, to 15, so the card stops fighting the reading
-    // angle of its own copy. The claim - a deliberate turn, never a level UI
-    // card - is unchanged.
-    expect(deg).toBeGreaterThan(11);
-    expect(deg).toBeLessThan(19);
+    // Positive is clockwise in CSS. The window was 20-30, then 11-19 when the
+    // refinement pass eased the turn to 15; the Studio pass halves it again to
+    // 7.5, for a card LAID on the composition rather than pinned to it. The
+    // claim - a real turn, never a level UI card - is unchanged.
+    expect(deg).toBeGreaterThan(5);
+    expect(deg).toBeLessThan(11);
   });
 });
 
@@ -274,7 +274,7 @@ test.describe("§07-§10 the decoration comes from brandbook assets", () => {
     await expect(page.locator(".dbr__swallow")).toHaveAttribute("aria-hidden", "true");
   });
 
-  test("the dark Studio section carries the brandbook sun, whole", async ({ page }) => {
+  test("the dark Studio section carries the brandbook sun, top intact", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/studio");
     const m = await page.locator(".dst__handoffsun").evaluate((el) => {
@@ -284,15 +284,20 @@ test.describe("§07-§10 the decoration comes from brandbook assets", () => {
         mask: getComputedStyle(el).getPropertyValue("--m").trim(),
         w: Math.round(r.width),
         h: Math.round(r.height),
-        inset: [r.top - b.top, b.bottom - r.bottom, r.left - b.left, b.right - r.right],
+        // top, left, right - the three sides the band must not shear
+        inset: [r.top - b.top, r.left - b.left, b.right - r.right],
+        bandH: Math.round(b.height),
       };
     });
     expect(m.mask).toContain("bb-sun-symbol.webp");
-    // it is a background graphic, not an icon - but a COMPLETE one. The old
-    // ">700px wide" measure was only reachable by letting the band shear the
-    // mark's upper rays off; see brand-refinement.spec.ts §12.
+    // A background graphic, not an icon. The old ">700px wide" measure was only
+    // reachable by shearing the mark's upper rays off; the fix after that made
+    // the mark whole by growing the band around it, which cost 390px of empty
+    // ink. The approved shape now: protect the top, crop the bottom at the
+    // section edge, and keep the band the height of its own content.
     expect(m.h).toBeGreaterThan(300);
     for (const side of m.inset) expect(side).toBeGreaterThan(0);
+    expect(m.bandH).toBeLessThan(320);
   });
 
   test("the Lab hero carries one symbol where two botanicals were", async ({ page }) => {

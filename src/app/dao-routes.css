@@ -1684,6 +1684,22 @@ html:has(.dlb) {
      horizontally, but the Lab card now rises ABOVE this section's top edge to
      sit across the boundary, and plain `hidden` would shave that overlap off. */
   overflow-x: clip;
+  /* §Studio 03: THE TWO BLACKS.
+     On a phone the Lab card joins the flow as this section's last child, with
+     `margin: 26px auto 34px`. `overflow-x: clip` does NOT establish a block
+     formatting context, so that 34px bottom margin collapsed straight THROUGH
+     the section and became a gap between it and the closing band - measured at
+     390: rooms ended at 2139, the handoff began at 2173.
+     What showed in the gap was `.dao-page`'s flat ink, with none of the weave
+     the two sections either side of it carry. Both sections paint
+     rgb(22,21,19); the band between them painted rgb(16,15,13) and then
+     stepped back up at a hard edge. That step IS the "two different blacks" and
+     the seam - not a colour mismatch between the sections, which have always
+     used the identical treatment.
+     flow-root contains the margin, so the two dark surfaces meet directly and
+     the black is one continuous material. The margin itself is unchanged - it
+     is now inside the section, where it was always meant to be. */
+  display: flow-root;
 }
 .dst__roomsbody {
   position: relative;
@@ -1731,10 +1747,13 @@ html:has(.dlb) {
   background: var(--dao-green);
   /* §05: 23deg clockwise. 20 read as a slip rather than a decision and 30 put
      the lower-left corner into the body copy at 1024.
-     §Refinement 01: eased a third of the way back to level - 15deg. Still an
-     unmistakable, deliberate turn (nothing near a horizontal UI card), but it
-     no longer fights the reading angle of its own three lines. */
-  transform: rotate(15deg);
+     §Refinement 01: eased a third of the way back to level - 15deg.
+     §Studio 01: halved again, to 7.5deg. The card reads as something LAID on
+     the composition rather than pinned to it at an angle - a light placement,
+     not a rotated poster. Size, proportion, type, botanical, texture, shadow
+     and the share of the card that sits above the boundary are all untouched;
+     only the angle moves. */
+  transform: rotate(7.5deg);
   transform-origin: 62% 50%;
   box-shadow: 12px 17px 36px rgba(0, 0, 0, 0.55);
   /* §Refinement 01: everything inside the card is now measured against the
@@ -1817,16 +1836,14 @@ html:has(.dlb) {
   color: var(--dao-paper);
   padding: 90px var(--dao-gutter) 80px;
   overflow: clip;
-  /* §Refinement 02: the closing band used to be a short strip with a 1080px
-     mark dropped into it, so `overflow: clip` above - which is what keeps the
-     page from lengthening - was shearing the sun on three sides, the upper
-     rays worst of all. The band is now tall enough to hold the whole symbol,
-     and the symbol is measured to fit inside it. Nothing is cropped and
-     nothing overflows: both halves of the problem are solved in the same
-     place. */
-  min-height: clamp(430px, 44vw, 720px);
-  display: grid;
-  align-content: center;
+  /* §Refinement 02 gave this band a `min-height` large enough to hold the WHOLE
+     sun, which fixed the sheared upper rays by making the mark's size dictate
+     the section's height. §Studio 02 reverses that trade: the band is a closing
+     statement, not a frame for a graphic, and at 634px tall it left a long
+     stretch of empty black between "Nine capabilities..." and "Make something
+     with us." The height goes back to its own content - padding, statement,
+     CTA - and the sun is anchored and cropped to fit THAT, rather than the
+     other way round. See .dst__handoffsun below. */
 }
 /* the closing statement keeps the left of the band; the sun keeps the right,
    so the two occupy the composition instead of sitting on top of each other */
@@ -1843,47 +1860,46 @@ html:has(.dlb) {
    than a light source. The aspect ratio is the artwork's own (1400x1550) - the
    mark is genuinely taller than it is wide and squaring it would distort the
    rays.
-   §Refinement 02: and it is sized by HEIGHT, not by viewport width. The band is
-   the thing it has to fit inside, and the band's height is exactly what the old
-   `width: 62vw` never looked at - which is how a mark 988px tall ended up in a
-   250px strip, with its whole top row of rays sheared off by the containment
-   above. Height-first, centred on the band's own axis and always smaller than
-   the band's minimum: the complete symbol renders at every width, on desktop
-   and on a phone, with every ray intact - and it still cannot lengthen the
-   page, because it no longer needs to be cropped to stay inside it. */
+   §Refinement 02 sized it by HEIGHT rather than by viewport width, which fixed
+   the sheared rays - but it fixed them by growing the band around the mark.
+   §Studio 02 keeps the height-first sizing and drops the growing: the mark is
+   ANCHORED BY ITS TOP inside the band, a little below the upper edge, so every
+   upper ray is intact and nothing about the symbol depends on the band being
+   tall. Where the band is shorter than the mark, `overflow: clip` above crops
+   its LOWER edge exactly at the section boundary - a deliberate crop at the end
+   of the page, which is how a large print behaves in an editorial layout, and
+   the one thing the brief asks be traded for the height. Still a background
+   symbol many times the size of the statement it sits behind, still quiet at 7%
+   cream, and still unable to lengthen the page. */
 .dst__handoffsun {
   position: absolute;
   right: clamp(8px, 4vw, 90px);
-  top: 50%;
-  transform: translateY(-50%);
-  height: clamp(300px, 34vw, 560px);
+  top: clamp(12px, 1.6vw, 26px);
+  height: clamp(280px, 28vw, 460px);
   aspect-ratio: 1400 / 1550;
   width: auto;
   background: rgba(242, 237, 227, 0.07);
   --m: url("/assets/graphics/bb-sun-symbol.webp");
 }
-/* Below ~720 the statement and the mark can no longer stand side by side -
-   measured, that is exactly where the body's right edge crosses the sun's left
-   one. So the composition turns through 90deg instead of collapsing: the
-   statement keeps the top of the band and the mark takes a zone of its own
-   underneath it, centred, complete, and clear of the type and the CTA. The
-   band's lower padding IS that zone, so the sun can never reach the closing
-   line however the title wraps. */
+/* Below ~720 there is no room for the statement and the mark to stand side by
+   side - measured, that is exactly where the body's right edge crosses the
+   sun's left one.
+   §Refinement 02 answered that by giving the mark a zone of its own under the
+   statement, paid for with ~300px of extra lower padding. §Studio 04 removes
+   that padding: a phone screen cannot afford a block of empty ink, and the two
+   elements read as stacked blocks rather than as one section. The sun goes
+   BEHIND the statement instead, centred and anchored by its top exactly as on
+   desktop. At 7% cream on ink it is a print the type sits on, not something the
+   type has to avoid - and the section is back to the height of its own
+   content. */
 @media (max-width: 720px) {
-  .dst__handoff {
-    min-height: 0;
-    padding-bottom: clamp(300px, 72vw, 420px);
-    align-content: start;
-  }
   .dst__handoffbody {
     max-width: none;
   }
   .dst__handoffsun {
-    top: auto;
-    bottom: clamp(24px, 6vw, 44px);
     right: 50%;
     transform: translateX(50%);
-    height: clamp(250px, 56vw, 340px);
+    height: clamp(230px, 52vw, 320px);
   }
 }
 /* §03: strong Optika at the real heaviest weight (600). Size, leading, colour,
@@ -1923,8 +1939,8 @@ html:has(.dlb) {
     top: 0;
     right: 0;
     aspect-ratio: 1.62;
-    /* the same third eased off the turn as on desktop: 12 -> 8 */
-    transform: rotate(8deg);
+    /* the same easing as the desktop card, step for step: 12 -> 8 -> 4 */
+    transform: rotate(4deg);
     transform-origin: 50% 50%;
     box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.5);
   }
@@ -1943,6 +1959,15 @@ html:has(.dlb) {
   }
   .dst__roomsbody {
     padding-bottom: 40px;
+  }
+  /* §Studio 03, second half: with the collapsed margin contained, the two dark
+     surfaces meet - but the CARD'S DROP SHADOW still reached a few pixels past
+     the seam, where the next section painted over it and left the gradient
+     ending on a hard edge. Measured, it needs about 45px below the card and had
+     34. This is the room for it to finish inside its own section; it changes
+     nothing else, and it is why the seam now measures flat. */
+  .dst__rooms {
+    padding-bottom: 18px;
   }
 }
 
