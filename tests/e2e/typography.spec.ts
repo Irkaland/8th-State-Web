@@ -431,7 +431,6 @@ test.describe("Decorative text-link stroke", () => {
   test("reduced motion keeps the stroke but drops the animation", async ({ browser }) => {
     const ctx = await browser.newContext({
       reducedMotion: "reduce",
-      extraHTTPHeaders: { "x-dao-hard-load": "allow" },
     });
     const page = await ctx.newPage();
     await gotoRoute(page, "/");
@@ -452,7 +451,6 @@ test.describe("Decorative text-link stroke", () => {
       viewport: { width: 390, height: 844 },
       isMobile: true,
       hasTouch: true,
-      extraHTTPHeaders: { "x-dao-hard-load": "allow" },
     });
     const page = await ctx.newPage();
     await gotoRoute(page, "/");
@@ -481,7 +479,6 @@ test.describe("Typography introduces no horizontal overflow", () => {
         viewport: { width: w, height: h },
         isMobile: true,
         hasTouch: true,
-        extraHTTPHeaders: { "x-dao-hard-load": "allow" },
       });
       const page = await ctx.newPage();
       for (const route of [

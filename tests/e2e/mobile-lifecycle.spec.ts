@@ -13,13 +13,14 @@ import {
  * `mobile-chrome` (Pixel 5) projects ONLY, deliberately without the
  * `--autoplay-policy=no-user-gesture-required` launch flag the desktop project
  * uses: with that flag the reel autoplays regardless and none of this proves
- * anything. Every test here goes through a real document load with no bypass
- * header, so the Studio Ident plays first - which is exactly the condition the
- * autoplay bug lived in.
+ * anything. Every test here goes through a real document load, so the Studio
+ * Ident plays first - which is exactly the condition the autoplay bug lived in.
+ *
+ * §P0: this file used to clear the suite-wide `x-dao-hard-load` bypass header to
+ * behave like a real browser. There is no such header any more - the whole suite
+ * now sends real-browser requests - so the override is gone rather than kept as
+ * a no-op.
  */
-
-// act like a real browser: no §02 refresh-contract bypass
-test.use({ extraHTTPHeaders: {} });
 
 /** wait for the ident sheet to finish and leave the stage */
 async function waitForIdent(page: Page) {

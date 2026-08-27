@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { type Locale, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { LegalPage } from "@/components/dao/LegalPage";
 
 export async function generateMetadata({
@@ -11,7 +12,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.daoRoutes.legal.copyright };
+  return {
+    title: m.daoRoutes.legal.copyright,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/copyright"),
+  };
 }
 
 export default async function CopyrightPage({ params }: { params: Promise<{ locale: string }> }) {

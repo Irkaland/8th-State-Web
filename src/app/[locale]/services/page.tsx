@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
 import { projectsSorted } from "@/content/projects";
@@ -21,7 +22,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.nav.services, description: m.dao.services.intro };
+  return {
+    title: m.nav.services,
+    description: m.dao.services.intro,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/services"),
+  };
 }
 
 const svc = (n: string) => DAO_SERVICES.find((s) => s.n === n)!;

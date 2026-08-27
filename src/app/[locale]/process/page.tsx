@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { DAO_SERVICES } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
@@ -17,7 +18,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.nav.process, description: m.daoRoutes.process.intro };
+  return {
+    title: m.nav.process,
+    description: m.daoRoutes.process.intro,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/process"),
+  };
 }
 
 /**

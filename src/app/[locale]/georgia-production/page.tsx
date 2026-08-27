@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { GEORGIA_SCOPE, GEORGIA_STILLS } from "@/content/pathways";
 import { DaoShell } from "@/components/dao/DaoShell";
@@ -17,7 +18,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.nav.georgiaProduction, description: m.georgia.intro };
+  return {
+    title: m.nav.georgiaProduction,
+    description: m.georgia.intro,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/georgia-production"),
+  };
 }
 
 /**

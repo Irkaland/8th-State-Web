@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { LabProvider, LabFilterRow, LabNotesGrid } from "@/components/dao/LabFieldNotes";
@@ -16,7 +17,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.dao.nav.lab, description: m.daoRoutes.lab.copy };
+  return {
+    title: m.dao.nav.lab,
+    description: m.daoRoutes.lab.copy,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/studio-lab"),
+  };
 }
 
 /**

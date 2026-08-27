@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { type Locale, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { DaoBrief } from "@/components/dao/DaoBrief";
 import { up } from "@/lib/cn";
@@ -13,7 +14,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.nav.startProject, description: m.daoRoutes.brief.intro };
+  return {
+    title: m.nav.startProject,
+    description: m.daoRoutes.brief.intro,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/start-a-project"),
+  };
 }
 
 // /start-a-project - a production brief, not a form (handoff 4e).

@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
+import { IDENT_ATTR } from "@/lib/session-lifecycle";
 
 /** One project a person is credited on, resolved against the real Work archive. */
 export type TeamWorkCredit = {
@@ -525,14 +526,24 @@ export function TeamContactSheet({
 
   // §09: read ?person= on the client only, after hydration, so /team stays
   // statically rendered. No push here - the entry already exists.
+  //
+  // §P0: this now actually runs for a real visitor. The proxy used to redirect a
+  // document load of /team to the locale home AND clear the query, so a shared
+  // or bookmarked profile link could never reach this effect; it only ever fired
+  // under the test bypass header.
+  //
+  // The slug is validated against `order` - the roster this component was handed -
+  // rather than by interpolating it into a CSS selector. `?person="]` produced an
+  // invalid selector and threw inside the animation frame, which is both a crash
+  // and an unnecessary way to ask "is this a real person?" when the answer is
+  // already in memory. An unknown id simply opens nothing: the Team route renders
+  // normally, which is the honest safe state.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("person");
-    if (!q) return;
-    const id = requestAnimationFrame(() => {
-      if (document.querySelector(`[data-dtm-card="${q}"]`)) openFrom(q, null, false);
-    });
+    if (!q || !order.includes(q)) return;
+    const id = requestAnimationFrame(() => openFrom(q, null, false));
     return () => cancelAnimationFrame(id);
-  }, [openFrom]);
+  }, [openFrom, order]);
 
   // §10: Back closes the profile and returns to the roster
   useEffect(() => {
@@ -548,14 +559,15 @@ export function TeamContactSheet({
         beginClose(openSlug);
       } else if (!ours) {
         // a genuine Forward, back into a profile. Our own pop never lands here.
+        // Validated against the roster for the same reason as the deep link above.
         const q = new URLSearchParams(window.location.search).get("person");
-        if (q && document.querySelector(`[data-dtm-card="${q}"]`)) openFrom(q, null, false);
+        if (q && order.includes(q)) openFrom(q, null, false);
       }
       fromHistory.current = false;
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, [openSlug, openFrom, beginClose]);
+  }, [openSlug, openFrom, beginClose, order]);
 
   /* ------------------------------------------------- scroll lock (§05) ----- */
 
@@ -579,6 +591,13 @@ export function TeamContactSheet({
     if (!openSlug) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        // §P0: a deep-linked profile now opens BEHIND the Studio Ident, because
+        // a hard load of /team?person=... stays on /team instead of being sent
+        // Home. Any keypress skips the ident - so an Escape pressed to get past
+        // the intro would otherwise also close the profile the visitor followed
+        // a link to reach, and they would never see it. While the ident holds
+        // the stage, Escape belongs to the ident alone.
+        if (document.documentElement.hasAttribute(IDENT_ATTR)) return;
         e.stopPropagation();
         close();
         return;

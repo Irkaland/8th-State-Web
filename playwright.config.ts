@@ -16,11 +16,12 @@ export default defineConfig({
     baseURL: BASE,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
-    // §02 refresh contract: real document loads of deep routes redirect to
-    // the locale home. Suites need to render deep routes directly, so every
-    // request carries the bypass header; the dedicated refresh tests
-    // override this with an empty header set to act like a real browser.
-    extraHTTPHeaders: { "x-dao-hard-load": "allow" },
+    // §P0: there is no bypass header any more. Every request in the suite is
+    // now shaped exactly like a real browser's, because a deep route resolves
+    // itself for everyone - the former `x-dao-hard-load: allow` existed only to
+    // opt tests out of a redirect that no longer exists. Removing it means the
+    // suite finally exercises production's real routing behaviour, which is
+    // what let the deep-route, 404 and ?person= defects ship unnoticed.
   },
   projects: [
     {

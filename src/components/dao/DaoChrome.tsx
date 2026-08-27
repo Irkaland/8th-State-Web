@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/locales";
 import { cn } from "@/lib/cn";
+import { focusableWithin, isFocusable } from "@/lib/focusable";
 import { NAV_OPEN_KEY, safeSession } from "@/lib/session-lifecycle";
 import { useLiveSearch } from "@/lib/use-live-search";
 
@@ -125,23 +126,34 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
       if (e.key !== "Tab" || !nav) return;
       // a real keyboard move - focus may raise previews from here on
       keyboardNav.current = true;
-      const focusables = Array.from(
-        nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
-      ).filter((el) => el.offsetParent !== null);
+      // §P0: focusableWithin() asks whether each candidate can ACTUALLY take
+      // focus. The previous filter was `offsetParent !== null`, which does not
+      // exclude `inert` - so while the Work categories were collapsed their five
+      // links stayed in this list, Tab was preventDefault()ed, .focus() silently
+      // did nothing on an inert target, and focus never left the WORK link.
+      const focusables = focusableWithin(nav);
       // §01: the single EN/KA switcher lives in the top-right chrome (the
       // burger sheet carries none) - keep it reachable inside the trap.
-      const lang = Array.from(
-        document.querySelectorAll<HTMLElement>(".dao-chrome .dao-lang a"),
-      ).filter((el) => el.offsetParent !== null);
+      const lang = focusableWithin(document.querySelector(".dao-chrome") ?? document).filter((el) =>
+        el.closest(".dao-lang"),
+      );
       const burger = burgerRef.current;
-      const all = burger ? [...focusables, ...lang, burger] : [...focusables, ...lang];
+      const all = [...focusables, ...lang, ...(burger && isFocusable(burger) ? [burger] : [])];
       if (all.length === 0) return;
       const idx = all.indexOf(document.activeElement as HTMLElement);
-      let next = idx;
+      let next: number;
       if (e.shiftKey) next = idx <= 0 ? all.length - 1 : idx - 1;
-      else next = idx === all.length - 1 ? 0 : idx + 1;
+      else next = idx === -1 || idx === all.length - 1 ? 0 : idx + 1;
       e.preventDefault();
-      all[next]?.focus();
+      // Defensive: if the chosen target still refuses focus for a reason the
+      // predicate cannot see, walk on rather than swallowing the keystroke and
+      // parking the visitor. A full lap without a move means there is nothing
+      // to focus, and the trap simply does not act.
+      for (let step = 0; step < all.length; step += 1) {
+        const target = all[(next + step * (e.shiftKey ? -1 : 1) + all.length * 2) % all.length];
+        target?.focus();
+        if (document.activeElement === target) return;
+      }
     };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;

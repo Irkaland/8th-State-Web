@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages, format } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { projectsSorted } from "@/content/projects";
 import { DAO_DISCIPLINES, disciplineOf, disciplineLabel } from "@/content/dao-work";
@@ -25,7 +26,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const m = getMessages(locale);
-  return { title: m.nav.work, description: m.work.description };
+  return {
+    title: m.nav.work,
+    description: m.work.description,
+    // §P0: this page canonicalises to ITSELF, not to the locale home.
+    alternates: routeAlternates(locale, "/work"),
+  };
 }
 
 // /work - living production archive (handoff 3b). Filter state lives entirely

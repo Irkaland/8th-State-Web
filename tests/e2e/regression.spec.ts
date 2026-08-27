@@ -14,9 +14,9 @@ import { gotoRoute } from "./helpers";
  *
  * Final navigation + refresh pass additions:
  *  M. one visible EN/KA switcher while the burger menu is open
- *  N. real document loads always re-enter at the locale home showreel
- *     (these tests drop the x-dao-hard-load bypass header the rest of the
- *     suite uses to render deep routes directly)
+ *  N. §P0: a real document load RESOLVES THE ROUTE IT ASKED FOR - the former
+ *     re-enter-at-Home contract is gone. See routing-contract.spec.ts; the
+ *     ident behaviour that survived it is asserted here.
  *  O. reload resets scroll to the top
  *  P. brand mark resets Home to the showreel top, never replays the ident
  *  Q. studio intro orbit: white square gone, official curled serpent in
@@ -107,9 +107,10 @@ test.describe("KA routing", () => {
 });
 
 test.describe("Production routing regression", () => {
-  // Behave like a real visitor. This catches proxy redirects of Next RSC
-  // navigation fetches, which the default suite bypass header intentionally skips.
-  test.use({ extraHTTPHeaders: {} });
+  // §P0: every request in the suite is now shaped like a real visitor's - the
+  // former `x-dao-hard-load: allow` bypass is gone along with the redirect it
+  // opted out of. This block still watches for proxy redirects of Next RSC
+  // navigation fetches, which must never happen.
 
   test("Home direct links reach Work and Contact without a hard-load redirect", async ({
     page,
@@ -176,13 +177,19 @@ test.describe("Production routing regression", () => {
     expect(redirects).toEqual([]);
   });
 
-  test("hard browser refresh still re-enters Home correctly", async ({ page }) => {
+  // §P0: this replaces "hard browser refresh still re-enters Home correctly",
+  // which asserted that a document load of /studio lands on /. That was the
+  // defect, not the contract. A refresh now keeps the reader where they were.
+  test("a hard browser refresh keeps the route it was on", async ({ page }) => {
     await page.goto("/studio");
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/studio$/);
     await expect(page.locator(".dao-ident")).toBeVisible();
     await page.keyboard.press("Escape").catch(() => {});
     await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
-    await expect(page.locator(".dao-reel")).toBeVisible();
+    await expect(page).toHaveURL(/\/studio$/);
+    await expect(page.locator("#main")).toBeVisible();
+    // and the Showreel is where it belongs - on Home, not on Studio
+    await expect(page.locator(".dao-reel")).toHaveCount(0);
   });
 });
 
@@ -283,30 +290,53 @@ test.describe("Burger menu language switcher (§01)", () => {
   });
 });
 
-test.describe("Refresh contract (§02/§14) - real document loads", () => {
-  // Behave like a real browser: no bypass header on any request.
-  test.use({ extraHTTPHeaders: {} });
-
-  test("a document load of any deep route re-enters at the home showreel", async ({ page }) => {
-    for (const [route, home] of [
-      ["/studio", /\/$/],
-      ["/work", /\/$/],
-      ["/studio-lab", /\/$/],
-      ["/ka/studio", /\/ka$/],
+/**
+ * §P0: the former "Refresh contract (§02/§14)" block lived here and asserted
+ * that a document load of any deep route re-enters at the locale home. That
+ * contract has been REPLACED - a URL now identifies a page - and its
+ * replacement is tests/e2e/routing-contract.spec.ts, which covers direct loads,
+ * refresh, query preservation, the 404 and canonical metadata in both locales.
+ *
+ * What survives from the old block is the part that was never about routing:
+ * the Ident still plays on a real document load, it still resets scroll to the
+ * top behind its own sheet, and it still hands over to the page beneath. Those
+ * are asserted below - now on a DEEP route, which the old contract could not
+ * express, because it sent every deep route Home before the assertion ran.
+ */
+test.describe("Ident on a real document load (§P0)", () => {
+  test("the ident plays over the route that was actually requested", async ({ page }) => {
+    for (const [route, expected] of [
+      ["/studio", "/studio"],
+      ["/work", "/work"],
+      ["/studio-lab", "/studio-lab"],
+      ["/ka/studio", "/ka/studio"],
     ] as const) {
       await page.goto(route);
-      await expect(page, `${route} did not land on its locale home`).toHaveURL(home);
       // the ident plays on the hard load ...
-      await expect(page.locator(".dao-ident")).toBeVisible();
+      await expect(page.locator(".dao-ident"), `${route} ident`).toBeVisible();
+      // ... over the requested route, which the URL never left
+      expect(
+        await page.evaluate(() => window.location.pathname),
+        `${route} url during the ident`,
+      ).toBe(expected);
       await page.keyboard.press("Escape").catch(() => {});
       await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
-      // ... and hands over to the Master Showreel at the top
-      await expect(page.locator(".dao-reel")).toBeVisible();
+      // ... and reveals that route, still at the top
+      await expect(page.locator("#main")).toBeVisible();
+      expect(await page.evaluate(() => window.location.pathname)).toBe(expected);
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     }
   });
 
-  test("reloading Home resets scroll to the showreel top", async ({ page }) => {
+  test("a document load of Home still hands over to the Master Showreel", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".dao-ident")).toBeVisible();
+    await page.keyboard.press("Escape").catch(() => {});
+    await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
+    await expect(page.locator(".dao-reel")).toBeVisible();
+  });
+
+  test("reloading resets scroll to the top", async ({ page }) => {
     await gotoRoute(page, "/");
     await page.evaluate(() => window.scrollTo(0, 2600));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
@@ -317,6 +347,18 @@ test.describe("Refresh contract (§02/§14) - real document loads", () => {
     await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5_000 }).toBe(0);
     await expect(page.locator(".dao-reel")).toBeVisible();
+  });
+
+  test("a deep route reload keeps the route AND resets scroll", async ({ page }) => {
+    await gotoRoute(page, "/studio");
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(400);
+    await page.reload();
+    expect(await page.evaluate(() => window.location.pathname)).toBe("/studio");
+    await page.keyboard.press("Escape").catch(() => {});
+    await page.locator(".dao-ident").waitFor({ state: "hidden", timeout: 8_000 });
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5_000 }).toBe(0);
+    expect(await page.evaluate(() => window.location.pathname)).toBe("/studio");
   });
 });
 

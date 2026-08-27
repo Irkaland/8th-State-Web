@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale, LOCALES } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
+import { routeAlternates } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { getProject, projectSlugs, projectsSorted } from "@/content/projects";
 import { disciplineOf, disciplineLabel } from "@/content/dao-work";
@@ -26,6 +27,10 @@ export async function generateMetadata({
   return {
     title: `${project.title} - ${t(project.categoryLabel, locale as Locale)}`,
     description: t(project.summary, locale as Locale),
+    // §P0: each case study canonicalises to its own route, not to the locale
+    // home. The slug comes from generateStaticParams, so it is always a real
+    // project by the time this runs.
+    alternates: routeAlternates(locale, `/work/${project.slug}`),
     openGraph: { images: [{ url: (project.hero ?? project.cover).src }] },
   };
 }

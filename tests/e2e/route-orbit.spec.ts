@@ -377,7 +377,6 @@ test.describe("Post-showreel section - yellow stock and the ink orbit", () => {
         viewport: { width: w, height: h },
         isMobile: true,
         hasTouch: true,
-        extraHTTPHeaders: { "x-dao-hard-load": "allow" },
       });
       const page = await ctx.newPage();
       await gotoRoute(page, "/");
@@ -427,7 +426,6 @@ test.describe("Post-showreel section - yellow stock and the ink orbit", () => {
   test("reduced motion keeps the yellow ground and the ink ring", async ({ browser }) => {
     const ctx = await browser.newContext({
       reducedMotion: "reduce",
-      extraHTTPHeaders: { "x-dao-hard-load": "allow" },
     });
     const page = await ctx.newPage();
     await gotoRoute(page, "/");

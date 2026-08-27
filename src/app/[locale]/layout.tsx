@@ -7,6 +7,7 @@ import "../globals.css";
 import { LOCALES, type Locale, isLocale, LOCALE_HTML_LANG } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
 import { getSiteUrl, isNoindex } from "@/lib/site-url";
+import { routeAlternates } from "@/lib/route-metadata";
 
 // perf phase 2A: Space Grotesk, Instrument Sans and Space Mono are removed -
 // runtime FontFaceSet evidence showed none of their faces ever rendered a
@@ -62,10 +63,12 @@ export async function generateMetadata({
     metadataBase: new URL(siteUrl),
     title: { default: m.meta.defaultTitle, template: m.meta.titleTemplate },
     description: m.meta.description,
-    alternates: {
-      canonical: locale === "en" ? "/" : "/ka",
-      languages: { en: "/", ka: "/ka", "x-default": "/" },
-    },
+    // §P0: the locale HOME's own alternates. This is the layout default, so it
+    // is only ever the answer for "/" and "/ka" - every other route declares
+    // its own via routeAlternates(), because Next replaces `alternates`
+    // wholesale rather than merging it field by field. Leaving this as the
+    // site-wide default is what made every page canonicalise to the homepage.
+    alternates: routeAlternates(locale, "/"),
     robots: isNoindex() ? { index: false, follow: false } : undefined,
     openGraph: {
       type: "website",
