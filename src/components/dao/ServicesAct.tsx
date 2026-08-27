@@ -61,7 +61,6 @@ function FragImage({
       alt={alt}
       fill
       sizes="200px"
-      unoptimized={src === "/media/aom-cover.jpg"}
       className={cn("dao-svc__fragimg object-cover", ready && "is-ready")}
       // Cached images can finish before hydration attaches onLoad.
       ref={(img) => {

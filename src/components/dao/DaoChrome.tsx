@@ -617,7 +617,6 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
                   width={600}
                   height={380}
                   sizes="300px"
-                  unoptimized={src === "/media/aom-cover.jpg"}
                   className={preview?.key === key ? "is-on" : ""}
                 />
               ))}

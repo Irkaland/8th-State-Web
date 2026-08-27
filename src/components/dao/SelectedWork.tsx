@@ -241,7 +241,6 @@ export function SelectedWork({
                   alt={rel === 0 ? p.alt : ""}
                   fill
                   sizes="(max-width: 720px) 90vw, 820px"
-                  unoptimized={p.cover === "/media/aom-cover.jpg"}
                   className="object-cover"
                 />
                 <span className="dao-work__badge">{up(m.caseStudy)}</span>

@@ -124,12 +124,23 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
               style={{ backgroundSize: "200px" }}
               aria-hidden="true"
             />
+            {/* Perf phase 3: the closing production card prints the official
+                5000x5000 master. `unoptimized` shipped that master whole -
+                1,300 KB for a chip that is 128px wide at its largest, a 19-53x
+                oversample depending on viewport and DPR. The flag dates from a
+                spell of unstable Netlify image derivatives; the optimizer is
+                verified working, and the same file through it is ~7 KB.
+                `sizes` states the three widths .dao-credits__chip img actually
+                renders at (128 / 84 / 70), so the browser fetches one small
+                derivative instead. Alpha, aspect ratio, crop and layout are
+                untouched - the artwork is identical, only its transfer size
+                changes. */}
             <Image
               src="/assets/brand/8th-state-logo.png"
               alt="8th State Production"
               width={256}
               height={256}
-              unoptimized
+              sizes="(max-width: 560px) 70px, (max-width: 960px) 84px, 128px"
             />
           </span>
           <span className="dao-credits__id">

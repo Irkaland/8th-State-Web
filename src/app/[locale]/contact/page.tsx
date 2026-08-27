@@ -161,12 +161,16 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 style={{ backgroundSize: "200px" }}
                 aria-hidden="true"
               />
+              {/* Perf phase 3: same chip, same fix as the Home closing card -
+                  see ContactAct. The 5000x5000 master was shipped whole for a
+                  128px-wide chip; `sizes` names the three widths the CSS
+                  actually renders. Appearance unchanged. */}
               <Image
                 src="/assets/brand/8th-state-logo.png"
                 alt="8th State Production"
                 width={256}
                 height={256}
-                unoptimized
+                sizes="(max-width: 560px) 70px, (max-width: 960px) 84px, 128px"
               />
             </span>
             <span className="dao-credits__id">

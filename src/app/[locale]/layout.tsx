@@ -14,10 +14,19 @@ import { routeAlternates } from "@/lib/route-metadata";
 // glyph (their only consumers were the deleted legacy token layer and the
 // skip link, which now uses the system monospace stack). Noto Sans Georgian
 // stays: it is the live Georgian fallback behind Optika / ALK Sanet.
+// Perf phase 3: still declared, still the fallback behind ALK Sanet - only no
+// longer PRELOADED. Its 41.5 KB file was fetched eagerly on every route in both
+// locales, and runtime evidence says it never renders: across /, /ka, /ka/studio
+// and /ka/work, document.fonts reports adevas / optika / glacier / sanet as
+// `loaded` and Noto Sans Georgian never among them, because ALK Sanet covers the
+// Georgian text. Dropping the preload keeps the @font-face and the fallback role
+// exactly as they are; the file is now fetched only if a glyph actually needs it.
+// Font family, weights, roles and display:swap are untouched.
 const georgian = Noto_Sans_Georgian({
   subsets: ["georgian"],
   variable: "--f-georgian",
   display: "swap",
+  preload: false,
 });
 
 // Approved brand fonts (Digital Art Object handoff): Adevas display,
@@ -110,8 +119,15 @@ export default async function LocaleLayout({
   // above. The celestial sun is also the global navigation mark, so the one
   // hint covers the ident's two suns and the chrome chip together.
   preload("/assets/brand/serpent-infinity.webp", { as: "image" });
-  preload("/assets/brand/celestial-sun.webp", { as: "image" });
-  preload("/assets/graphics/sun.webp", { as: "image" });
+  // Perf phase 3: these two are consumed as CSS `mask-image` (--m), and a mask
+  // fetch is made in CORS mode, where the three above are `background-image`
+  // and fetched no-CORS. Without a matching crossorigin the preload could not
+  // be reused - Chrome logged "the request credentials mode does not match",
+  // discarded it, and fetched each file a SECOND time. Two wasted preloads and
+  // two duplicate downloads on every route in both locales. The hint now
+  // matches how the asset is actually requested.
+  preload("/assets/brand/celestial-sun.webp", { as: "image", crossOrigin: "anonymous" });
+  preload("/assets/graphics/sun.webp", { as: "image", crossOrigin: "anonymous" });
 
   return (
     <html
