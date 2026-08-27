@@ -33,23 +33,35 @@ export default async function StartAProjectPage({
       locale={locale}
       messages={m}
       veil="ink"
-      returnTab={{ label: up(m.daoRoutes.returnTab.back), fallback: "/" }}
+      returnTab={{ label: up(m.daoRoutes.returnTab.back), parent: "/" }}
     >
       <div className="dao-page dbr" data-dao-scene="dark">
         <div className="dao-weave" aria-hidden="true" />
         <header className="dbr__intro">
-          <span className="dao-kicker" style={{ color: "var(--dao-yellow)" }}>
-            {up(R.kicker)}
-          </span>
-          <h1 className="dbr__title">
-            {R.title}
-            <span style={{ color: "var(--dao-red)" }}>.</span>
-          </h1>
-          <p
-            style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(242,237,227,.75)", maxWidth: 520 }}
-          >
-            {R.intro}
-          </p>
+          <div className="dbr__introtext">
+            <span className="dao-kicker" style={{ color: "var(--dao-yellow)" }}>
+              {up(R.kicker)}
+            </span>
+            <h1 className="dbr__title">
+              {R.title}
+              <span style={{ color: "var(--dao-red)" }}>.</span>
+            </h1>
+            <p
+              style={{
+                fontSize: 14,
+                lineHeight: 1.7,
+                color: "rgba(242,237,227,.75)",
+                maxWidth: 520,
+              }}
+            >
+              {R.intro}
+            </p>
+          </div>
+          {/* §14: the brandbook swallow, cream on the ink ground, answering the
+              heading from the opposite side of the page. It is the same alpha
+              artwork the rest of the site uses, so the printed edge is the
+              brandbook's own - only the colour it is painted in changes. */}
+          <span className="dbr__swallow dao-mask" aria-hidden="true" />
         </header>
         <DaoBrief locale={locale} messages={m} />
       </div>

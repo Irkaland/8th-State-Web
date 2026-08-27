@@ -292,23 +292,46 @@ test.describe("§04 ENTER THE LAB rule", () => {
 
 /* ------------------------------------------------------------------ §05 --- */
 
-test("§05 the Studio bird is not being upscaled any more", async ({ page }) => {
+/**
+ * SUPERSEDES "§05 the Studio bird is not being upscaled any more".
+ *
+ * That test existed because one 900px swallow filled the right half of the
+ * Studio cover and was being drawn past its own resolution. The studio has
+ * since removed the single giant bird entirely and replaced it with three
+ * smaller brandbook marks - so the original defect cannot recur, and the
+ * assertion that guarded it has nothing left to measure.
+ *
+ * The concern it protected is kept, and widened: NONE of the marks that
+ * replaced it may be drawn past its own source either.
+ */
+test("§05 no Studio cover decoration is being upscaled", async ({ page }) => {
   await gotoRoute(page, "/studio");
-  const m = await page.evaluate(async () => {
-    const el = document.querySelector(".dst__swallow") as HTMLElement;
-    const url = getComputedStyle(el)
-      .maskImage.match(/url\(["']?([^"')]+)/)?.[1]
-      ?.replace(/^.*(\/assets)/, "$1");
-    const box = el.getBoundingClientRect();
-    const img = new Image();
-    img.src = url!;
-    await img.decode();
-    return { natural: img.naturalWidth, rendered: box.width, url };
+  // the single giant bird is gone
+  expect(await page.locator(".dst__swallow").count()).toBe(0);
+
+  const marks = await page.evaluate(async () => {
+    const out: { url: string; natural: number; rendered: number }[] = [];
+    for (const el of document.querySelectorAll<HTMLElement>(".dst__decor > span")) {
+      const cs = getComputedStyle(el);
+      const url = (cs.maskImage || cs.webkitMaskImage)
+        .match(/url\(["']?([^"')]+)/)?.[1]
+        ?.replace(/^.*(\/assets)/, "$1");
+      const img = new Image();
+      img.src = url!;
+      await img.decode();
+      out.push({
+        url: url!,
+        natural: img.naturalWidth,
+        rendered: el.getBoundingClientRect().width,
+      });
+    }
+    return out;
   });
-  expect(m.url).toContain("swallow");
-  // the source must now cover the box it is drawn in at 1x
-  expect(m.natural).toBeGreaterThanOrEqual(m.rendered);
-  expect(m.natural).toBeGreaterThan(515); // it shipped at 515 wide
+  expect(marks.length).toBe(3);
+  for (const m of marks) {
+    expect(m.url, "a real brandbook asset").toMatch(/\/assets\/graphics\/bb-/);
+    expect(m.natural, m.url + " is drawn past its source").toBeGreaterThanOrEqual(m.rendered);
+  }
 });
 
 /* ------------------------------------------------------------ §06 / §07 --- */

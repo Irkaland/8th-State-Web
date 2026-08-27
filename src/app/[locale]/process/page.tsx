@@ -39,7 +39,7 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
       locale={locale}
       messages={m}
       veil="paper"
-      returnTab={{ label: up(m.nav.studio), fallback: "/studio", ground: "light" }}
+      returnTab={{ label: up(m.nav.studio), parent: "/studio", ground: "light" }}
     >
       {/* §15: the orange environment is scoped to this route's own class, not
           to the shared cream .dao-page--paper. The strong stock plus the weave

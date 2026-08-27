@@ -40,7 +40,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
       locale={locale}
       messages={m}
       veil="green"
-      returnTab={{ label: up(m.nav.studio), fallback: "/studio" }}
+      returnTab={{ label: up(m.nav.studio), parent: "/studio" }}
     >
       <LabProvider>
         <div className="dao-page dlb" data-dao-scene="dark">
@@ -53,14 +53,11 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               style={{ ["--d" as string]: "120ms" }}
               aria-hidden="true"
             />
+            {/* §10: one brandbook symbol on the right, in place of the grown
+                stem and the small wreath that used to sit beside it */}
             <span
-              className="dlb__stem dao-mask dao-fade"
+              className="dlb__bird dao-mask dao-fade"
               style={{ ["--d" as string]: "240ms" }}
-              aria-hidden="true"
-            />
-            <span
-              className="dlb__wreath dao-mask dao-fade"
-              style={{ ["--d" as string]: "480ms" }}
               aria-hidden="true"
             />
             <div
@@ -161,15 +158,11 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                   href={localeHref(locale, "/contact")}
                   className="dao-chipcta dao-btnfill dao-btnfill--red"
                 >
+                  {/* §11: the small bloom that used to hang off the corner is
+                      gone. The button's surface now carries the paper grain
+                      instead, so it reads as a printed red card rather than as a
+                      digital fill with a flower stuck to it. */}
                   {up(R.writeToLab)}
-                  <span
-                    className="dao-chipcta__glyph dao-mask"
-                    style={{
-                      ["--m" as string]: "url(/assets/graphics/bloom.webp)",
-                      background: "var(--dao-mint)",
-                    }}
-                    aria-hidden="true"
-                  />
                 </Link>
               </div>
             </section>

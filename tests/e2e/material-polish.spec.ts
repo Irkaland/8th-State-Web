@@ -151,9 +151,17 @@ test.describe("§01 Selected Work progress indicators", () => {
 });
 
 test.describe("§02-§03 Studio Lab botanicals", () => {
+  /*
+   * The Studio Lab ROUTE HERO no longer has a tall stem: the studio replaced the
+   * two botanicals on its right - the grown stem and the small wreath below it -
+   * with a single brandbook symbol. The Home act still carries its stem, so the
+   * stem assertions stay, scoped to the surface that still has one, and the route
+   * hero gets the assertion that now applies to it instead (see below). The stem
+   * selector is null where there is nothing left to measure.
+   */
   for (const [label, route, rose, stem] of [
     ["home act", "/", ".dao-lab__rose", ".dao-lab__stem"],
-    ["route hero", "/studio-lab", ".dlb__rose", ".dlb__stem"],
+    ["route hero", "/studio-lab", ".dlb__rose", null],
   ] as const) {
     test(`${label}: the left rose is a background layer`, async ({ page }) => {
       await gotoRoute(page, route);
@@ -200,27 +208,28 @@ test.describe("§02-§03 Studio Lab botanicals", () => {
       expect(blooms).toEqual([]);
     });
 
-    test(`${label}: the tall stem is grown, cream and cropped off the right edge`, async ({
-      page,
-    }) => {
-      await gotoRoute(page, route);
-      const got = await styles(page, stem, ["background-color", "mask-image"]);
-      const c = rgba(got!["background-color"]!);
-      expect(c.slice(0, 3), "cream treatment kept").toEqual([242, 237, 227]);
-      expect(c[3], "eased for the larger shape").toBeLessThan(0.75);
-      expect(got!["mask-image"]).toContain("stem");
+    (stem ? test : test.skip)(
+      `${label}: the tall stem is grown, cream and cropped off the right edge`,
+      async ({ page }) => {
+        await gotoRoute(page, route);
+        const got = await styles(page, stem!, ["background-color", "mask-image"]);
+        const c = rgba(got!["background-color"]!);
+        expect(c.slice(0, 3), "cream treatment kept").toEqual([242, 237, 227]);
+        expect(c[3], "eased for the larger shape").toBeLessThan(0.75);
+        expect(got!["mask-image"]).toContain("stem");
 
-      const box = await page.evaluate((sel) => {
-        const el = document.querySelector(sel)!;
-        const b = el.getBoundingClientRect();
-        return { right: b.right, width: b.width, vw: document.documentElement.clientWidth };
-      }, stem);
-      // genuinely cropped: a real part of the artwork is past the viewport
-      expect(box.right, "extends beyond the right edge").toBeGreaterThan(box.vw);
-      expect((box.right - box.vw) / box.width, "not a token sliver").toBeGreaterThan(0.1);
-      // and it is a big graphic now, not a centred icon
-      expect(box.width).toBeGreaterThan(170);
-    });
+        const box = await page.evaluate((sel) => {
+          const el = document.querySelector(sel)!;
+          const b = el.getBoundingClientRect();
+          return { right: b.right, width: b.width, vw: document.documentElement.clientWidth };
+        }, stem!);
+        // genuinely cropped: a real part of the artwork is past the viewport
+        expect(box.right, "extends beyond the right edge").toBeGreaterThan(box.vw);
+        expect((box.right - box.vw) / box.width, "not a token sliver").toBeGreaterThan(0.1);
+        // and it is a big graphic now, not a centred icon
+        expect(box.width).toBeGreaterThan(170);
+      },
+    );
 
     test(`${label}: the crop never widens the document`, async ({ page }) => {
       await gotoRoute(page, route);
@@ -230,6 +239,35 @@ test.describe("§02-§03 Studio Lab botanicals", () => {
       expect(overflow).toBeLessThanOrEqual(1);
     });
   }
+
+  /**
+   * SUPERSEDES the route hero's half of "the tall stem is grown, cream and
+   * cropped off the right edge". The stem it measured has been replaced by ONE
+   * brandbook symbol, so the claim moves to that symbol: the same faded, cream,
+   * cropped, printed integration - a different mark carrying it.
+   */
+  test("route hero: one brandbook symbol replaces the two botanicals", async ({ page }) => {
+    await gotoRoute(page, "/studio-lab");
+    // both of the marks that used to sit on the right are gone
+    await expect(page.locator(".dlb__stem, .dlb__wreath")).toHaveCount(0);
+
+    const got = await styles(page, ".dlb__bird", ["background-color", "mask-image"]);
+    expect(got, ".dlb__bird").not.toBeNull();
+    const c = rgba(got!["background-color"]!);
+    expect(c.slice(0, 3), "cream treatment kept").toEqual([242, 237, 227]);
+    expect(c[3], "faded, printed integration").toBeLessThan(0.75);
+    expect(c[3], "but never invisible").toBeGreaterThan(0.05);
+    expect(got!["mask-image"]).toContain("bb-bird-open");
+
+    const box = await page.evaluate(() => {
+      const el = document.querySelector(".dlb__bird")!;
+      const b = el.getBoundingClientRect();
+      return { right: b.right, width: b.width, vw: document.documentElement.clientWidth };
+    });
+    // present at real size, and cropped by the cover rather than fully inset
+    expect(box.width, "has presence").toBeGreaterThan(150);
+    expect(box.right, "reaches the right edge").toBeGreaterThan(box.vw - 20);
+  });
 });
 
 test.describe("§04 the Contact sun", () => {

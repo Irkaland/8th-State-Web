@@ -38,7 +38,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
       locale={locale}
       messages={m}
       veil="ink"
-      returnTab={{ label: up(m.daoRoutes.returnTab.back), fallback: "/" }}
+      returnTab={{ label: up(m.daoRoutes.returnTab.back), parent: "/" }}
     >
       <div className="dao-page dao-page--ink dct" data-dao-scene="dark">
         <div className="dao-weave" aria-hidden="true" />

@@ -39,7 +39,7 @@ export function LegalPage({
       locale={locale}
       messages={messages}
       veil="fade"
-      returnTab={{ label: up(messages.daoRoutes.returnTab.back), fallback: "/", ground: "light" }}
+      returnTab={{ label: up(messages.daoRoutes.returnTab.back), parent: "/", ground: "light" }}
     >
       <div className="dao-page dlg" data-dao-scene="light">
         <div className="dao-grain" style={{ opacity: 0.32 }} aria-hidden="true" />

@@ -244,10 +244,15 @@ html:has(.dlb) {
   gap: 24px;
   flex-wrap: wrap;
 }
-/* the archive page title - DISPLAY role */
+/* the archive page title - DISPLAY role.
+   §13: the floor was 64px, which is both higher than the shared cover ramp's
+   44px and too high for the Georgian word: "ნამუშევრები" sets to about 406px at
+   64px, so at 375 and 320 the title ran past the page and was clipped. The floor
+   now matches every other page title; the slope and the cap are untouched, so
+   nothing changes from 616px up. */
 .dwk__title {
   font-family: var(--dao-f-display);
-  font-size: clamp(64px, 10.4vw, 150px);
+  font-size: clamp(44px, 10.4vw, 150px);
   line-height: 1;
   color: var(--dao-paper);
 }
@@ -1370,16 +1375,63 @@ html:has(.dlb) {
   padding: 26px var(--dao-gutter) 120px;
   overflow: visible;
 }
-.dst__swallow {
+/* §07/§08: the single giant bird is gone.
+   One 900px silhouette filling the right half of the cover read as a backdrop
+   rather than as artwork placed on a page, and at that size it was also being
+   drawn well past its own resolution. Three brandbook marks take its place - a
+   flowering stem, a twin-bird ornament and a curled flourish - at three clearly
+   different sizes, spaced apart, and deliberately off any shared axis. Each one
+   sits close to its native size, so the print survives.
+   The midground parallax is unchanged: the group moves as one object at 15% of
+   scroll, exactly as the bird did, and is static under reduced motion. */
+.dst__decor {
   position: absolute;
-  right: -140px;
-  top: -40px;
-  width: clamp(380px, 62vw, 900px);
-  aspect-ratio: 9 / 7.6;
-  background: rgba(35, 116, 179, 0.16);
-  --m: url("/assets/graphics/swallow.webp");
+  inset: 0;
   pointer-events: none;
   will-change: transform;
+}
+.dst__decor span {
+  position: absolute;
+  display: block;
+}
+/* the largest of the three, high on the right */
+.dst__decor--birds {
+  right: clamp(18px, 7vw, 132px);
+  top: clamp(24px, 6vw, 92px);
+  width: clamp(120px, 17vw, 250px);
+  aspect-ratio: 246 / 247;
+  background: rgba(19, 18, 16, 0.13);
+  --m: url("/assets/graphics/bb-twin-birds.webp");
+}
+/* mid-sized, dropped low and pulled well inboard - no shared edge with the
+   ornament above it */
+.dst__decor--stem {
+  right: clamp(96px, 26vw, 430px);
+  bottom: clamp(30px, 9vw, 150px);
+  width: clamp(56px, 8.4vw, 128px);
+  aspect-ratio: 167 / 280;
+  background: rgba(19, 18, 16, 0.115);
+  --m: url("/assets/graphics/bb-flower-stem.webp");
+}
+/* the smallest mark, near the right edge and between the other two in height,
+   so the three read as a composition rather than a row or a column */
+.dst__decor--flourish {
+  right: clamp(10px, 2.6vw, 44px);
+  top: 54%;
+  width: clamp(14px, 2vw, 32px);
+  aspect-ratio: 48 / 223;
+  background: rgba(19, 18, 16, 0.16);
+  --m: url("/assets/graphics/bb-flourish.webp");
+}
+/* below 720 the cover is a single narrow column: the stem would land on the
+   statement, so only the two marks that sit clear of the type are kept */
+@media (max-width: 720px) {
+  .dst__decor--stem {
+    display: none;
+  }
+  .dst__decor--birds {
+    width: clamp(84px, 22vw, 120px);
+  }
 }
 /* the studio manifesto statement - medium editorial copy, so strong Optika
    rather than the display face (§02) */
@@ -1620,63 +1672,74 @@ html:has(.dlb) {
   color: var(--dao-paper);
   text-wrap: pretty;
 }
-/* §10: a physical card laid across the boundary, not a panel inset into the
-   black. Three things make it read that way: it starts above this section so it
-   overlaps the paper world above, it is inset from the right so all four edges
-   are visible, and it carries a real drop shadow so it sits ON the black rather
-   than being cut out of it.
-   The tilt is deliberately small - 1.1deg, negative so the card RISES from left
-   to right - and the shadow is angled with it. Any more and the type starts to
-   fight the baseline of the copy beside it. */
+/* A PRINTED CARD LAID ACROSS THE BOUNDARY.
+   It used to be a tall column pinned from -58px to the section's bottom edge -
+   which made it a panel inset into the black, almost square, reading as another
+   section rather than as an object. It is now a landscape card at roughly
+   business-card proportions (1.62:1), turned clockwise and dropped across the
+   seam between the paper world above and the black below.
+   Three things make it read as an object: the aspect ratio is fixed so it never
+   stretches to the section, all four edges stand clear of the gutter, and the
+   drop shadow is angled with the rotation so it sits ON the black rather than
+   being cut out of it. */
 .dst__labpanel {
   position: absolute;
-  right: clamp(14px, 2.6vw, 52px);
-  top: -58px;
-  bottom: 0;
-  width: clamp(260px, 29vw, 420px);
+  right: clamp(20px, 5vw, 96px);
+  /* far enough above the seam that the card's upper edge lands on paper */
+  top: clamp(-190px, -14vw, -96px);
+  bottom: auto;
+  width: clamp(300px, 40vw, 580px);
+  aspect-ratio: 1.62;
   background: var(--dao-green);
-  transform: rotate(-1.1deg);
-  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.55);
+  /* §05: 23deg clockwise. 20 read as a slip rather than a decision and 30 put
+     the lower-left corner into the body copy at 1024; 23 is noticeably placed,
+     still square enough to read, and the type stays level enough to scan. */
+  transform: rotate(23deg);
+  transform-origin: 62% 50%;
+  box-shadow: 18px 26px 54px rgba(0, 0, 0, 0.55);
 }
 .dst__labpanel-inner {
   position: relative;
-  padding: 80px 44px;
+  /* a short card cannot carry 80px of vertical padding */
+  padding: clamp(20px, 2.4vw, 34px) clamp(24px, 2.8vw, 40px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  gap: clamp(6px, 0.6vw, 10px);
 }
 /* §04: the green Studio Lab card copy. Strong Optika at the real heaviest
    weight (600 - no Optika Bold file ships). Size, leading, ink colour and the
    three-line break structure are exactly as before; the card colour, botanical
    artwork, texture, dimensions, interaction and destination are untouched, and
    so are the STUDIO LAB kicker and the ENTER THE LAB CTA. */
+/* The card is now short and wide, so the copy is sized against the card rather
+   than against the viewport: it has to clear three lines inside a box whose
+   height is width/1.62. The old stepped media query for the narrow-column era is
+   gone with the column - a single fluid ramp covers every width, and it was
+   checked against the widest line, which is Georgian, not English. */
 .dst__lablines {
   font-family: var(--dao-f-ui);
   font-weight: var(--dao-w-editorial);
-  font-size: 30px;
-  line-height: 1.1;
+  font-size: clamp(17px, 2.4vw, 35px);
+  line-height: 1.08;
   color: var(--dao-ink);
   white-space: pre-line;
+  text-wrap: balance;
 }
-/* Optika sets wider than the display face at the same size. Between 721px and
-   ~1100px .dst__labpanel is a narrow absolutely-positioned column - about 178px
-   of inner width at 768 - and the longest line needs 181px in EN and 208px in
-   KA at 30px, so it clipped. Outside that band the panel is roomy (632px inner
-   at 720 and below, 237px+ from 1100 up) and the approved 30px stands. One
-   stepped size for the narrow band only; the three-line structure is unchanged.
-   Verified against the widest line, which is Georgian, not English. */
-@media (min-width: 721px) and (max-width: 1099px) {
-  .dst__lablines {
-    font-size: 24px;
-  }
-}
+/* the botanical stays, scaled to the card and tucked into its right edge - at
+   the old 120x160 it was taller than the card it sits on */
 .dst__labstem {
   position: absolute;
-  right: 40px;
-  bottom: 60px;
-  width: 120px;
-  height: 160px;
-  background: rgba(242, 237, 227, 0.75);
+  /* on the card's right half, vertically centred - the type takes the left, the
+     botanical answers it, and the card reads as composed rather than half-empty */
+  right: clamp(14px, 3.4vw, 54px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(46px, 7.4vw, 112px);
+  aspect-ratio: 3 / 4;
+  height: auto;
+  background: rgba(242, 237, 227, 0.78);
   --m: url("/assets/graphics/stem.webp");
 }
 .dst__roomsserpent {
@@ -1703,20 +1766,23 @@ html:has(.dlb) {
   padding: 90px var(--dao-gutter) 80px;
   overflow: clip;
 }
-/* §12: larger - roughly double - and still a print, not a light source. The
-   opacity is unchanged at 0.06 cream, and it is pushed further off the right
-   edge so the extra size is spent on crop rather than on presence. It is
-   cropped by .dst__handoff's overflow above, so growing it can no longer
-   lengthen the page. */
+/* §09: the brandbook's own celestial sun, and much bigger.
+   The previous mark was the generic sun graphic at 620px; this is the symbol
+   from the brandbook's SYMBOLS sheet at up to 1080px - a large background
+   graphic rather than a decorative icon. Cream at 0.07 keeps it a print on the
+   black rather than a light source, and it is still cropped by .dst__handoff's
+   overflow above, so growing it cannot lengthen the page.
+   The aspect ratio is the artwork's own (1400x1550) - the mark is genuinely
+   taller than it is wide and squaring it would distort the rays. */
 .dst__handoffsun {
   position: absolute;
-  right: clamp(-260px, -14vw, -110px);
-  top: 10px;
-  width: clamp(360px, 40vw, 620px);
-  aspect-ratio: 1;
+  right: clamp(-380px, -20vw, -150px);
+  top: -60px;
+  width: clamp(520px, 62vw, 1080px);
+  aspect-ratio: 1400 / 1550;
   height: auto;
-  background: rgba(242, 237, 227, 0.06);
-  --m: url("/assets/graphics/sun.webp");
+  background: rgba(242, 237, 227, 0.07);
+  --m: url("/assets/graphics/bb-sun-symbol.webp");
 }
 /* §03: strong Optika at the real heaviest weight (600). Size, leading, colour,
    the red full stop and the CTA beneath are untouched. */
@@ -1737,16 +1803,33 @@ html:has(.dlb) {
     grid-template-columns: 1fr;
     gap: 40px;
   }
-  /* §10: below 720 the card is a full-width block in the flow, where a tilt
-     and a negative top would only cost readability and leave a wedge of black
-     above it. Desktop is where the overlap has to communicate. */
+  /* §06: on a phone the card used to go full-width, square up and lose its
+     shadow - at which point it stopped being an object and became another
+     section of the page. It now stays a card: still landscape, still tilted,
+     still shadowed, sitting in the flow with a real margin around it. The tilt
+     is eased to 12deg because a 23deg turn on a 300px-wide card throws its
+     corners past the gutter. */
   .dst__rooms .dst__labpanel {
     position: relative;
-    width: 100%;
+    width: min(100%, 340px);
+    max-width: calc(100vw - 2 * var(--dao-gutter) - 24px);
+    margin: 26px auto 34px;
     top: 0;
     right: 0;
-    transform: none;
-    box-shadow: none;
+    aspect-ratio: 1.62;
+    transform: rotate(12deg);
+    transform-origin: 50% 50%;
+    box-shadow: 12px 18px 34px rgba(0, 0, 0, 0.5);
+  }
+  .dst__labpanel-inner {
+    padding: 18px 20px;
+  }
+  .dst__lablines {
+    font-size: clamp(15px, 4.4vw, 20px);
+  }
+  .dst__labstem {
+    right: 14px;
+    width: clamp(38px, 12vw, 56px);
   }
   .dst__roomsbody {
     padding-bottom: 40px;
@@ -1784,31 +1867,27 @@ html:has(.dlb) {
   background: rgba(242, 237, 227, 0.14);
   --m: url("/assets/graphics/floral-rose.webp");
 }
-/* §03B: grown and pushed off the right edge, cropped by .dlb__cover's
-   overflow. Cream kept, density eased for the larger shape. */
-.dlb__stem {
+/* §10: the two botanicals on the right - the grown stem and the small wreath
+   below it - are replaced by ONE brandbook symbol, the open-winged bird from the
+   SYMBOLS sheet. Same faded, printed integration the botanicals had: cream, low
+   density, cropped by .dlb__cover's overflow. Sized to have presence without
+   competing with the STUDIO LAB title or the intro copy beside it, and turned a
+   few degrees so it reads as placed rather than centred. */
+.dlb__bird {
   position: absolute;
-  right: clamp(-180px, -11vw, -44px);
-  top: 40px;
-  width: clamp(200px, 33vw, 480px);
-  aspect-ratio: 26 / 34;
-  background: rgba(242, 237, 227, 0.55);
-  --m: url("/assets/graphics/stem.webp");
-  transform: rotate(7deg);
+  right: clamp(-70px, -3vw, -10px);
+  top: clamp(56px, 8vw, 130px);
+  width: clamp(180px, 27vw, 400px);
+  aspect-ratio: 296 / 295;
+  background: rgba(242, 237, 227, 0.4);
+  --m: url("/assets/graphics/bb-bird-open.webp");
+  transform: rotate(-6deg);
 }
-/* §03A: the small yellow bloom is removed outright, rule and element both. */
+/* §03A: the small yellow bloom is removed outright, rule and element both.
+   §10: and so is .dlb__wreath - it was positioned relative to the grown stem
+   that has now been replaced, so it had nothing left to sit against. The hero
+   carries one symbol on the right, not a scatter. */
 
-/* moved inboard of the grown stem (§03B) - at its old right: 64px it landed
-   on the stalk. Same artwork and size, clear of both the stem and the copy. */
-.dlb__wreath {
-  position: absolute;
-  right: clamp(150px, 24vw, 350px);
-  top: 470px;
-  width: 120px;
-  height: 120px;
-  background: rgba(242, 237, 227, 0.85);
-  --m: url("/assets/graphics/wreath.webp");
-}
 .dlb__title {
   font-family: var(--dao-f-display);
   font-size: clamp(62px, 10.4vw, 150px);
@@ -2293,6 +2372,16 @@ html:has(.dlb) {
    /georgia-production - cinematic field guide (4d)
    ============================================================ */
 
+/* §12: the same floor and the same slope as every other cover title, so the
+   hierarchy is identical at the mobile and tablet widths where this title was
+   visibly smaller. Only the CAP is lower: "PRODUCTION" at the shared 130px needs
+   about 806px in the display face and the cover column is 800px, so the top of
+   the ramp genuinely has to give - it is the line length that differs here, not
+   the rank of the page. */
+.dgp__title {
+  font-size: clamp(44px, 9vw, 108px);
+  line-height: 0.98;
+}
 .dgp__cover {
   position: relative;
   padding: 26px var(--dao-gutter) 70px;
@@ -2594,12 +2683,52 @@ html:has(.dlb) {
   background: var(--dao-ink);
   color: var(--dao-paper);
 }
+/* §14/§15: heading on one side, swallow on the other.
+   Two columns rather than a stack, so the swallow has a composition zone of its
+   own on the right and the heading keeps the left. The column gap is what puts
+   the strongest negative space between them - which is also what makes the
+   swallow's LEFT margin the largest of its four, since it is then centred inside
+   its own zone with the gap added on that side. */
 .dbr__intro {
   padding: 20px var(--dao-gutter) 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 40%);
+  align-items: center;
+  gap: clamp(28px, 6vw, 110px);
+}
+.dbr__introtext {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+.dbr__swallow {
+  /* centred on both axes inside its own zone (§15) */
+  justify-self: center;
+  align-self: center;
+  width: clamp(150px, 21vw, 330px);
+  /* the artwork's own proportion - 900x994 */
+  aspect-ratio: 900 / 994;
+  background: var(--dao-paper);
+  --m: url("/assets/graphics/swallow.webp");
+  pointer-events: none;
+}
+/* §16: on a phone the two columns become one. The swallow keeps its role - a
+   significant graphic sitting with the heading - but drops below the copy at a
+   smaller size and stays centred, so it can never reach an input, the title or
+   the chrome. It scales as an object: aspect ratio held, negative space held,
+   and no horizontal contribution at all. */
+@media (max-width: 860px) {
+  .dbr__intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  .dbr__swallow {
+    width: clamp(112px, 30vw, 190px);
+    justify-self: center;
+    margin: 4px 0 8px;
+  }
+}
+
 .dbr__title {
   font-family: var(--dao-f-display);
   font-size: clamp(44px, 5.8vw, 84px);
@@ -3166,45 +3295,11 @@ html:has(.dlb) {
   line-height: 1.65;
   color: var(--dao-brown);
 }
-.dtm__section {
-  position: relative;
-}
-.dtm__depthead {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 52px var(--dao-gutter) 14px;
-}
-.dtm__deptno {
-  font-family: var(--dao-f-numeral);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  color: var(--dao-brown);
-}
-.dtm__deptname {
-  margin: 0;
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-editorial);
-  font-size: clamp(19px, 2vw, 26px);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.dtm__deptc {
-  margin-left: auto;
-  font-family: var(--dao-f-numeral);
-  font-size: 11.5px;
-  letter-spacing: 0.12em;
-  color: rgba(19, 18, 16, 0.45);
-}
-/* the department rule is the same 2px pencil stroke the site uses under type */
-.dtm__deptrule {
-  display: block;
-  height: 2px;
-  margin: 0 var(--dao-gutter);
-  background: rgba(19, 18, 16, 0.55);
-  -webkit-mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
-  mask: url("/assets/textures/pencil-rule-h.webp") left center / 100% 100% no-repeat;
-}
+/* The per-department heading, number, count and rule are gone: the roster is one
+   continuous contact sheet, so there is nothing to head. Department survives on
+   the person and is stated inside their profile, below.
+   Six rules (section, depthead, deptno, deptname, deptc, deptrule) were deleted
+   together with their markup rather than left orphaned in the stylesheet. */
 /* §02: the footprint comes down about a third. Four frames to a row instead of
    three, and the frame itself is capped, so the reduction is real layout rather
    than a smaller picture inside the same box. The freed width goes to the
@@ -3212,6 +3307,8 @@ html:has(.dlb) {
 .dtm__grid {
   position: relative;
   display: grid;
+  /* the space the first department heading used to open with */
+  margin-block-start: 44px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 40px 40px;
   padding: 24px var(--dao-gutter) 32px;
@@ -3454,6 +3551,13 @@ html:has(.dlb) {
   position: relative;
   z-index: 1;
   padding: 34px 34px 28px;
+  /* §01: a browser scrollbar down the edge of a printed sheet breaks the
+     illusion, and on a phone it is drawn over the paper. The sheet still
+     scrolls - by touch, by wheel, by keyboard, by screen reader - the bar is
+     just not painted. Firefox takes the standard property; WebKit and Chromium
+     need the pseudo-element, and -ms-overflow-style covers legacy Edge. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   /* §04: a clean rectangular edge - no radius, no torn top, no drop shadow */
   flex: 1 1 auto;
   min-width: 0;
@@ -3473,6 +3577,10 @@ html:has(.dlb) {
 .dtm__stage[data-dtm-phase="open"] .dtm__morph > .dtm__dossier {
   opacity: 1;
   transition: opacity 300ms 180ms var(--dao-ease-editorial);
+}
+.dtm__dossier::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 .dtm__dossier:focus-visible {
   outline: 2px solid var(--dao-red);

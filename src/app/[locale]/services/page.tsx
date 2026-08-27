@@ -48,7 +48,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
       locale={locale}
       messages={m}
       veil="paper"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), fallback: "/", ground: "light" }}
+      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/", ground: "light" }}
     >
       <div className="dao-page dsv" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />

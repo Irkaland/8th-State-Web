@@ -22,7 +22,7 @@ export function DaoShell({
   locale: Locale;
   messages: Messages;
   veil: VeilFamily;
-  returnTab?: { label: string; fallback: string; ground?: "dark" | "light" };
+  returnTab?: { label: string; parent: string; ground?: "dark" | "light" };
   children: React.ReactNode;
 }) {
   return (
@@ -36,7 +36,7 @@ export function DaoShell({
         <ReturnTab
           locale={locale}
           label={returnTab.label}
-          fallback={returnTab.fallback}
+          parent={returnTab.parent}
           ground={returnTab.ground}
         />
       )}

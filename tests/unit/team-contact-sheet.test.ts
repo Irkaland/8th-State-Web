@@ -324,6 +324,55 @@ describe("the role rule is the thin pencil stroke", () => {
  * measured origin, geometry interpolation, reverse sequence, restoration - not
  * the intermediate values of an animation.
  */
+describe("the roster is one continuous grid", () => {
+  const jsx = read("src/components/dao/TeamContactSheet.tsx");
+  const css = read("src/app/dao-routes.css");
+
+  it("renders no per-department section, heading, number, count or rule", () => {
+    for (const cls of [
+      "dtm__section",
+      "dtm__depthead",
+      "dtm__deptno",
+      "dtm__deptname",
+      "dtm__deptc",
+      "dtm__deptrule",
+    ]) {
+      expect(jsx, cls).not.toContain(cls);
+      // removed with their markup rather than left orphaned in the stylesheet
+      expect(css, cls).not.toContain("." + cls);
+    }
+  });
+
+  it("derives the grid from the same flat order prev/next walks", () => {
+    expect(jsx).toContain("const roster = order");
+    expect(jsx).toContain("{roster.map((card) => {");
+    expect(jsx).not.toContain("sections.map((section)");
+  });
+
+  it("keeps department on the person, and states it in the profile", () => {
+    // the schema is untouched...
+    expect(
+      teamMemberSchema.parse({ id: "x", slug: "x", department: "direction", order: 1 }).department,
+    ).toBe("direction");
+    // ...the sections are still built, because the flat order comes from them...
+    expect(teamByDepartment().length).toBeGreaterThan(1);
+    // ...and the profile still prints it
+    expect(jsx).toContain('<span className="dtm__dept">{up(card.departmentName)}</span>');
+  });
+
+  it("hides the sheet's scrollbar without disabling the scroll", () => {
+    const doss = css.match(/^\.dtm__dossier \{[\s\S]*?\n\}/m)![0];
+    // §01: hidden in all three engines - standard, WebKit/Chromium, legacy Edge
+    expect(doss).toContain("scrollbar-width: none");
+    expect(doss).toContain("-ms-overflow-style: none");
+    expect(css).toContain(".dtm__dossier::-webkit-scrollbar");
+    // the scroll itself is untouched
+    expect(doss).toContain("overflow-y: auto");
+    expect(doss).not.toContain("overflow-y: hidden");
+    expect(doss).not.toContain("overflow: hidden");
+  });
+});
+
 describe("the profile morphs out of the card that opened it", () => {
   const jsx = read("src/components/dao/TeamContactSheet.tsx");
   const css = read("src/app/dao-routes.css");

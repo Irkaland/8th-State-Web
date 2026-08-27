@@ -6,7 +6,7 @@ import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
-import { StudioSwallow } from "@/components/dao/StudioSwallow";
+import { StudioDecor } from "@/components/dao/StudioDecor";
 import { up } from "@/lib/cn";
 
 export async function generateMetadata({
@@ -38,7 +38,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
       locale={locale}
       messages={m}
       veil="red"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), fallback: "/", ground: "light" }}
+      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/", ground: "light" }}
     >
       {/* v7 #11 white-strip fix: the route shell ground is the closing
           section's ink - the paper world ends inside the ink close, so no
@@ -51,7 +51,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
 
           {/* manifesto cover - giant swallow behind statement */}
           <InView className="dst__cover" threshold={0.05}>
-            <StudioSwallow />
+            <StudioDecor />
             <header className="dao-cover" style={{ position: "relative", padding: 0 }}>
               <h1 className="dao-cover__title dao-side" style={{ ["--x" as string]: "-60px" }}>
                 {up(m.nav.studio)}

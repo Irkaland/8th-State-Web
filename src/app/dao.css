@@ -324,6 +324,22 @@ html {
   /* #d03e26 at 82% over #131210 = rgb(175, 54, 34) - the palette's own
      darkening move, the same one that produced --dao-green-ink */
   --dao-btn-live: rgb(175, 54, 34);
+  /* §11: printed red paper, not flat digital red. The same paper grain the
+     rest of the site is printed on, multiplied into the fill so the colour
+     stays the brand red and only its surface changes. isolation keeps the
+     blend inside the button instead of reaching the ground behind it. */
+  position: relative;
+  isolation: isolate;
+}
+.dao-btnfill--red::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/textures/paper-grain.webp");
+  background-size: 190px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 /* §14: the label on the red fill. Paper (#f2ede3) measures 4.09:1 against
    #d03e26, which is under AA for 11px text, and the brief fixes both the red
@@ -712,6 +728,8 @@ html[data-dao-idle] .dao-returntab:has(:focus-visible) {
   color: var(--dao-ink);
   background: var(--dao-paper);
   border: 0;
+  /* it is an <a> now, so the link underline has to be turned off explicitly */
+  text-decoration: none;
   padding: 9px 15px;
   min-height: 34px;
   transform: rotate(-1deg);
@@ -1004,12 +1022,13 @@ html[data-dao-nav-open] .dao-returntab {
   cursor: pointer;
   line-height: inherit;
 }
-/* the WORK numeral is also the categories toggle, so it still needs a visible
-   active state - it brightens to paper rather than staying red */
-.dao-nav__num--toggle:hover,
-.dao-nav__num--toggle[aria-expanded="true"] {
-  color: rgba(242, 237, 227, 0.85);
-}
+/* §03: the WORK numeral gets NO colour of its own.
+   It used to brighten to paper on hover and while expanded, which made 01 the
+   only numeral in the sheet that reacted - it read as highlighted rather than as
+   state, and sat differently from 02-08. The expanded state is carried by
+   aria-expanded and, visibly, by the category list appearing; the numeral stays
+   brand red like every other. Focus, below, is a keyboard affordance and is
+   deliberately kept. */
 .dao-nav__num--toggle:focus-visible {
   outline: 2px solid var(--dao-blue);
   outline-offset: 3px;
@@ -2412,6 +2431,21 @@ html[data-dao-nav-open] .dao-returntab {
   .dao-svc__frag,
   .dao-svc__fragnone {
     margin-left: 0;
+  }
+}
+/* §13: the empty-capability note is a fixed 200px card inside a row that also
+   carries 34px of left padding and a 28px gap. Below about 560 there is no
+   longer room for all three, and the note was being clipped by
+   .dao-svc__bodyin's overflow. The row wraps and gives up its indent instead;
+   the note keeps its width and its paper tilt. */
+@media (max-width: 560px) {
+  .dao-svc__detail {
+    flex-wrap: wrap;
+    padding-left: 0;
+    gap: 16px;
+  }
+  .dao-svc__fragnone {
+    max-width: 100%;
   }
 }
 @media (prefers-reduced-motion: reduce) {

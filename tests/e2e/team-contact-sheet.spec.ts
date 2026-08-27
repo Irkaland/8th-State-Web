@@ -237,24 +237,80 @@ test.describe("§01 the portrait frame is a complete four-sided perimeter", () =
 
 /* ------------------------------------------------ roster + departments ---- */
 
-test.describe("§04/§05 roster and departments", () => {
-  test("groups people under editorial headings, in the approved order", async ({ page }) => {
+test.describe("the roster is one continuous contact sheet", () => {
+  /**
+   * SUPERSEDES "groups people under editorial headings, in the approved order"
+   * and "renders no empty department". The roster used to be a stack of
+   * per-department sections, each with a number, a heading, a count and a rule.
+   * Both assertions are inverted here rather than dropped, so the change of
+   * model stays legible: the studio reads as one company, and department is now
+   * profile metadata rather than a divider in the landing grid.
+   */
+  test("shows no department heading, number, count or separator", async ({ page }) => {
     await gotoRoute(page, "/team");
-    const depts = await page
-      .locator(".dtm__deptname")
-      .evaluateAll((els) => els.map((e) => (e as HTMLElement).innerText));
-    expect(depts).toEqual(["PRODUCTION", "DIRECTION"]);
-    // no filter bar
+    for (const sel of [
+      ".dtm__deptname",
+      ".dtm__deptno",
+      ".dtm__deptc",
+      ".dtm__deptrule",
+      ".dtm__depthead",
+      ".dtm__section",
+    ]) {
+      expect(await page.locator(sel).count(), sel).toBe(0);
+    }
+    // and no heading in the roster names a department either
+    const roster = await page.locator(".dtm__sheet").innerText();
+    expect(roster).not.toMatch(/\bPRODUCTION\b/);
+    expect(roster).not.toMatch(/\bDIRECTION\b/);
+    // still no filter bar
     expect(await page.locator("[role='tablist'], .dtm__filters").count()).toBe(0);
   });
 
-  test("renders no empty department", async ({ page }) => {
+  test("puts every person in ONE grid, in the prev/next order", async ({ page }) => {
     await gotoRoute(page, "/team");
-    const counts = await page
-      .locator(".dtm__section")
-      .evaluateAll((els) => els.map((e) => e.querySelectorAll(".dtm__person").length));
-    expect(counts.length).toBeGreaterThan(0);
-    for (const c of counts) expect(c).toBeGreaterThan(0);
+    expect(await page.locator(".dtm__grid").count()).toBe(1);
+    const inGrid = await page.locator(".dtm__grid .dtm__person").count();
+    const total = await page.locator(".dtm__person").count();
+    expect(total).toBeGreaterThan(1);
+    expect(inGrid).toBe(total);
+    // the visible sequence and the keyboard sequence are the same list
+    const slugs = await page
+      .locator(".dtm__person")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-dtm-card")));
+    expect(slugs).toEqual([
+      "production-01",
+      "production-02",
+      "production-03",
+      "direction-01",
+      "direction-02",
+    ]);
+  });
+
+  test("runs the grid as one flow, with no gap where a department used to break", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await gotoRoute(page, "/team");
+    const tops = await page
+      .locator(".dtm__person")
+      .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    const rows = [...new Set(tops)].sort((a, b) => a - b);
+    // five seats at four columns is two rows - not one row per department
+    expect(rows.length).toBe(2);
+    // and the second row follows the first by one row's pitch, not by a section break
+    const heights = await page
+      .locator(".dtm__person")
+      .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
+    expect(rows[1] - rows[0]).toBeLessThan(Math.max(...heights) + 80);
+  });
+
+  test("still states the department inside the person's own profile", async ({ page }) => {
+    await gotoRoute(page, "/team");
+    const card = await park(page, 4);
+    await card.click();
+    await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
+    // the fifth seat is in Direction, and its profile says so
+    await expect(page.locator(".dtm__dept")).toContainText("DIRECTION");
   });
 
   test("states the page over two lines, not as a Meet the Team banner", async ({ page }) => {
@@ -781,11 +837,15 @@ test.describe("§13 EN and KA", () => {
     const ka = await page.locator(".dtm__title").innerText();
     expect(en).toMatch(/THE PEOPLE/);
     expect(ka).toMatch(/[Ⴀ-ჿ]/);
-    const depts = await page
-      .locator(".dtm__deptname")
-      .evaluateAll((els) => els.map((e) => (e as HTMLElement).innerText));
-    expect(depts.length).toBe(2);
-    for (const d of depts) expect(d).toMatch(/[Ⴀ-ჿ]/);
+    // the roster carries no department headings any more, so what has to be
+    // Georgian is the roster copy itself
+    expect(await page.locator(".dtm__deptname").count()).toBe(0);
+    expect(await page.locator(".dtm__provisional").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    const card = await park(page, 0);
+    await card.click();
+    await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
+    // and the department, which now lives in the profile, is Georgian there
+    expect(await page.locator(".dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
   });
 
   test("leaves no English marked blank on the Georgian route", async ({ page }) => {

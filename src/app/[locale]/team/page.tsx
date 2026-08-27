@@ -136,7 +136,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
       locale={locale}
       messages={m}
       veil="paper"
-      returnTab={{ label: up(m.nav.studio), fallback: "/studio", ground: "light" }}
+      returnTab={{ label: up(m.nav.studio), parent: "/studio", ground: "light" }}
     >
       <div className="dao-page dao-page--paper dtm" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />

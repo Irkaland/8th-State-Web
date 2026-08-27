@@ -69,7 +69,7 @@ export default async function ProjectPage({
       locale={locale}
       messages={m}
       veil="blue"
-      returnTab={{ label: up(m.nav.work), fallback: "/work" }}
+      returnTab={{ label: up(m.nav.work), parent: "/work" }}
     >
       <article className="dao-page dpj" data-dao-scene="light" style={{ paddingTop: 0 }}>
         {/* opening title on the blue sheet the archive frame expanded into */}

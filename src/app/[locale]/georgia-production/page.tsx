@@ -50,7 +50,7 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
       locale={locale}
       messages={m}
       veil="blue"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), fallback: "/", ground: "light" }}
+      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/", ground: "light" }}
     >
       <div className="dao-page dao-page--paper" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />
@@ -61,10 +61,13 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
             <span className="dao-kicker dao-fade" style={{ color: "var(--dao-blue)" }}>
               {up(R.kicker)}
             </span>
-            <h1
-              className="dao-cover__title"
-              style={{ fontSize: "clamp(40px,7.6vw,110px)", lineHeight: 0.98 }}
-            >
+            {/* §12: the size lived here as an inline override - clamp(40px,7.6vw,110px)
+                against the shared cover ramp of clamp(44px,9vw,130px) - so this
+                title was smaller than every other page title at EVERY width, and
+                read as a secondary item purely because its words are longer. It
+                is a named class now, and the ramp matches the shared one exactly
+                up to its cap. */}
+            <h1 className="dao-cover__title dgp__title">
               <span className="dao-rise">
                 <span>{up(m.nav.georgiaProduction.split(" ")[0])}</span>
               </span>

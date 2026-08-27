@@ -78,7 +78,7 @@ export default async function WorkPage({
       locale={locale}
       messages={m}
       veil="blue"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), fallback: "/" }}
+      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/" }}
     >
       <div className="dao-page dwk" data-dao-scene="dark">
         {/* blue material plane carried in from Selected Work */}

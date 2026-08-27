@@ -633,6 +633,17 @@ export function TeamContactSheet({
   };
 
   const index = openSlug ? order.indexOf(openSlug) : -1;
+  /**
+   * Every person, in one list.
+   *
+   * `order` is the flat roster the profile's prev/next already steps through, so
+   * deriving the grid from it keeps the visual sequence and the keyboard sequence
+   * identical by construction - they cannot drift apart.
+   */
+  const roster = order
+    .map((slug) => sections.flatMap((s) => s.people).find((c) => c.slug === slug))
+    .filter((c): c is TeamCard => c !== undefined);
+
   const openCard = openSlug
     ? (sections.flatMap((s) => s.people).find((c) => c.slug === openSlug) ?? null)
     : null;
@@ -965,77 +976,69 @@ export function TeamContactSheet({
         </p>
       )}
 
-      {sections.map((section) => (
-        <section key={section.id} className="dtm__section" aria-labelledby={`dept-${section.id}`}>
-          <div className="dtm__depthead">
-            <span className="dtm__deptno" aria-hidden="true">
-              {String(sections.indexOf(section) + 1).padStart(2, "0")}
-            </span>
-            <h2 className="dtm__deptname" id={`dept-${section.id}`}>
-              {up(section.name)}
-            </h2>
-            <span className="dtm__deptc" aria-hidden="true">
-              {section.people.length}
-            </span>
-          </div>
-          <span className="dtm__deptrule" aria-hidden="true" />
-
-          <div className={cn("dtm__grid", openSlug && "is-open")}>
-            {section.people.map((card) => {
-              const isOpen = openSlug === card.slug;
-              const n = order.indexOf(card.slug) + 1;
-              return (
-                <div key={card.slug} className="dtm__cell" style={{ display: "contents" }}>
-                  <button
-                    type="button"
-                    data-dtm-card={card.slug}
-                    ref={(el) => {
-                      triggers.current[card.slug] = el;
-                    }}
-                    className={cn(
-                      "dtm__person",
-                      isOpen && "is-active",
-                      // §06: the seat stays in the grid at full size, only unseen,
-                      // so nothing reflows while its content is out on the stage
-                      isOpen && "is-lifted",
-                      openSlug && !isOpen && "is-dim",
-                    )}
-                    aria-expanded={isOpen}
-                    onClick={() => (isOpen ? close() : openFrom(card.slug, boxOf(card.slug), true))}
-                  >
-                    <Frame
-                      card={card}
-                      sizes="(max-width: 720px) 40vw, 22vw"
-                      priority={n <= 3}
-                      pending={R.portraitPending}
-                    />
-                    <span className="dtm__pbody">
-                      <span className="dtm__pno" aria-hidden="true">
-                        {String(n).padStart(2, "0")}
-                      </span>
-                      <span className="dtm__pname">
-                        <NameOrSlot card={card} pending={R.namePending} />
-                      </span>
-                      {card.role && <span className="dtm__role">{up(card.role)}</span>}
-                      {!card.role && (
-                        <span className="dtm__role dtm__role--pending">{up(R.rolePending)}</span>
-                      )}
-                      {card.secondaryRoles[0] && (
-                        <span className="dtm__role dtm__role--2">{up(card.secondaryRoles[0])}</span>
-                      )}
-                      <span className="dtm__view" aria-hidden="true">
-                        {up(R.viewProfile)} →
-                      </span>
-                    </span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
-      {/* §02/§04: one stage, outside every section, so the fixed sheet is laid
-          out against the viewport rather than against a grid cell */}
+      {/*
+        ONE ROSTER.
+        The people used to be grouped into per-department sections, each with a
+        number, a heading, a count at the far right and a rule - which split the
+        page into a stack of small directories. The studio reads as one company,
+        so the roster is now a single continuous contact sheet. Department is
+        still carried on every person and is still stated inside their profile;
+        it is simply no longer a divider in the landing grid.
+      */}
+      <div className={cn("dtm__grid", openSlug && "is-open")}>
+        {roster.map((card) => {
+          const isOpen = openSlug === card.slug;
+          const n = order.indexOf(card.slug) + 1;
+          return (
+            <div key={card.slug} className="dtm__cell" style={{ display: "contents" }}>
+              <button
+                type="button"
+                data-dtm-card={card.slug}
+                ref={(el) => {
+                  triggers.current[card.slug] = el;
+                }}
+                className={cn(
+                  "dtm__person",
+                  isOpen && "is-active",
+                  // §06: the seat stays in the grid at full size, only unseen,
+                  // so nothing reflows while its content is out on the stage
+                  isOpen && "is-lifted",
+                  openSlug && !isOpen && "is-dim",
+                )}
+                aria-expanded={isOpen}
+                onClick={() => (isOpen ? close() : openFrom(card.slug, boxOf(card.slug), true))}
+              >
+                <Frame
+                  card={card}
+                  sizes="(max-width: 720px) 40vw, 22vw"
+                  priority={n <= 3}
+                  pending={R.portraitPending}
+                />
+                <span className="dtm__pbody">
+                  <span className="dtm__pno" aria-hidden="true">
+                    {String(n).padStart(2, "0")}
+                  </span>
+                  <span className="dtm__pname">
+                    <NameOrSlot card={card} pending={R.namePending} />
+                  </span>
+                  {card.role && <span className="dtm__role">{up(card.role)}</span>}
+                  {!card.role && (
+                    <span className="dtm__role dtm__role--pending">{up(R.rolePending)}</span>
+                  )}
+                  {card.secondaryRoles[0] && (
+                    <span className="dtm__role dtm__role--2">{up(card.secondaryRoles[0])}</span>
+                  )}
+                  <span className="dtm__view" aria-hidden="true">
+                    {up(R.viewProfile)} →
+                  </span>
+                </span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      {/* one stage, outside the grid, so the fixed sheet is laid out against the
+          viewport rather than against a grid cell */}
       {openCard && profile(openCard)}
     </div>
   );

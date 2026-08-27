@@ -385,19 +385,27 @@ test.describe("§10-§12 Studio", () => {
     expect(got.cardRight).toBeLessThanOrEqual(got.vw + 1);
   });
 
-  test("the tilt is subtle and rises left to right", async ({ page }) => {
+  /**
+   * SUPERSEDES "the tilt is subtle and rises left to right", which required a
+   * NEGATIVE angle of at most 3deg. The card was then a tall panel inset into
+   * the black, where anything more would have fought the copy beside it. It is
+   * now a landscape card laid across the boundary, and the studio asked for a
+   * deliberate clockwise turn of roughly 20-30deg. Both halves of the old
+   * assertion are inverted: the sign and the magnitude.
+   */
+  test("the tilt is a deliberate clockwise turn", async ({ page }) => {
     await gotoRoute(page, "/studio");
     const m = await page.evaluate(
       () => getComputedStyle(document.querySelector(".dst__labpanel")!).transform,
     );
-    // matrix(a, b, c, d, e, f): b is sin(theta); negative => right edge higher
+    // matrix(a, b, c, d, e, f): b is sin(theta); POSITIVE is clockwise
     const parts = m
       .match(/matrix\(([^)]+)\)/)![1]
       .split(",")
       .map(Number);
     const deg = (Math.atan2(parts[1]!, parts[0]!) * 180) / Math.PI;
-    expect(deg).toBeLessThan(0);
-    expect(Math.abs(deg), "subtle, not a dramatic diagonal").toBeLessThanOrEqual(3);
+    expect(deg, "clockwise").toBeGreaterThan(18);
+    expect(deg, "placed, not gimmicky").toBeLessThan(30);
   });
 
   test("the Lab card text is fully readable and uncropped", async ({ page }) => {
@@ -442,7 +450,15 @@ test.describe("§10-§12 Studio", () => {
     expect(got.docH - got.shellBot).toBeLessThanOrEqual(4);
   });
 
-  test("§12 the sun is larger and still quiet", async ({ page }) => {
+  /**
+   * SUPERSEDES "§12 the sun is larger and still quiet", which pinned the mark to
+   * the generic sun graphic at 0.06 alpha. The studio replaced it with the
+   * celestial sun from the brandbook's own SYMBOLS sheet, at roughly double the
+   * size again, and one point of alpha more to hold at that scale. The claim it
+   * makes is the same in spirit - a large print, not a light source - so the
+   * numbers move and the intent does not.
+   */
+  test("§12 the sun is the brandbook symbol, much larger, still quiet", async ({ page }) => {
     await gotoRoute(page, "/studio");
     const got = await page.evaluate(() => {
       const el = document.querySelector(".dst__handoffsun")!;
@@ -453,10 +469,11 @@ test.describe("§10-§12 Studio", () => {
         mask: cs.maskImage || cs.webkitMaskImage,
       };
     });
-    expect(got.w, "was 300px").toBeGreaterThan(340);
-    expect(got.mask).toContain("sun");
-    // unchanged opacity - larger, not louder
-    expect(rgba(got.bg)[3]).toBeLessThanOrEqual(0.06);
+    // it was 620px at this width before; it is a background graphic now
+    expect(got.w, "was 620px").toBeGreaterThan(700);
+    expect(got.mask).toContain("bb-sun-symbol");
+    // still a print: nowhere near a visible fill
+    expect(rgba(got.bg)[3]).toBeLessThanOrEqual(0.09);
   });
 });
 
