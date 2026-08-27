@@ -217,9 +217,12 @@ test.describe("§04-§06 the Studio Lab card is an object, not a section", () =>
       const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
       return (Math.atan2(m.b, m.a) * 180) / Math.PI;
     });
-    // positive is clockwise in CSS; the brief asked for roughly 20-30
-    expect(deg).toBeGreaterThan(18);
-    expect(deg).toBeLessThan(30);
+    // Positive is clockwise in CSS. The window was 20-30; the refinement pass
+    // eased the turn by a third, to 15, so the card stops fighting the reading
+    // angle of its own copy. The claim - a deliberate turn, never a level UI
+    // card - is unchanged.
+    expect(deg).toBeGreaterThan(11);
+    expect(deg).toBeLessThan(19);
   });
 });
 
@@ -271,16 +274,25 @@ test.describe("§07-§10 the decoration comes from brandbook assets", () => {
     await expect(page.locator(".dbr__swallow")).toHaveAttribute("aria-hidden", "true");
   });
 
-  test("the dark Studio section carries the brandbook sun, much larger", async ({ page }) => {
+  test("the dark Studio section carries the brandbook sun, whole", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/studio");
-    const m = await page.locator(".dst__handoffsun").evaluate((el) => ({
-      mask: getComputedStyle(el).getPropertyValue("--m").trim(),
-      w: Math.round(el.getBoundingClientRect().width),
-    }));
+    const m = await page.locator(".dst__handoffsun").evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const b = el.closest(".dst__handoff")!.getBoundingClientRect();
+      return {
+        mask: getComputedStyle(el).getPropertyValue("--m").trim(),
+        w: Math.round(r.width),
+        h: Math.round(r.height),
+        inset: [r.top - b.top, b.bottom - r.bottom, r.left - b.left, b.right - r.right],
+      };
+    });
     expect(m.mask).toContain("bb-sun-symbol.webp");
-    // it was 620px at this width; it is a background graphic now, not an icon
-    expect(m.w).toBeGreaterThan(700);
+    // it is a background graphic, not an icon - but a COMPLETE one. The old
+    // ">700px wide" measure was only reachable by letting the band shear the
+    // mark's upper rays off; see brand-refinement.spec.ts §12.
+    expect(m.h).toBeGreaterThan(300);
+    for (const side of m.inset) expect(side).toBeGreaterThan(0);
   });
 
   test("the Lab hero carries one symbol where two botanicals were", async ({ page }) => {
@@ -382,8 +394,11 @@ test.describe("§14-§16 the Start a Project swallow", () => {
         swallowCentre: Math.round(r.left + r.width / 2),
       };
     });
-    // the brandbook artwork, painted cream
-    expect(m.mask).toContain("swallow.webp");
+    // The brandbook artwork, painted cream. It ships as VECTOR now: the source
+    // in the brandbook is 279x314 and this box draws it up to 330px wide, so
+    // any raster was an enlargement by construction. The outline is traced from
+    // that same object - see scripts/vectorize-swallow.mjs - not re-drawn.
+    expect(m.mask).toContain("swallow.svg");
     expect(m.colour).toBe("rgb(242, 237, 227)");
     // it is on the opposite side of the page from the heading
     expect(m.swallowCentre).toBeGreaterThan(m.titleCentre);

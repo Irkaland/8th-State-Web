@@ -122,18 +122,35 @@ test.describe("01 the Studio Lab flower is gone", () => {
 
 /* ------------------------------------------------- 02 Services capability -- */
 
-test.describe("02 Services capability titles resolve to Optika 600", () => {
-  const NINE = [
+/**
+ * SUPERSEDES "02 Services capability titles resolve to Optika 600", which
+ * required all NINE to be strong Optika.
+ *
+ * The nine are not one tier. Five of them are the page's SPREAD headings - the
+ * three major services, group I (Creative Direction / Art Direction), group III
+ * (Film & Video Production / Photography) and group IV (Post-Production) - and
+ * they are the only large headings on the site that were still set in the UI
+ * face while every other route's masthead used the display face. They now take
+ * --dao-f-display, at 400, because Adevas ships Regular only and 600 on it
+ * would be a synthesised bold.
+ *
+ * The other four are group II's capability GRID inside a spread, not spread
+ * headings, and they deliberately stay strong Optika: the hierarchy between a
+ * spread heading and the grid under it depends on their being different faces.
+ *
+ * What the original test protected - every capability title resolves through
+ * the design system, at a REAL weight, and none is patched per instance - is
+ * kept in full and simply asked per tier.
+ */
+test.describe("02 Services capability titles resolve to their tier's face", () => {
+  const DISPLAY = [
     "Creative Direction",
     "Art Direction",
-    "Production Design",
-    "Scenography",
-    "Costume Design",
-    "Decoration",
     "Film & Video Production",
     "Photography",
     "Post-Production",
   ];
+  const OPTIKA = ["Production Design", "Scenography", "Costume Design", "Decoration"];
 
   test("every capability title on the page, all nine of them", async ({ page }) => {
     await gotoRoute(page, "/services");
@@ -145,31 +162,54 @@ test.describe("02 Services capability titles resolve to Optika 600", () => {
           family: cs.fontFamily,
           weight: cs.fontWeight,
           size: parseFloat(cs.fontSize),
+          tier: e.closest(".dsv__g1names, .dsv__g3names, .dsv__g4") ? "display" : "ui",
         };
       }),
     );
     // 01, 02, 03-06, 07, 08, 09 - the whole list, not just what a screenshot showed
     expect(titles.length).toBeGreaterThanOrEqual(9);
     for (const t of titles) {
-      expect(first(t.family), t.text).toBe("optika");
-      expect(t.weight, t.text).toBe("600");
       expect(t.size, t.text).toBeGreaterThan(0);
+      if (t.tier === "display") {
+        expect(first(t.family), t.text).toBe("adevas");
+        // Adevas has one weight - anything above it would be synthesised
+        expect(t.weight, t.text).toBe("400");
+      } else {
+        expect(first(t.family), t.text).toBe("optika");
+        expect(t.weight, t.text).toBe("600");
+      }
     }
-    for (const name of NINE) {
-      expect(
-        titles.some((t) => t.text.includes(name)),
-        `${name} is present`,
-      ).toBe(true);
+    for (const name of DISPLAY) {
+      const t = titles.find((x) => x.text.includes(name));
+      expect(t, `${name} is present`).toBeTruthy();
+      expect(t!.tier, `${name} is a spread heading`).toBe("display");
+    }
+    for (const name of OPTIKA) {
+      const t = titles.find((x) => x.text.includes(name));
+      expect(t, `${name} is present`).toBeTruthy();
+      expect(t!.tier, `${name} stays in the group II grid`).toBe("ui");
     }
   });
 
-  test("and in KA, through the locale-aware token", async ({ page }) => {
+  test("and in KA, through the locale-aware tokens", async ({ page }) => {
     await gotoRoute(page, "/ka/services");
-    const weights = await page
-      .locator(".dsv__name")
-      .evaluateAll((els) => els.map((e) => getComputedStyle(e).fontWeight));
-    expect(weights.length).toBeGreaterThanOrEqual(9);
-    for (const w of weights) expect(w).toBe("600");
+    const titles = await page.locator(".dsv__name").evaluateAll((els) =>
+      els.map((e) => {
+        const cs = getComputedStyle(e);
+        return {
+          family: cs.fontFamily,
+          weight: cs.fontWeight,
+          tier: e.closest(".dsv__g1names, .dsv__g3names, .dsv__g4") ? "display" : "ui",
+        };
+      }),
+    );
+    expect(titles.length).toBeGreaterThanOrEqual(9);
+    for (const t of titles) {
+      // Georgian never falls back to a Latin face, in either tier
+      expect(first(t.family)).not.toBe("adevas");
+      expect(first(t.family)).not.toBe("optika");
+      expect(t.weight).toBe(t.tier === "display" ? "400" : "600");
+    }
   });
 
   test("wording, numbering and Related Work routing are untouched", async ({ page }) => {

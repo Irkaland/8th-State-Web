@@ -1057,17 +1057,32 @@ html[data-dao-nav-open] .dao-returntab {
   padding: 0;
   text-align: left;
 }
-/* §07: GEORGIA PRODUCTION and START A PROJECT carry this class because they
-   are the two longest labels. It used to shrink them at EVERY width, so on a
-   desktop with room to spare they sat visibly smaller than the six labels
-   around them and broke the primary hierarchy.
-   The reduction now applies only where it is actually needed. Above the
-   breakpoint these two labels inherit .dao-nav__link untouched, so the desktop
-   menu is one consistent scale; below it they step down just enough to stay on
-   one line, which is verified for both locales at 430/390/375/360/320. */
-@media (max-width: 620px) {
-  .dao-nav__link--sm {
-    font-size: clamp(16px, min(3.5vh, 4.6vw), 46px);
+/* §Refinement 07: GEORGIA PRODUCTION and START A PROJECT used to SHARE a
+   step-down on every phone width, which is why they read as a second tier
+   under WORK / SERVICES / STUDIO / STUDIO LAB / PROCESS / CONTACT. Measuring
+   the rows rather than assuming them says the step-down was mostly unearned:
+   below 900 the Georgian companion already moves onto its own line, so the
+   label owns the whole remaining column, and
+
+     - START A PROJECT fits at the shared size in BOTH locales at every target
+       width, so it carries no reduction at all any more (the prop is gone from
+       the row);
+     - GEORGIA PRODUCTION fits at the shared size in ENGLISH at every target
+       width - 224px of label in a 314px column at 375, 229 in 259 at 320 - so
+       the English menu is now ONE scale, top to bottom, which is what the
+       brief asks for.
+
+   Georgian is the one case that genuinely does not fit: პროდაქშენი
+   საქართველოში measures 14.4x its own font-size, against 11.6x for the English
+   string, and at 430 it would need 386px of a 369px column. So the reduction
+   survives for that label, in the Georgian document only, at as little as it
+   takes - 5.4vw instead of 6.2vw, checked at 430/390/375/360/320 with the
+   floor lowered to match. Above 760 even Georgian fits at the shared size, so
+   tablet and desktop are pixel-identical to before. Its English companion
+   keeps its own secondary hierarchy either way. */
+@media (max-width: 760px) {
+  html[lang="ka"] .dao-nav__link--sm {
+    font-size: clamp(16px, min(5.4vh, 5.4vw), 64px);
   }
 }
 .dao-nav__link:hover,
@@ -2516,12 +2531,26 @@ html[data-dao-nav-open] .dao-returntab {
   align-items: baseline;
   margin-top: 48px;
   gap: 20px;
+  /* §Refinement 10: the foot never wrapped, so on a phone the note squeezed
+     the CTA until the arrow was pushed onto a line of its own - a stray glyph
+     under the words, which reads as broken rather than as composition. The row
+     wraps now, so when there is not enough width for both the CTA takes its
+     own line WHOLE instead of being compressed. */
+  flex-wrap: wrap;
+  row-gap: 18px;
 }
 .dao-svc__all {
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.3em;
   color: var(--dao-paper);
+  /* the label and its arrow are ONE object: an inline-flex line with its own
+     gap, and no wrap inside it, so the arrow can never be orphaned however
+     narrow the viewport gets */
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+  white-space: nowrap;
 }
 /* yellow, not the usual red: red on this blue is the one palette pair that
    vibrates instead of reading */

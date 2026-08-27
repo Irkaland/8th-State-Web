@@ -568,7 +568,6 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             href={href("/start-a-project")}
             style={stagger(7)}
             dim={workOpen}
-            small
             onHover={hoverPreview("start", 7)}
             onFocusPreview={focusPreview("start", 7)}
             onLeave={leavePreview("start")}
@@ -629,6 +628,9 @@ function NavRow({
   style,
   dim,
   lab,
+  /* §Refinement 07: only the ONE label that cannot fit at the shared size -
+     GEORGIA PRODUCTION - and even then only in the Georgian document. See the
+     .dao-nav__link--sm rule. */
   small,
   onHover,
   onFocusPreview,

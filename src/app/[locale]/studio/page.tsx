@@ -263,7 +263,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
         <InView className="dst__handoff" threshold={0.2} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
           <span className="dst__handoffsun dao-mask" aria-hidden="true" />
-          <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="dst__handoffbody">
             <h2 className="dst__make dao-rise">
               <span>
                 {R.make}

@@ -124,7 +124,19 @@ html:has(.dlb) {
    only carries the CTA's own type. */
 .dao-cta {
   position: relative;
-  display: inline-block;
+  /* §Refinement 10/11: the label and its arrow are ONE object. As inline text
+     the arrow was just the last word of the line, so a CTA one glyph too wide
+     for its column dropped the arrow onto a line by itself - "ALL LAB WORK IN
+     THE ARCHIVE" then a stray "→" at 320, and the same on four Georgian CTAs.
+     Two flex items instead: the label may still wrap inside its own item, so
+     nothing is forced to overflow, but the arrow can never be separated from
+     it. `last baseline` puts the arrow on the label's FINAL line, which is
+     where it belongs when the label does wrap; flex-end is the fallback for
+     anything that does not support it. */
+  display: inline-flex;
+  align-items: flex-end;
+  align-items: last baseline;
+  gap: 0.28em;
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.28em;
@@ -1041,6 +1053,25 @@ html:has(.dlb) {
   line-height: 1.05;
   color: inherit;
 }
+/* §Refinement 04: the THREE major service headings - group I (Creative
+   Direction / Art Direction), group III (Film & Video Production /
+   Photography) and group IV (Post-Production) - are the display moments of
+   this page, and they were the only large headings on the site still set in
+   the UI face. They take the primary display face, the same one every other
+   route's masthead uses (--dao-f-display: Adevas in Latin, ALK Sanet in
+   Georgian, resolved through the locale token so KA follows).
+   Weight goes with it: Adevas ships Regular ONLY, so leaving the inherited 600
+   would have asked the browser to synthesise a bold that does not exist.
+   Group II keeps strong Optika deliberately - those four are a capability GRID
+   inside a spread, not a spread heading, and the hierarchy between the two
+   depends on their being different. Sizes, colours, layout, the strike marks
+   and every supporting line are untouched. */
+.dsv__g1names .dsv__name,
+.dsv__g3names .dsv__name,
+.dsv__g4 .dsv__name {
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+}
 /* group I - typography-led split on paper */
 .dsv__g1 {
   padding: 60px var(--dao-gutter) 90px;
@@ -1685,28 +1716,44 @@ html:has(.dlb) {
 .dst__labpanel {
   position: absolute;
   right: clamp(20px, 5vw, 96px);
-  /* far enough above the seam that the card's upper edge lands on paper */
-  top: clamp(-190px, -14vw, -96px);
+  /* far enough above the seam that the card's upper edge lands on paper.
+     §Refinement 01: reduced with the card, so the SHARE of it that sits on
+     paper is unchanged - the overlap is a proportion of the object, not a
+     fixed distance. */
+  top: clamp(-127px, -9.3vw, -64px);
   bottom: auto;
-  width: clamp(300px, 40vw, 580px);
+  /* §Refinement 01: a third smaller. It was reading as a slab dropped on the
+     seam rather than as a printed card someone put there; at two thirds of the
+     width it is an object in the composition again. Landscape proportion, the
+     boundary overlap, the shadow and the destination are all unchanged. */
+  width: clamp(200px, 27vw, 388px);
   aspect-ratio: 1.62;
   background: var(--dao-green);
   /* §05: 23deg clockwise. 20 read as a slip rather than a decision and 30 put
-     the lower-left corner into the body copy at 1024; 23 is noticeably placed,
-     still square enough to read, and the type stays level enough to scan. */
-  transform: rotate(23deg);
+     the lower-left corner into the body copy at 1024.
+     §Refinement 01: eased a third of the way back to level - 15deg. Still an
+     unmistakable, deliberate turn (nothing near a horizontal UI card), but it
+     no longer fights the reading angle of its own three lines. */
+  transform: rotate(15deg);
   transform-origin: 62% 50%;
-  box-shadow: 18px 26px 54px rgba(0, 0, 0, 0.55);
+  box-shadow: 12px 17px 36px rgba(0, 0, 0, 0.55);
+  /* §Refinement 01: everything inside the card is now measured against the
+     CARD, not the viewport. That is what makes the type and the botanical
+     shrink WITH it instead of staying at their old size in a smaller box - and
+     it is what keeps them in proportion at every width, including the phone. */
+  container-type: inline-size;
 }
 .dst__labpanel-inner {
   position: relative;
-  /* a short card cannot carry 80px of vertical padding */
-  padding: clamp(20px, 2.4vw, 34px) clamp(24px, 2.8vw, 40px);
+  /* a short card cannot carry 80px of vertical padding. The ratios are the
+     ones the old viewport-based clamps resolved to at 1440, so the card's
+     internal composition is unchanged - only its overall size moved. */
+  padding: clamp(14px, 5.9cqw, 34px) clamp(16px, 6.9cqw, 40px);
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: clamp(6px, 0.6vw, 10px);
+  gap: clamp(4px, 1.5cqw, 10px);
 }
 /* §04: the green Studio Lab card copy. Strong Optika at the real heaviest
    weight (600 - no Optika Bold file ships). Size, leading, ink colour and the
@@ -1721,7 +1768,10 @@ html:has(.dlb) {
 .dst__lablines {
   font-family: var(--dao-f-ui);
   font-weight: var(--dao-w-editorial);
-  font-size: clamp(17px, 2.4vw, 35px);
+  /* 6% of the card's own width - the ratio the old 2.4vw ramp produced at
+     every desktop width it was not pinned at, now expressed against the thing
+     it was always really sized against */
+  font-size: clamp(15px, 6cqw, 35px);
   line-height: 1.08;
   color: var(--dao-ink);
   white-space: pre-line;
@@ -1733,10 +1783,12 @@ html:has(.dlb) {
   position: absolute;
   /* on the card's right half, vertically centred - the type takes the left, the
      botanical answers it, and the card reads as composed rather than half-empty */
-  right: clamp(14px, 3.4vw, 54px);
+  right: clamp(10px, 8.5cqw, 54px);
   top: 50%;
   transform: translateY(-50%);
-  width: clamp(46px, 7.4vw, 112px);
+  /* measured against the card, like the type: at 18.5% of it the botanical
+     holds exactly the share of the composition it held before the card shrank */
+  width: clamp(34px, 18.5cqw, 112px);
   aspect-ratio: 3 / 4;
   height: auto;
   background: rgba(242, 237, 227, 0.78);
@@ -1765,24 +1817,74 @@ html:has(.dlb) {
   color: var(--dao-paper);
   padding: 90px var(--dao-gutter) 80px;
   overflow: clip;
+  /* §Refinement 02: the closing band used to be a short strip with a 1080px
+     mark dropped into it, so `overflow: clip` above - which is what keeps the
+     page from lengthening - was shearing the sun on three sides, the upper
+     rays worst of all. The band is now tall enough to hold the whole symbol,
+     and the symbol is measured to fit inside it. Nothing is cropped and
+     nothing overflows: both halves of the problem are solved in the same
+     place. */
+  min-height: clamp(430px, 44vw, 720px);
+  display: grid;
+  align-content: center;
 }
-/* §09: the brandbook's own celestial sun, and much bigger.
-   The previous mark was the generic sun graphic at 620px; this is the symbol
-   from the brandbook's SYMBOLS sheet at up to 1080px - a large background
-   graphic rather than a decorative icon. Cream at 0.07 keeps it a print on the
-   black rather than a light source, and it is still cropped by .dst__handoff's
-   overflow above, so growing it cannot lengthen the page.
-   The aspect ratio is the artwork's own (1400x1550) - the mark is genuinely
-   taller than it is wide and squaring it would distort the rays. */
+/* the closing statement keeps the left of the band; the sun keeps the right,
+   so the two occupy the composition instead of sitting on top of each other */
+.dst__handoffbody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: min(58%, 620px);
+}
+/* §09: the brandbook's own celestial sun rather than the generic sun graphic -
+   the symbol from the brandbook's SYMBOLS sheet, as a large background graphic
+   and not a decorative icon. Cream at 0.07 keeps it a print on the black rather
+   than a light source. The aspect ratio is the artwork's own (1400x1550) - the
+   mark is genuinely taller than it is wide and squaring it would distort the
+   rays.
+   §Refinement 02: and it is sized by HEIGHT, not by viewport width. The band is
+   the thing it has to fit inside, and the band's height is exactly what the old
+   `width: 62vw` never looked at - which is how a mark 988px tall ended up in a
+   250px strip, with its whole top row of rays sheared off by the containment
+   above. Height-first, centred on the band's own axis and always smaller than
+   the band's minimum: the complete symbol renders at every width, on desktop
+   and on a phone, with every ray intact - and it still cannot lengthen the
+   page, because it no longer needs to be cropped to stay inside it. */
 .dst__handoffsun {
   position: absolute;
-  right: clamp(-380px, -20vw, -150px);
-  top: -60px;
-  width: clamp(520px, 62vw, 1080px);
+  right: clamp(8px, 4vw, 90px);
+  top: 50%;
+  transform: translateY(-50%);
+  height: clamp(300px, 34vw, 560px);
   aspect-ratio: 1400 / 1550;
-  height: auto;
+  width: auto;
   background: rgba(242, 237, 227, 0.07);
   --m: url("/assets/graphics/bb-sun-symbol.webp");
+}
+/* Below ~720 the statement and the mark can no longer stand side by side -
+   measured, that is exactly where the body's right edge crosses the sun's left
+   one. So the composition turns through 90deg instead of collapsing: the
+   statement keeps the top of the band and the mark takes a zone of its own
+   underneath it, centred, complete, and clear of the type and the CTA. The
+   band's lower padding IS that zone, so the sun can never reach the closing
+   line however the title wraps. */
+@media (max-width: 720px) {
+  .dst__handoff {
+    min-height: 0;
+    padding-bottom: clamp(300px, 72vw, 420px);
+    align-content: start;
+  }
+  .dst__handoffbody {
+    max-width: none;
+  }
+  .dst__handoffsun {
+    top: auto;
+    bottom: clamp(24px, 6vw, 44px);
+    right: 50%;
+    transform: translateX(50%);
+    height: clamp(250px, 56vw, 340px);
+  }
 }
 /* §03: strong Optika at the real heaviest weight (600). Size, leading, colour,
    the red full stop and the CTA beneath are untouched. */
@@ -1811,25 +1913,33 @@ html:has(.dlb) {
      corners past the gutter. */
   .dst__rooms .dst__labpanel {
     position: relative;
-    width: min(100%, 340px);
+    /* §Refinement 01: moderately smaller, NOT the desktop third - a third off
+       a 340px card leaves 227px, at which the three lines stop being a
+       statement and become a caption. 300px keeps it a card you can read
+       across the room, with the same margins it had. */
+    width: min(100%, 300px);
     max-width: calc(100vw - 2 * var(--dao-gutter) - 24px);
     margin: 26px auto 34px;
     top: 0;
     right: 0;
     aspect-ratio: 1.62;
-    transform: rotate(12deg);
+    /* the same third eased off the turn as on desktop: 12 -> 8 */
+    transform: rotate(8deg);
     transform-origin: 50% 50%;
-    box-shadow: 12px 18px 34px rgba(0, 0, 0, 0.5);
+    box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.5);
   }
+  /* the phone card is proportionally shorter on type than the desktop one is -
+     it always was - so it keeps its own ratios against the card, rather than
+     inheriting the desktop 6% */
   .dst__labpanel-inner {
-    padding: 18px 20px;
+    padding: 5.3cqw 5.9cqw;
   }
   .dst__lablines {
-    font-size: clamp(15px, 4.4vw, 20px);
+    font-size: clamp(13px, 5.2cqw, 20px);
   }
   .dst__labstem {
-    right: 14px;
-    width: clamp(38px, 12vw, 56px);
+    right: 4.7cqw;
+    width: clamp(32px, 14cqw, 56px);
   }
   .dst__roomsbody {
     padding-bottom: 40px;
@@ -1957,11 +2067,27 @@ html:has(.dlb) {
 .dlb__filtersep {
   color: rgba(19, 18, 16, 0.3);
 }
+/* §Refinement 06: the slash separates the three Field Notes filters from the
+   LAB WORK route, which it can only do while the row is ONE line. Measured, the
+   row still fits at 560 in both locales and wraps below it - and once it wraps
+   the slash is no longer between anything: it either trails the filters or, on
+   a 390 phone, leads the next line, where it reads as a stray character in
+   front of "LAB WORK →". So it is removed exactly where it stops separating.
+   display:none, not a colour or a width: a hidden flex item takes no gap
+   either, so nothing is left behind where it was. */
+@media (max-width: 560px) {
+  .dlb__filtersep {
+    display: none;
+  }
+}
 .dlb__labworklink {
   color: var(--dao-ink);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+  /* inline-flex collapses the space between the label and its arrow, so the
+     gap has to be declared: without it the row reads "LAB WORK→" */
+  gap: 0.3em;
 }
 .dlb__labworklink:hover {
   color: rgba(19, 18, 16, 0.6);
@@ -2709,7 +2835,7 @@ html:has(.dlb) {
   /* the artwork's own proportion - 900x994 */
   aspect-ratio: 900 / 994;
   background: var(--dao-paper);
-  --m: url("/assets/graphics/swallow.webp");
+  --m: url("/assets/graphics/swallow.svg");
   pointer-events: none;
 }
 /* §16: on a phone the two columns become one. The swallow keeps its role - a
@@ -2807,6 +2933,16 @@ html:has(.dlb) {
   min-height: 44px;
   text-transform: uppercase;
   transition: background-color 200ms ease;
+  /* §Refinement 08: a <button> centres its text by default, which is invisible
+     while every option is one line and obvious the moment one is not: on a
+     phone PRODUCTION & SPATIAL DESIGN wraps, and its two lines centred
+     themselves inside a box whose five neighbours all read from the left edge.
+     The options are one system, so they all start at the same place. The wrap
+     itself is fine and is left alone. */
+  text-align: left;
+  /* a two-line option needs a leading it can breathe in, and a single-line one
+     is unaffected: min-height, padding and the 44px target are all unchanged */
+  line-height: 1.45;
 }
 .dbr__chip[aria-pressed="true"] {
   background: rgba(35, 116, 179, 0.08);
@@ -3109,7 +3245,7 @@ html:has(.dlb) {
   width: 70px;
   height: 70px;
   background: var(--dao-blue);
-  --m: url("/assets/graphics/swallow.webp");
+  --m: url("/assets/graphics/swallow.svg");
   transform: rotate(4deg);
 }
 .d404__code {

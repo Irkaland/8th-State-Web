@@ -160,7 +160,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
           <span
             className="dao-mask"
             style={{
-              ["--m" as string]: "url(/assets/graphics/swallow.webp)",
+              ["--m" as string]: "url(/assets/graphics/swallow.svg)",
               width: 66,
               height: 66,
               background: "var(--dao-ink)",
@@ -235,7 +235,7 @@ export function StudioIntro({ locale, messages }: { locale: Locale; messages: Me
         <span
           className="dao-mask"
           style={{
-            ["--m" as string]: "url(/assets/graphics/swallow.webp)",
+            ["--m" as string]: "url(/assets/graphics/swallow.svg)",
             right: 36,
             top: 66,
             width: 44,

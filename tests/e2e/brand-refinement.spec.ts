@@ -390,8 +390,14 @@ test.describe("§10-§12 Studio", () => {
    * NEGATIVE angle of at most 3deg. The card was then a tall panel inset into
    * the black, where anything more would have fought the copy beside it. It is
    * now a landscape card laid across the boundary, and the studio asked for a
-   * deliberate clockwise turn of roughly 20-30deg. Both halves of the old
-   * assertion are inverted: the sign and the magnitude.
+   * deliberate clockwise turn.
+   *
+   * The 20-30deg window this test used to hold is itself superseded: the
+   * refinement pass eased the turn by a third, to 15deg, because at 23 the
+   * card fought the reading angle of its own three lines. What the test is
+   * for is unchanged - the turn must stay a deliberate, clearly visible
+   * clockwise placement and must never flatten into an ordinary UI card - so
+   * the window moves with the decision and the claim does not.
    */
   test("the tilt is a deliberate clockwise turn", async ({ page }) => {
     await gotoRoute(page, "/studio");
@@ -404,8 +410,8 @@ test.describe("§10-§12 Studio", () => {
       .split(",")
       .map(Number);
     const deg = (Math.atan2(parts[1]!, parts[0]!) * 180) / Math.PI;
-    expect(deg, "clockwise").toBeGreaterThan(18);
-    expect(deg, "placed, not gimmicky").toBeLessThan(30);
+    expect(deg, "clockwise, and never mistakable for a level card").toBeGreaterThan(11);
+    expect(deg, "placed, not gimmicky").toBeLessThan(19);
   });
 
   test("the Lab card text is fully readable and uncropped", async ({ page }) => {
@@ -458,20 +464,48 @@ test.describe("§10-§12 Studio", () => {
    * makes is the same in spirit - a large print, not a light source - so the
    * numbers move and the intent does not.
    */
-  test("§12 the sun is the brandbook symbol, much larger, still quiet", async ({ page }) => {
+  /**
+   * The "much larger" half of this claim was measured as a raw width - it had
+   * to clear 700px at 1440 - and that number is superseded. The mark was
+   * sized against the VIEWPORT while the band it sits in is sized against its
+   * own content, so at 1440 an 892px sun was dropped into a 250px strip and
+   * `overflow: clip` sheared it on three sides: the whole top row of rays was
+   * missing. It is now measured against the band, which is the thing it has
+   * to fit inside.
+   *
+   * So the assertion moves from "wider than 700px" - a proxy that could only
+   * ever be satisfied by cropping - to the two things actually wanted: the
+   * WHOLE symbol renders, and it is still a large atmospheric print rather
+   * than an icon. Both are stronger than what they replace.
+   */
+  test("§12 the sun is the brandbook symbol, whole, large and still quiet", async ({ page }) => {
     await gotoRoute(page, "/studio");
     const got = await page.evaluate(() => {
       const el = document.querySelector(".dst__handoffsun")!;
+      const band = document.querySelector(".dst__handoff")!;
+      const r = el.getBoundingClientRect();
+      const b = band.getBoundingClientRect();
       const cs = getComputedStyle(el);
       return {
-        w: el.getBoundingClientRect().width,
+        w: r.width,
+        h: r.height,
+        top: r.top - b.top,
+        bottom: b.bottom - r.bottom,
+        left: r.left - b.left,
+        right: b.right - r.right,
+        statement: document.querySelector(".dst__make")!.getBoundingClientRect().height,
         bg: cs.backgroundColor,
         mask: cs.maskImage || cs.webkitMaskImage,
       };
     });
-    // it was 620px at this width before; it is a background graphic now
-    expect(got.w, "was 620px").toBeGreaterThan(700);
     expect(got.mask).toContain("bb-sun-symbol");
+    // nothing is cropped: every edge of the mark is inside the band that clips it
+    expect(got.top, "top rays inside the band").toBeGreaterThan(0);
+    expect(got.bottom, "bottom inside the band").toBeGreaterThan(0);
+    expect(got.left, "left inside the band").toBeGreaterThan(0);
+    expect(got.right, "right inside the band").toBeGreaterThan(0);
+    // still a background graphic, not an icon: taller than the closing statement
+    expect(got.h).toBeGreaterThan(got.statement * 3);
     // still a print: nowhere near a visible fill
     expect(rgba(got.bg)[3]).toBeLessThanOrEqual(0.09);
   });
