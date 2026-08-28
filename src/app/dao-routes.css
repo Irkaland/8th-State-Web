@@ -2747,8 +2747,29 @@ html:has(.dlb) {
   .dgp__platerow > div:nth-child(2) {
     top: 0;
   }
+  /* §P5: the A-D index descriptions are real translated content - what each
+     pathway actually covers - and they were the only copy on this page with no
+     mobile presentation at all. Measured at 390px in both locales: 4 of 4
+     hidden, and the same text appears nowhere else on the page, so a phone
+     visitor lost it entirely rather than reading it somewhere else.
+
+     The cause is horizontal, not editorial: .dgp__indexrow is one flex line of
+     letter + name + description, with the description pushed to the right rail
+     (margin-left:auto, max-width:240px, right-aligned). Three items cannot
+     share one line on a phone, so it was switched off.
+
+     It now wraps onto its own line under the row instead of being removed:
+     the letter and name keep their line and their rhythm, and the description
+     reads as the secondary caption it already is - same 11.5px, same colour,
+     just left-aligned and full width. Desktop is untouched. */
+  .dgp__indexrow {
+    flex-wrap: wrap;
+  }
   .dgp__indexdesc {
-    display: none;
+    flex-basis: 100%;
+    margin-left: 0;
+    max-width: none;
+    text-align: left;
   }
 }
 
@@ -4356,8 +4377,16 @@ html:has(.dlb) {
   }
 }
 @media (max-width: 380px) {
+  /* §P5: this block tightens the row on the narrowest phones - the gap drops
+     14 -> 13 and .dtm__wcard drops 108 -> 88. The portrait column used to go
+     the other way, 80 -> 96, so crossing 381px -> 380px made the portrait 20%
+     LARGER on a narrower screen (80.7x100.6 -> 96.8x120.7 measured) while the
+     name/role column lost 16px at exactly the width where it had least to
+     spare. It also contradicted the deliberate 118 -> 80 reduction above.
+     Dropping the override leaves the 80px column from the 720px block, so both
+     the portrait and the text column are now continuous across the boundary
+     (80.7px portrait and 251px text column on either side of it). */
   .dtm__person {
-    grid-template-columns: 96px minmax(0, 1fr);
     gap: 13px;
   }
   .dtm__wcard {
