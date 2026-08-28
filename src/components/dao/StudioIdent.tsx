@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Messages } from "@/i18n";
+import type { IdentMessages } from "@/i18n/slices";
 import { cn } from "@/lib/cn";
 import { IDENT_ATTR, IDENT_DONE_EVENT } from "@/lib/session-lifecycle";
 import {
@@ -44,8 +44,8 @@ let identPlayedThisLoad = false;
 const EXIT_MS = 1100;
 const HOLD_UNTIL_MS = 2450;
 
-export function StudioIdent({ messages }: { messages: Messages }) {
-  const m = messages.dao.ident;
+export function StudioIdent({ ident }: { ident: IdentMessages }) {
+  const m = ident;
   // Lazy initial state: on internal client-side navigation the ident mounts
   // already "gone" - it must never paint, not even for one frame (§01).
   // On a real document load the module flag is fresh and the ident holds.

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import type { Messages } from "@/i18n";
+import type { ReelMessages } from "@/i18n/slices";
 import { IDENT_ATTR, IDENT_DONE_EVENT } from "@/lib/session-lifecycle";
 
 /**
@@ -20,8 +20,8 @@ const REEL_POSTER = "/media/showreel-poster.jpg";
 const RETRY_MS = 250;
 const MAX_TRIES = 12;
 
-export function Showreel({ messages, hasReel }: { messages: Messages; hasReel: boolean }) {
-  const m = messages.dao.reel;
+export function Showreel({ reel, hasReel }: { reel: ReelMessages; hasReel: boolean }) {
+  const m = reel;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 

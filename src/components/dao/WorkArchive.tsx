@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import type { Messages } from "@/i18n";
+import type { WorkArchiveMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { format } from "@/i18n/format";
@@ -36,11 +36,11 @@ export function WorkArchive({
   total,
 }: {
   locale: Locale;
-  messages: Messages;
+  messages: WorkArchiveMessages;
   items: ArchiveItem[];
   total: number;
 }) {
-  const m = messages.daoRoutes.work;
+  const m = messages;
 
   // Compose rows: 6-frame cycle → feature · pair · center · pair.
   const rows = useMemo(() => {

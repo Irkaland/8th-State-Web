@@ -9,6 +9,7 @@ import { InView } from "@/components/dao/InView";
 import { LabProvider, LabFilterRow, LabNotesGrid } from "@/components/dao/LabFieldNotes";
 import { LabTickerRow } from "@/components/dao/LabTicker";
 import { up } from "@/lib/cn";
+import { labMessages } from "@/i18n/slices";
 
 export async function generateMetadata({
   params,
@@ -87,7 +88,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               </p>
               {/* v7 #10: three equal filters + the separate LAB WORK route */}
               <div className="dao-fade" style={{ ["--d" as string]: "360ms" }}>
-                <LabFilterRow locale={locale} messages={m} />
+                <LabFilterRow locale={locale} messages={labMessages(m)} />
               </div>
             </div>
           </InView>
@@ -107,7 +108,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                 style={{ marginTop: 26, background: "rgba(86,98,46,.6)" }}
                 aria-hidden="true"
               />
-              <LabNotesGrid messages={m} />
+              <LabNotesGrid messages={labMessages(m)} />
             </section>
           </InView>
 

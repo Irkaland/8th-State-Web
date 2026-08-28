@@ -1,4 +1,5 @@
 import type { Messages } from "@/i18n";
+import { chromeMessages, identMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { DaoChrome } from "./DaoChrome";
 import { PageVeil, type VeilFamily } from "./PageVeil";
@@ -29,9 +30,14 @@ export function DaoShell({
     <div className="dao">
       {/* §15: a long absence re-enters the site from the ident */}
       <SessionResume home={locale === "en" ? "/" : `/${locale}`} />
-      <StudioIdent messages={messages} />
+      {/* §P3: DaoShell is a Server Component, so `messages` here never crosses
+          the wire - but these two children are client components on EVERY
+          route, and handing them the whole dictionary is what put all 497
+          strings into every payload. They now receive only their own slices,
+          which sets the localization floor for the entire site. */}
+      <StudioIdent ident={identMessages(messages)} />
       <PageVeil family={veil} />
-      <DaoChrome locale={locale} messages={messages} />
+      <DaoChrome locale={locale} messages={chromeMessages(messages)} />
       {returnTab && (
         <ReturnTab
           locale={locale}

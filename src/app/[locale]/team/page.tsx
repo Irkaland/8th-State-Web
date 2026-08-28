@@ -16,6 +16,7 @@ import {
   type TeamWorkCredit,
 } from "@/components/dao/TeamContactSheet";
 import { up } from "@/lib/cn";
+import { teamSheetMessages } from "@/i18n/slices";
 
 export async function generateMetadata({
   params,
@@ -164,7 +165,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
         {anyPeople ? (
           <TeamContactSheet
             locale={locale}
-            messages={m}
+            messages={teamSheetMessages(m)}
             sections={sections}
             order={order}
             provisionalRoster={!hasConfirmedTeam()}

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import type { LabMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { up } from "@/lib/cn";
@@ -35,9 +35,9 @@ const TINTS: Record<LabFilter, string> = {
   experiments: "var(--dao-green)",
 };
 
-export function LabFilterRow({ locale, messages }: { locale: Locale; messages: Messages }) {
+export function LabFilterRow({ locale, messages }: { locale: Locale; messages: LabMessages }) {
   const ctx = useContext(LabContext)!;
-  const R = messages.daoRoutes.lab;
+  const R = messages.lab;
   const filters: { id: LabFilter; label: string }[] = [
     { id: "research", label: R.research },
     { id: "experiments", label: R.experiments },
@@ -73,10 +73,10 @@ export function LabFilterRow({ locale, messages }: { locale: Locale; messages: M
   );
 }
 
-export function LabNotesGrid({ messages }: { messages: Messages }) {
+export function LabNotesGrid({ messages }: { messages: LabMessages }) {
   const ctx = useContext(LabContext)!;
-  const R = messages.daoRoutes.lab;
-  const cr = messages.daoRoutes.contentRequired;
+  const R = messages.lab;
+  const cr = messages.contentRequired;
 
   const notes: {
     id: string;

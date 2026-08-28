@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import type { BriefMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { InView } from "./InView";
@@ -16,8 +16,8 @@ import { cn, up } from "@/lib/cn";
  * the approved response copy. Submission is simulated in-browser exactly
  * like the previous approved brief (no production backend in this phase).
  */
-export function DaoBrief({ locale, messages }: { locale: Locale; messages: Messages }) {
-  const m = messages.daoRoutes.brief;
+export function DaoBrief({ locale, messages }: { locale: Locale; messages: BriefMessages }) {
+  const m = messages.brief;
   const [disciplines, setDisciplines] = useState<string[]>([]);
   const [about, setAbout] = useState("");
   const [when, setWhen] = useState("");
@@ -59,7 +59,7 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Messa
   };
 
   if (sent) {
-    const s = messages.brief.success;
+    const s = messages.success;
     return (
       <div className="dbr__sheets" role="status">
         <div className="dao-sheet dbr__sheet dbr__sheet--cream is-in dbr__deal">

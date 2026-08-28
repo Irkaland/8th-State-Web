@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { Messages } from "@/i18n";
+import type { ChromeMessages } from "@/i18n/slices";
 import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/locales";
 import { cn } from "@/lib/cn";
 import { focusableWithin, isFocusable } from "@/lib/focusable";
@@ -17,8 +17,8 @@ import { useLiveSearch } from "@/lib/use-live-search";
  * Open 450ms, close 320ms; links rise from masks with 60ms stagger;
  * WORK expands its approved categories; focus is trapped while open.
  */
-export function DaoChrome({ locale, messages }: { locale: Locale; messages: Messages }) {
-  const m = messages.dao.nav;
+export function DaoChrome({ locale, messages }: { locale: Locale; messages: ChromeMessages }) {
+  const m = messages.nav;
   const pathname = usePathname() || "/";
   // §15: the switcher must not drop an active Work filter
   const search = useLiveSearch();
@@ -384,7 +384,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             <Link
               href={switchLocalePath(pathname, "en", search)}
               aria-current={locale === "en" ? "true" : undefined}
-              aria-label={messages.common.switchToEnglish}
+              aria-label={messages.switchToEnglish}
               onClick={onLang}
             >
               EN
@@ -392,7 +392,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
             <Link
               href={switchLocalePath(pathname, "ka", search)}
               aria-current={locale === "ka" ? "true" : undefined}
-              aria-label={messages.common.switchToGeorgian}
+              aria-label={messages.switchToGeorgian}
               onClick={onLang}
             >
               KA
@@ -419,13 +419,13 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Mess
         className={cn("dao-nav", open && "is-open", closing && "is-closing")}
         role="dialog"
         aria-modal="true"
-        aria-label={messages.nav.menu}
+        aria-label={messages.menu}
         aria-hidden={!open}
         inert={!open}
       >
         <div className="dao-weave" aria-hidden="true" />
         <div className="dao-nav__serpent dao-mask" aria-hidden="true" />
-        <nav className="dao-nav__list" aria-label={messages.nav.primary}>
+        <nav className="dao-nav__list" aria-label={messages.primary}>
           {/* 01 WORK - the label itself opens the full archive (/work, ALL
               active - never a remembered category). The numeral carries the
               categories toggle so the approved sub-list stays reachable

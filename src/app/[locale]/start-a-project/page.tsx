@@ -6,6 +6,7 @@ import { routeAlternates } from "@/lib/route-metadata";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { DaoBrief } from "@/components/dao/DaoBrief";
 import { up } from "@/lib/cn";
+import { briefMessages } from "@/i18n/slices";
 
 export async function generateMetadata({
   params,
@@ -69,7 +70,7 @@ export default async function StartAProjectPage({
               brandbook's own - only the colour it is painted in changes. */}
           <span className="dbr__swallow dao-mask" aria-hidden="true" />
         </header>
-        <DaoBrief locale={locale} messages={m} />
+        <DaoBrief locale={locale} messages={briefMessages(m)} />
       </div>
     </DaoShell>
   );

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import type { SelectedWorkMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
@@ -41,10 +41,10 @@ export function SelectedWork({
   projects,
 }: {
   locale: Locale;
-  messages: Messages;
+  messages: SelectedWorkMessages;
   projects: DaoWorkProject[];
 }) {
-  const m = messages.dao.work;
+  const m = messages;
   const sectionRef = useInViewOnce<HTMLElement>(0.15);
   const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);

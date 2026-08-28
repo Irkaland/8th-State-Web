@@ -15,6 +15,14 @@ import { ServicesAct, type CapabilityStill } from "@/components/dao/ServicesAct"
 import { StudioLab } from "@/components/dao/StudioLab";
 import { ContactAct } from "@/components/dao/ContactAct";
 import { up } from "@/lib/cn";
+import {
+  reelMessages,
+  introMessages,
+  selectedWorkMessages,
+  servicesActMessages,
+  studioLabMessages,
+  contactActMessages,
+} from "@/i18n/slices";
 
 // Homepage - "One Continuous Take" (approved Digital Art Object Direction 01).
 // Eight acts in a locked order: Ident → Showreel → Studio → Selected Work →
@@ -62,14 +70,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <DaoShell locale={locale} messages={m} veil="none">
       <h1 className="sr-only">{m.meta.defaultTitle}</h1>
       <Showreel
-        messages={m}
+        reel={reelMessages(m)}
         hasReel={existsSync(join(process.cwd(), "public", "media", "showreel.mp4"))}
       />
-      <StudioIntro locale={locale} messages={m} />
-      <SelectedWork locale={locale} messages={m} projects={projects} />
-      <ServicesAct locale={locale} messages={m} stills={stills} />
-      <StudioLab locale={locale} messages={m} />
-      <ContactAct locale={locale} messages={m} />
+      <StudioIntro locale={locale} intro={introMessages(m)} />
+      <SelectedWork locale={locale} messages={selectedWorkMessages(m)} projects={projects} />
+      <ServicesAct locale={locale} messages={servicesActMessages(m)} stills={stills} />
+      <StudioLab locale={locale} lab={studioLabMessages(m)} />
+      <ContactAct locale={locale} messages={contactActMessages(m)} />
     </DaoShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import type { StudioLabMessages } from "@/i18n/slices";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { useInViewOnce } from "./hooks";
 import { LabTickerRow } from "./LabTicker";
@@ -13,8 +13,8 @@ import { up } from "@/lib/cn";
  * after the sheet threshold, ink CTA with paint-stroke, Glacier ticker
  * (36s loop; paused under reduced motion).
  */
-export function StudioLab({ locale, messages }: { locale: Locale; messages: Messages }) {
-  const m = messages.dao.lab;
+export function StudioLab({ locale, lab }: { locale: Locale; lab: StudioLabMessages }) {
+  const m = lab;
   const sectionRef = useInViewOnce<HTMLElement>(0.25);
 
   return (

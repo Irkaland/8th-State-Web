@@ -18,6 +18,7 @@ import {
 import { DaoShell } from "@/components/dao/DaoShell";
 import { WorkArchive, type ArchiveItem } from "@/components/dao/WorkArchive";
 import { cn, up } from "@/lib/cn";
+import { workArchiveMessages } from "@/i18n/slices";
 
 export async function generateMetadata({
   params,
@@ -163,7 +164,7 @@ export default async function WorkPage({
           </div>
         </header>
 
-        <WorkArchive locale={locale} messages={m} items={items} total={all.length} />
+        <WorkArchive locale={locale} messages={workArchiveMessages(m)} items={items} total={all.length} />
       </div>
     </DaoShell>
   );

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { format, type Messages } from "@/i18n";
+import { format } from "@/i18n";
+import type { ServicesActMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { t } from "@/content/localized";
@@ -101,10 +102,10 @@ export function ServicesAct({
   stills,
 }: {
   locale: Locale;
-  messages: Messages;
+  messages: ServicesActMessages;
   stills: Partial<Record<CapabilityId, CapabilityStill>>;
 }) {
-  const m = messages.dao.services;
+  const m = messages.services;
   const sectionRef = useInViewOnce<HTMLElement>(0.12);
   const [open, setOpen] = useState<string | null>("03"); // hover state shown captured in 1a
   // Stills that have finished load + decode stay ready for the session, so
@@ -147,7 +148,7 @@ export function ServicesAct({
             const info = stills[s.id];
             const href = localeHref(locale, capabilityWorkHref(s.id));
             const name = t(s.name, locale);
-            const shown = format(messages.daoRoutes.work.projectsShown, {
+            const shown = format(messages.projectsShown, {
               count: info?.count ?? 0,
             });
             return (

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import type { TeamSheetMessages } from "@/i18n/slices";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
 import { IDENT_ATTR } from "@/lib/session-lifecycle";
@@ -263,14 +263,14 @@ export function TeamContactSheet({
   provisionalRoster,
 }: {
   locale: Locale;
-  messages: Messages;
+  messages: TeamSheetMessages;
   sections: TeamSection[];
   /** flat roster in the order the sections render it - drives prev/next */
   order: string[];
   /** true while no confirmed person exists, so the roster declares itself */
   provisionalRoster: boolean;
 }) {
-  const R = messages.daoRoutes.team;
+  const R = messages;
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   /**
    * Where the morph is in its cycle.

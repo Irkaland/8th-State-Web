@@ -9,6 +9,7 @@ import {
 import { teamMemberSchema } from "@/content/types";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
+import { teamSheetMessages } from "@/i18n/slices";
 
 /**
  * §23-§29 the external portfolio CTA, rendered.
@@ -46,7 +47,8 @@ function render(cards: TeamCard[], locale: "en" | "ka" = "en") {
   return renderToStaticMarkup(
     createElement(TeamContactSheet, {
       locale,
-      messages: locale === "en" ? en : ka,
+      // §P3: the sheet takes its own slice now, not the whole dictionary
+      messages: teamSheetMessages(locale === "en" ? en : ka),
       sections,
       order: cards.map((c) => c.slug),
       provisionalRoster: true,

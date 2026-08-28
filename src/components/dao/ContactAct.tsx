@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { Messages } from "@/i18n";
+import type { ContactActMessages } from "@/i18n/slices";
 import { type Locale, localeHref, switchLocalePath } from "@/i18n/locales";
 import { useLiveSearch } from "@/lib/use-live-search";
 import { useInViewOnce } from "./hooks";
@@ -15,9 +15,9 @@ import { up } from "@/lib/cn";
  * form is a visual state only until form scope is approved (handoff 2j) -
  * SEND explains that enquiries are not yet connected.
  */
-export function ContactAct({ locale, messages }: { locale: Locale; messages: Messages }) {
-  const m = messages.dao.contact;
-  const c = messages.dao.credits;
+export function ContactAct({ locale, messages }: { locale: Locale; messages: ContactActMessages }) {
+  const m = messages.contact;
+  const c = messages.credits;
   const pathname = usePathname() || "/";
   const search = useLiveSearch();
   const sectionRef = useInViewOnce<HTMLElement>(0.15);
@@ -146,7 +146,7 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
           <span className="dao-credits__id">
             <span className="dao-credits__wordmark">8TH STATE PRODUCTION</span>
             <span className="dao-credits__line">
-              {up(messages.dao.ident.city)} - {up(c.endWord)}
+              {up(messages.city)} - {up(c.endWord)}
             </span>
           </span>
         </Link>
@@ -173,7 +173,7 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Mes
           <Link href={localeHref(locale, "/services")}>{up(c.services)}</Link>
           <Link href={localeHref(locale, "/studio")}>{up(c.studio)}</Link>
           <Link href={localeHref(locale, "/studio-lab")}>{up(c.lab)}</Link>
-          <Link href={localeHref(locale, "/contact")}>{up(messages.dao.nav.contact)}</Link>
+          <Link href={localeHref(locale, "/contact")}>{up(messages.contactNav)}</Link>
           <Link href={localeHref(locale, "/privacy")}>{up(c.legal)}</Link>
           <span className="dao-lang" style={{ gap: 14 }}>
             <Link

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { Messages } from "@/i18n";
+import type { IntroMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { up } from "@/lib/cn";
@@ -25,8 +25,8 @@ import { useInViewOnce, usePrefersReducedMotion } from "./hooks";
  * hijacked. Mobile keeps the 2b constellation band. Reduced motion:
  * static ring at scale 1, statement fades.
  */
-export function StudioIntro({ locale, messages }: { locale: Locale; messages: Messages }) {
-  const m = messages.dao.intro;
+export function StudioIntro({ locale, intro }: { locale: Locale; intro: IntroMessages }) {
+  const m = intro;
   const sectionRef = useInViewOnce<HTMLElement>(0.2);
   const orbitRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
