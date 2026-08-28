@@ -114,8 +114,13 @@ summary {
   background: var(--ink);
   color: var(--paper);
   padding: 12px 18px;
-  /* a11y utility, visible only on focus - system mono, no downloaded font */
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  /* a11y utility, visible only on focus - system mono, no downloaded font.
+     §P4: the Georgian label has no monospace face to land on, so it was
+     rendering in whatever Georgian font the OS happens to ship. ALK Sanet is
+     already downloaded on a Georgian page and is reached only for glyphs the
+     monospace stack lacks, so Latin stays monospace and Georgian stays in the
+     brand. */
+  font-family: ui-monospace, "SF Mono", Menlo, monospace, var(--f-sanet);
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;

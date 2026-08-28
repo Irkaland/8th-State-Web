@@ -459,7 +459,17 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
                     attached to it - focus is .dao-nav__link:focus-visible. */}
                 {m.work}
               </Link>
-              <span className="dao-nav__ka" aria-hidden="true">
+              {/* §P4: WORK is the one companion built inline rather than through
+                  the shared row, and it was the only one of the eight missing a
+                  `lang`. Without it `:lang(ka)` rules - the Georgian typography
+                  role resolutions and the font-synthesis guard - never reached
+                  this span. Same test as the shared row, so a locale whose label
+                  is not Georgian still reports itself honestly. */}
+              <span
+                className="dao-nav__ka"
+                lang={/[ა-ჰ]/.test(m.workKa) ? "ka" : "en"}
+                aria-hidden="true"
+              >
                 {m.workKa}
               </span>
             </span>

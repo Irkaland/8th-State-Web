@@ -62,10 +62,42 @@
    an unrelated system font, their tokens resolve to the approved Georgian
    stack already in use (ALK Sanet -> Noto Sans Georgian). When the real files
    land, add a localFont declaration in layout.tsx and point the token at it -
-   nothing else has to change. */
+   nothing else has to change.
+
+   §P4 measured what the files actually contain, rather than what they are
+   named. Read from the woff2 tables:
+
+     Adevas Regular    400 only   233 codepoints   no Georgian
+     Optika            400/500/600 in three files  388 codepoints each, no Georgian
+     Glacier Regular   400 only   221 codepoints   no Georgian
+     ALK Sanet         400 only   128 codepoints   all 32 Mkhedruli letters the
+                                                   site uses; no Mtavruli, no
+                                                   typographic punctuation
+
+   So Georgian has exactly ONE real weight across all three of its roles. The
+   hierarchy that Latin gets from Adevas / Optika 600 / Optika 500 / Glacier
+   cannot be reproduced in Georgian from the files present, and asking for it
+   only produces a synthesized approximation - see the font-synthesis rule
+   below. Georgian display, editorial and copy are therefore separated by size,
+   colour and spacing, not by weight, until an approved Georgian font with more
+   than one weight exists. */
   --dao-f-display: var(--f-adevas), var(--f-sanet), serif;
   --dao-f-ui: var(--f-optika), var(--f-georgian), sans-serif;
-  --dao-f-numeral: var(--f-glacier), sans-serif;
+  /* §P4: Glacier is Latin-only (221 codepoints, no Georgian), and the numeral
+     role carries more than numerals - the Lab filter labels and the Studio
+     slate values run through it and are translated. On a Georgian page those
+     words found no Georgian face in this stack and fell through to whatever
+     the operating system offers: Sylfaen on Windows, something else elsewhere,
+     so the same page rendered in a different typeface per platform. ALK Sanet
+     now catches them. Glacier still wins every Latin character and digit,
+     because ALK Sanet is only reached for glyphs Glacier does not have.
+
+     Noto is deliberately NOT added here. ALK Sanet already covers every
+     Georgian letter this site uses, so Noto could only ever be reached by a
+     character no font in the stack has - and measuring it showed exactly that:
+     including it made /team fetch 24,924 B of Noto subsets in both locales to
+     look for the `※` marker, which Noto does not contain either. */
+  --dao-f-numeral: var(--f-glacier), var(--f-sanet), sans-serif;
   /* §02: the locale-invariant Latin stack. The role tokens above are
      re-pointed to Georgian faces under html[lang="ka"]; anything that is a
      Latin wordmark rather than translated copy - `8TH STATE`, `EN`/`KA` -
@@ -73,14 +105,22 @@
      face per locale. This token is deliberately absent from the Georgian
      override block. */
   --dao-f-latin: var(--f-optika), sans-serif;
-  --dao-f-ka: var(--f-sanet), var(--f-georgian), sans-serif;
+  /* §P4: Optika sits between ALK Sanet and the Georgian fallback in every
+     Georgian stack. ALK Sanet covers all 32 Mkhedruli letters the site uses
+     but only 128 codepoints in total, with no typographic punctuation: the
+     middot, ellipsis, quotes, degree, copyright and arrow that appear inside
+     Georgian copy are not in it. Optika - the brand's own Latin face - holds
+     all of them except the numero sign, so those characters now stay inside
+     the brand rather than dropping to a system font. Optika has no Georgian
+     glyphs, so it can never take a Georgian letter from ALK Sanet. */
+  --dao-f-ka: var(--f-sanet), var(--f-optika), var(--f-georgian), sans-serif;
   /* the burger navigation: Glacier in Latin, ALK Sanet in Georgian */
   --dao-f-nav: var(--f-glacier), sans-serif;
   /* Georgian role tokens - the two awaiting their real font files fall back
      to the approved Georgian stack, never to a system serif/sans */
-  --dao-f-ka-display: var(--f-sanet), var(--f-georgian), sans-serif;
-  --dao-f-ka-editorial: var(--f-sanet), var(--f-georgian), sans-serif;
-  --dao-f-ka-copy: var(--f-sanet), var(--f-georgian), sans-serif;
+  --dao-f-ka-display: var(--f-sanet), var(--f-optika), var(--f-georgian), sans-serif;
+  --dao-f-ka-editorial: var(--f-sanet), var(--f-optika), var(--f-georgian), sans-serif;
+  --dao-f-ka-copy: var(--f-sanet), var(--f-optika), var(--f-georgian), sans-serif;
   /* the real weights the Optika files provide - no synthetic weights */
   --dao-w-editorial: 600;
   --dao-w-copy: 500;
@@ -110,6 +150,34 @@ html[lang="ka"] {
   --dao-f-display: var(--dao-f-ka-display);
   --dao-f-ui: var(--dao-f-ka-editorial);
   --dao-f-nav: var(--dao-f-ka);
+}
+
+/* §P4: no faked Georgian weight.
+   ALK Sanet ships a single style at OS/2 usWeightClass 400. The role tokens
+   above resolve the display, editorial and copy roles to it on a Georgian
+   document, and those roles ask for 500 and 600 - weights the file does not
+   contain. Chrome answered by emboldening the 400 outlines itself: rendered at
+   96px, `font-weight: 600` differed from `font-weight: 400` in 9.8% of pixels
+   with synthesis allowed and was pixel-identical with it off, while the advance
+   width never moved. That is a rasterizer approximation of a brand typeface,
+   not the typeface. It was reaching 85 elements across the seven Georgian
+   routes measured at 1440px, and 77 of them at 390px.
+
+   The weights themselves are deliberately NOT rewritten to 400 here:
+   `--dao-w-editorial` is shared with the locale-invariant Latin rules
+   (`--dao-f-latin`, the `8TH STATE` wordmark and the EN/KA switcher), which
+   resolve to Optika and DO have real 500 and 600 files. Flattening the token
+   would strip the real weight off Latin on Georgian pages. Suppressing the
+   synthesis instead is exact: Optika keeps its genuine weights, and Georgian
+   renders the outlines ALK Sanet actually contains.
+
+   `:lang(ka)` rather than `html[lang="ka"]` so the Georgian companion labels
+   inside an English page - the burger's `.dao-nav__ka` spans - are covered too.
+   A real Georgian bold needs a font file the repository does not have; until
+   one is approved, Georgian hierarchy is carried by size, colour and spacing,
+   exactly as it is composed today. */
+:lang(ka) {
+  font-synthesis-weight: none;
 }
 
 html {
@@ -159,6 +227,9 @@ html {
 }
 .dao-t-editorial:lang(ka) {
   font-family: var(--dao-f-ka-editorial);
+  /* §P4: the Georgian resolution states the weight ALK Sanet actually has.
+     The Latin role keeps 600 because Optika SemiBold is a real file. */
+  font-weight: 400;
 }
 .dao-t-copy {
   font-family: var(--dao-f-ui);
@@ -166,6 +237,7 @@ html {
 }
 .dao-t-copy:lang(ka) {
   font-family: var(--dao-f-ka-copy);
+  font-weight: 400;
 }
 .dao-t-nav {
   font-family: var(--dao-f-nav);

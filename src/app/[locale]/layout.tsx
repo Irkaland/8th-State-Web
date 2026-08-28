@@ -31,8 +31,15 @@ const georgian = Noto_Sans_Georgian({
 
 // Approved brand fonts (Digital Art Object handoff): Adevas display,
 // Optika UI/body, Glacier numerals/chapters, ALK Sanet Georgian companions.
+// §P4: the three single-style faces now DECLARE the weight they actually
+// contain. Each file carries exactly one weight (OS/2 usWeightClass 400), and
+// an @font-face with no font-weight descriptor was being emitted, so the CSS
+// said nothing about what the file holds. Adevas and Glacier are Latin-only;
+// ALK Sanet is the Georgian face and the one this matters for - see the
+// font-synthesis rule in dao.css.
 const adevas = localFont({
   src: "../../fonts/Adevas-Regular.woff2",
+  weight: "400",
   variable: "--f-adevas",
   display: "swap",
 });
@@ -47,13 +54,25 @@ const optika = localFont({
 });
 const glacier = localFont({
   src: "../../fonts/Glacier-Regular.woff2",
+  weight: "400",
   variable: "--f-glacier",
   display: "swap",
 });
+// §P4: `adjustFontFallback` is off for ALK Sanet alone. next/font was emitting a
+// `sanet Fallback` face - local("Arial") at size-adjust 114.49%, ascent 63.67%,
+// descent 1.62% - immediately after `sanet` in the stack, so it intercepted
+// every character ALK Sanet does not contain before the rest of the stack was
+// ever consulted. ALK Sanet holds 128 codepoints and no typographic
+// punctuation, so the middots, ellipses and quotes inside Georgian copy were
+// rendering in oversized Arial. With the auto-fallback gone, the Georgian role
+// tokens in dao.css name their own fallback and those characters resolve to
+// Optika, which is the brand's own Latin face.
 const sanet = localFont({
   src: "../../fonts/ALK-Sanet-Regular.woff2",
+  weight: "400",
   variable: "--f-sanet",
   display: "swap",
+  adjustFontFallback: false,
 });
 
 export function generateStaticParams() {
