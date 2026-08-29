@@ -212,13 +212,19 @@ function Frame({
       )}
       {lab && <span className="dwk__bloom dao-mask" aria-hidden="true" />}
       <span className="dwk__caption">
-        <span
+        {/* §P6: the archive listed twelve projects and offered exactly one
+            heading - the page's own H1 - so there was no way to move between
+            entries by heading. The project title is the heading of its entry,
+            so it becomes one. `.dwk__name` already computes display:block with
+            zero margin inside a flex caption, and preflight makes a heading
+            inherit size and weight, so the swap is semantics only. */}
+        <h2
           className="dwk__name"
           style={big ? undefined : { fontSize: "clamp(22px,2.4vw,34px)" }}
         >
           {p.title}
           <span className="dao-strike" aria-hidden="true" />
-        </span>
+        </h2>
         <span className="dwk__meta">
           <span className="dwk__tick" aria-hidden="true" />
           {p.role} · {p.discipline} · {p.year}

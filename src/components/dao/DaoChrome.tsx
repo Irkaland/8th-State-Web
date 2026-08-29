@@ -369,7 +369,14 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
 
   return (
     <>
-      <div className={cn("dao-chrome", light && !open && "dao-chrome--light")}>
+      {/* §P6: the persistent chrome is the site's banner. It was a plain div,
+          so the brand home link, the EN/KA switcher and the burger trigger -
+          the only controls present on every route - sat outside every landmark
+          on all 20 route/locale combinations. Nothing here is styled off the
+          element name, and <header> is block like the div it replaces, so this
+          is semantics only. It is a direct child of `.dao`, not of main/section,
+          so it maps to `banner`; the sheet stays a sibling dialog. */}
+      <header className={cn("dao-chrome", light && !open && "dao-chrome--light")}>
         <Link
           href={localeHref(locale, "/")}
           className="dao-chrome__brand"
@@ -411,7 +418,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             <span className="dao-burger__line" aria-hidden="true" />
           </button>
         </div>
-      </div>
+      </header>
 
       <div
         id="dao-nav"

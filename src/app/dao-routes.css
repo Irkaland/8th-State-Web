@@ -3038,6 +3038,19 @@ html:has(.dlb) {
   outline: none;
   border-bottom-color: var(--dao-ink);
 }
+/* §P6: the brief's fields were the weakest keyboard focus on the site. Every
+   other control family answers with the 2px brand ring; these three opted out
+   of it and signalled focus only by taking their 1px underline from 50% to
+   100% ink - a change that is there, but is one pixel of opacity and easy to
+   lose while tabbing. The ring is deliberately NOT reinstated here: these are
+   underline fields and a floating rounded rect around them is not this form.
+   Instead the underline itself answers, doubling into the brand red on
+   keyboard focus only. Drawn as a shadow, so it costs no layout and the field
+   never shifts; pointer focus keeps the quiet ink underline it already had. */
+.dbr__write:focus-visible,
+.dbr__input:focus-visible {
+  box-shadow: 0 2px 0 var(--dao-red);
+}
 .dbr__write--small {
   font-size: 18px;
 }

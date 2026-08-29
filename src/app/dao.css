@@ -912,6 +912,22 @@ html[data-dao-nav-open] .dao-returntab {
   color: inherit;
   padding-bottom: 3px;
   border-bottom: 2px solid transparent;
+  /* §P6: anchors the hit expander below */
+  position: relative;
+}
+/* §P6: EN and KA are the smallest real controls on the site - measured 19.6x20
+   and 20.8x20 on every route in both locales, the only sub-24px targets that
+   are small on BOTH axes. The two-letter label is the design and is not being
+   grown; the TOUCH TARGET is what was too small, so it is expanded off an
+   absolutely positioned pseudo-element instead. Layout, type, the underline
+   rule and the focus outline all keep the element's own box, so nothing moves
+   by a pixel: only the region that answers a tap gets bigger, to 25.6x28 and
+   26.8x28. The pair sits 14px apart and each side grows by 3px, so 8px of
+   clear space remains between them and neither can steal the other's tap. */
+.dao-lang a::after {
+  content: "";
+  position: absolute;
+  inset: -4px -3px;
 }
 .dao-lang a:hover {
   color: var(--dao-yellow);

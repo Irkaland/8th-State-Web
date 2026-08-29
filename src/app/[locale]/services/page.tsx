@@ -104,10 +104,10 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
               {/* E1: left-positioned typography enters from the left, masked,
                   650ms EDITORIAL with 80ms line stagger */}
               <div className="dsv__g1names">
-                <span className="dsv__name dao-rise dao-rise--x">
+                <h2 className="dsv__name dao-rise dao-rise--x">
                   <span>{t(svc("01").name, locale)}</span>
-                </span>
-                <span className="dsv__name dao-rise dao-rise--x" style={{ position: "relative" }}>
+                </h2>
+                <h2 className="dsv__name dao-rise dao-rise--x" style={{ position: "relative" }}>
                   <span style={{ ["--d" as string]: "80ms", position: "relative" }}>
                     {t(svc("02").name, locale)}
                     <span
@@ -116,7 +116,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                       aria-hidden="true"
                     />
                   </span>
-                </span>
+                </h2>
               </div>
               <p className="dsv__desc dao-fade" style={{ ["--d" as string]: "200ms" }}>
                 {t(svc("01").desc, locale)} {t(svc("02").desc, locale)}
@@ -191,7 +191,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                   style={{ display: "flex", flexDirection: "column", gap: 10 }}
                   className="dao-fade"
                 >
-                  <span
+                  <h2
                     className="dsv__name"
                     style={{ position: "relative", alignSelf: "flex-start" }}
                   >
@@ -203,7 +203,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                         aria-hidden="true"
                       />
                     )}
-                  </span>
+                  </h2>
                   {worked && <span className="dsv__worked">{up(R.workedExample)} ✓</span>}
                   <span className="dsv__g2desc">{t(s.desc, locale)}</span>
                   {/* §13: Scenography, Costume Design and Decoration had no
@@ -272,9 +272,9 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
           </div>
           <div className="dsv__g4body">
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <span className="dsv__name dao-rise">
+              <h2 className="dsv__name dao-rise">
                 <span>{t(svc("09").name, locale)}</span>
-              </span>
+              </h2>
               <p
                 className="dsv__desc dao-fade"
                 style={{ ["--d" as string]: "120ms", maxWidth: 560 }}
