@@ -34,18 +34,18 @@ for (const [label, base] of [
   ["KA", "/ka"],
 ] as const) {
   test.describe(`§P0 Team deep link - ${label}`, () => {
-    const route = `${base}/team?person=direction-01`;
+    const route = `${base}/team?person=beka-siradze`;
 
     test(`${label}: a hard load opens the right profile and keeps the URL`, async ({ page }) => {
       const response = await page.goto(route);
       expect(response?.status()).toBe(200);
       // the query is not stripped on the way in
-      expect(await person(page)).toBe("direction-01");
+      expect(await person(page)).toBe("beka-siradze");
       await settle(page);
       // the profile is open once the ident has left the stage
       await expect(page.locator(".dtm__dossier")).toHaveCount(1);
       await expect(page.locator(".dtm__dept")).toContainText(/DIRECTION|რეჟისურა/i);
-      expect(await person(page)).toBe("direction-01");
+      expect(await person(page)).toBe("beka-siradze");
       expect(new URL(page.url()).pathname).toBe(`${base}/team`);
     });
 
@@ -55,7 +55,7 @@ for (const [label, base] of [
       await expect(page.locator(".dtm__dossier")).toHaveCount(1);
 
       await page.reload();
-      expect(await person(page), "query dropped by the reload").toBe("direction-01");
+      expect(await person(page), "query dropped by the reload").toBe("beka-siradze");
       await settle(page);
       await expect(page.locator(".dtm__dossier")).toHaveCount(1);
       await expect(page.locator(".dtm__dept")).toContainText(/DIRECTION|რეჟისურა/i);
@@ -73,7 +73,7 @@ for (const [label, base] of [
         page.locator(".dtm__dossier"),
         "Escape during the ident closed the deep-linked profile",
       ).toHaveCount(1);
-      expect(await person(page)).toBe("direction-01");
+      expect(await person(page)).toBe("beka-siradze");
     });
 
     test(`${label}: Escape closes the profile once the ident has gone`, async ({ page }) => {
@@ -135,7 +135,7 @@ for (const [label, base] of [
 
 test.describe("§P0 Team deep link - locale switch", () => {
   test("the switcher carries the person query across locales", async ({ page }) => {
-    await page.goto("/team?person=production-01");
+    await page.goto("/team?person=mariam-kandiashvili");
     await settle(page);
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
     // The open profile is a real modal - its backdrop deliberately blocks the
@@ -145,7 +145,7 @@ test.describe("§P0 Team deep link - locale switch", () => {
     const ka = await page
       .locator(".dao-chrome .dao-lang a", { hasText: "KA" })
       .getAttribute("href");
-    expect(ka).toBe("/ka/team?person=production-01");
+    expect(ka).toBe("/ka/team?person=mariam-kandiashvili");
   });
 
   test("switching locale from the roster keeps the route", async ({ page }) => {
@@ -158,10 +158,10 @@ test.describe("§P0 Team deep link - locale switch", () => {
   });
 
   test("the KA deep link opens the same person", async ({ page }) => {
-    await page.goto("/ka/team?person=production-01");
+    await page.goto("/ka/team?person=mariam-kandiashvili");
     await settle(page);
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
     await expect(page.locator("html")).toHaveAttribute("lang", "ka");
-    expect(await person(page)).toBe("production-01");
+    expect(await person(page)).toBe("mariam-kandiashvili");
   });
 });

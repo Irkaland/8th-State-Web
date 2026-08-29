@@ -102,18 +102,17 @@ export type Project = z.infer<typeof projectSchema>;
 // ---- Team -------------------------------------------------------------------
 
 /**
- * The departments a person can belong to, in the approved display order.
- * A section renders only when it has members, so this is an ordering contract
- * rather than a set of headings that must all appear.
+ * The groups a person can belong to, in the approved display order.
+ * The landing roster is one continuous grid, so these are not drawn as headings:
+ * the group orders the roster - which is how hierarchy is expressed - and is
+ * stated inside the person's own profile.
  */
 export const teamDepartment = z.enum([
-  "production",
-  "direction",
-  "creative",
-  "photography",
+  "creative-leadership",
+  "direction-production",
+  "camera-coordination",
   "art-department",
-  "post-production",
-  "studio-lab",
+  "studio-support",
 ]);
 export type TeamDepartment = z.infer<typeof teamDepartment>;
 
@@ -159,7 +158,7 @@ export const teamMemberSchema = z.object({
   /** the URL key for ?person= - kebab-case, stable */
   slug: z.string().regex(/^[a-z0-9-]+$/, "slug must be kebab-case"),
   /** omitted while the seat is provisional; the UI shows a marked blank */
-  name: z.string().min(1).optional(),
+  name: localizedTextSchema.optional(),
   provisional: z.boolean().default(false),
   department: teamDepartment,
   role: localizedTextSchema.optional(),

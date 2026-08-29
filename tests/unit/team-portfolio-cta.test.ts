@@ -26,7 +26,7 @@ function bare(over: Partial<TeamCard> = {}): TeamCard {
   return {
     slug: "fixture-01",
     provisional: true,
-    department: "production",
+    department: "direction-production",
     departmentName: "Production",
     secondaryRoles: [],
     expertise: [],
@@ -79,7 +79,7 @@ describe("§25 the render rule", () => {
     const parsed = teamMemberSchema.parse({
       id: "fixture-01",
       slug: "fixture-01",
-      department: "production",
+      department: "direction-production",
       order: 1,
     });
     expect(parsed.portfolioUrl).toBeUndefined();
@@ -88,7 +88,13 @@ describe("§25 the render rule", () => {
   });
 
   it("rejects a portfolio value that is not a url", () => {
-    const bad = { id: "x", slug: "x", department: "production", order: 1, portfolioUrl: "#" };
+    const bad = {
+      id: "x",
+      slug: "x",
+      department: "direction-production",
+      order: 1,
+      portfolioUrl: "#",
+    };
     expect(() => teamMemberSchema.parse(bad)).toThrow();
   });
 });
@@ -98,7 +104,7 @@ describe("§27 the portfolio and the professional links are separate fields", ()
     const parsed = teamMemberSchema.parse({
       id: "x",
       slug: "x",
-      department: "production",
+      department: "direction-production",
       order: 1,
       portfolioUrl: "https://example.com/",
       instagramUrl: "https://instagram.com/x",

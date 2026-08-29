@@ -258,10 +258,26 @@ test.describe("the roster is one continuous contact sheet", () => {
     ]) {
       expect(await page.locator(sel).count(), sel).toBe(0);
     }
-    // and no heading in the roster names a department either
-    const roster = await page.locator(".dtm__sheet").innerText();
-    expect(roster).not.toMatch(/\bPRODUCTION\b/);
-    expect(roster).not.toMatch(/\bDIRECTION\b/);
+    // and no element in the roster IS a group label. This has to compare whole
+    // element text, not search for the words: real roles legitimately read
+    // "Production Coordinator" and "Art Department Assistant", and neither of
+    // those is a section heading.
+    const labels = await page
+      .locator(".dtm__sheet *")
+      .evaluateAll((els) =>
+        els
+          .map((e) => (e.textContent ?? "").trim().toUpperCase())
+          .filter((t) =>
+            [
+              "CREATIVE LEADERSHIP",
+              "DIRECTION & PRODUCTION",
+              "CAMERA & COORDINATION",
+              "ART DEPARTMENT",
+              "STUDIO SUPPORT",
+            ].includes(t),
+          ),
+      );
+    expect(labels, labels.join(", ")).toEqual([]);
     // still no filter bar
     expect(await page.locator("[role='tablist'], .dtm__filters").count()).toBe(0);
   });
@@ -278,11 +294,19 @@ test.describe("the roster is one continuous contact sheet", () => {
       .locator(".dtm__person")
       .evaluateAll((els) => els.map((e) => e.getAttribute("data-dtm-card")));
     expect(slugs).toEqual([
-      "production-01",
-      "production-02",
-      "production-03",
-      "direction-01",
-      "direction-02",
+      "mariam-kandiashvili",
+      "beka-jokharidze",
+      "david-gurgulia",
+      "beka-siradze",
+      "irakli-kalandadze",
+      "nona-kandiashvili",
+      "tea-kandiashvili",
+      "vako-kvinikadze",
+      "yuko-chubinidze",
+      "luka-abazashvili",
+      "nutsa-revazishvili",
+      "lasha-bedianashvili",
+      "keto-kiladze",
     ]);
   });
 
@@ -295,8 +319,8 @@ test.describe("the roster is one continuous contact sheet", () => {
       .locator(".dtm__person")
       .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
     const rows = [...new Set(tops)].sort((a, b) => a - b);
-    // five seats at four columns is two rows - not one row per department
-    expect(rows.length).toBe(2);
+    // thirteen people at four columns is four rows - not one row per group
+    expect(rows.length).toBe(Math.ceil(13 / 4));
     // and the second row follows the first by one row's pitch, not by a section break
     const heights = await page
       .locator(".dtm__person")
@@ -320,15 +344,19 @@ test.describe("the roster is one continuous contact sheet", () => {
     expect(title.split("\n").filter(Boolean)).toHaveLength(2);
   });
 
-  test("shows every seat as a marked blank, never as a person", async ({ page }) => {
+  test("shows thirteen named people, and no marked blank at all", async ({ page }) => {
     await gotoRoute(page, "/team");
-    const slots = await page.locator(".dtm__slot").count();
-    const people = await page.locator(".dtm__person").count();
-    expect(slots).toBe(people);
+    // SUPERSEDES "shows every seat as a marked blank, never as a person".
+    // The roster is the confirmed current team, so the placeholder state is
+    // now the thing that must never come back.
+    await expect(page.locator(".dtm__person")).toHaveCount(13);
+    expect(await page.locator(".dtm__slot").count()).toBe(0);
     const text = await page.locator(".dtm__sheet").innerText();
-    expect(text).toContain("NAME PENDING");
-    // and the roster says it is unconfirmed, so the count is not a claim
-    await expect(page.locator(".dtm__provisional")).toHaveCount(1);
+    expect(text).not.toMatch(/NAME PENDING|ROLE PENDING/);
+    expect(text.toUpperCase()).toContain("MARIAM KANDIASHVILI");
+    expect(text.toUpperCase()).toContain("KETO KILADZE");
+    // and the roster no longer declares itself unconfirmed
+    await expect(page.locator(".dtm__provisional")).toHaveCount(0);
   });
 });
 
@@ -535,7 +563,7 @@ test.describe("§08/§11 the expanded profile", () => {
     await page.waitForTimeout(400);
     await page.locator(".dtm__nav .dtm__tcta").nth(1).click();
     await page.waitForTimeout(400);
-    expect(new URL(page.url()).searchParams.get("person")).toBe("production-03");
+    expect(new URL(page.url()).searchParams.get("person")).toBe("david-gurgulia");
     await page.goBack();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     expect(new URL(page.url()).searchParams.get("person")).toBeNull();
@@ -666,12 +694,12 @@ test.describe("§08/§11 the expanded profile", () => {
     await expect(page.locator(".dtm__nav .dtm__tcta").first()).toBeDisabled();
     await page.locator(".dtm__nav .dtm__tcta").nth(1).click();
     await page.waitForTimeout(400);
-    expect(new URL(page.url()).searchParams.get("person")).toBe("production-02");
+    expect(new URL(page.url()).searchParams.get("person")).toBe("beka-jokharidze");
     await expect(page.locator(".dtm__nav .dtm__tcta").first()).toBeEnabled();
   });
 
   test("deep links straight into a person", async ({ page }) => {
-    await gotoRoute(page, "/team?person=direction-01");
+    await gotoRoute(page, "/team?person=beka-siradze");
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
     await expect(page.locator(".dtm__dept")).toContainText("DIRECTION");
   });
@@ -679,12 +707,14 @@ test.describe("§08/§11 the expanded profile", () => {
   test("shows only the blocks that have content", async ({ page }) => {
     await gotoRoute(page, "/team");
     await openFirst(page);
-    // a reserved seat has nothing, so there are no labelled blanks at all
+    // identity, roles and responsibilities are all this person has, so the
+    // labelled blocks below them are absent rather than drawn empty
     expect(await page.locator(".dtm__fieldk").count()).toBe(0);
     expect(await page.locator(".dtm__work").count()).toBe(0);
     expect(await page.locator(".dtm__links").count()).toBe(0);
-    // and it says why, rather than opening onto a void
-    await expect(page.locator(".dtm__awaiting")).toHaveCount(1);
+    // and the responsibility line IS there, so the seat is not awaiting content
+    await expect(page.locator(".dtm__statement")).toHaveCount(1);
+    await expect(page.locator(".dtm__awaiting")).toHaveCount(0);
   });
 });
 
@@ -815,7 +845,7 @@ test.describe("§11 reduced motion", () => {
     // the parked card is the SECOND seat, so next is the third
     await page.locator(".dtm__nav .dtm__tcta").nth(1).click();
     await page.waitForTimeout(200);
-    expect(new URL(page.url()).searchParams.get("person")).toBe("production-03");
+    expect(new URL(page.url()).searchParams.get("person")).toBe("david-gurgulia");
     await page.keyboard.press("Escape");
     await expect(page.locator(".dtm__stage")).toHaveCount(0);
     // after stepping, the sheet belongs to the third seat - so that is the card
@@ -838,9 +868,9 @@ test.describe("§13 EN and KA", () => {
     expect(en).toMatch(/THE PEOPLE/);
     expect(ka).toMatch(/[Ⴀ-ჿ]/);
     // the roster carries no department headings any more, so what has to be
-    // Georgian is the roster copy itself
+    // Georgian is the roster copy itself - the roles under each name
     expect(await page.locator(".dtm__deptname").count()).toBe(0);
-    expect(await page.locator(".dtm__provisional").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    expect(await page.locator(".dtm__person .dtm__role").first().innerText()).toMatch(/[Ⴀ-ჿ]/);
     const card = await park(page, 0);
     await card.click();
     await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
@@ -853,8 +883,9 @@ test.describe("§13 EN and KA", () => {
     await gotoRoute(page, "/ka/team");
     const roster = await page.locator(".dtm__sheet").innerText();
     expect(roster).not.toMatch(/NAME PENDING|PORTRAIT PENDING|ROLE PENDING/);
-    // the marked blanks are still THERE - they just read in Georgian
-    expect(await page.locator(".dtm__slot").count()).toBeGreaterThan(0);
+    // the names are real now, so there are no marked blanks left - but no
+    // portrait exists yet, and THAT mark still has to read in Georgian
+    expect(await page.locator(".dtm__slot").count()).toBe(0);
     expect(await page.locator(".dtm__pendingmark").first().innerText()).toMatch(/[Ⴀ-ჿ]/);
     const card = await park(page, 0);
     await card.click();
@@ -868,8 +899,9 @@ test.describe("§13 EN and KA", () => {
     await gotoRoute(page, "/ka/team");
     await openFirst(page);
     expect(new URL(page.url()).pathname).toBe("/ka/team");
-    await expect(page.locator(".dtm__awaiting")).toHaveCount(1);
-    expect(await page.locator(".dtm__awaiting").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    await expect(page.locator(".dtm__awaiting")).toHaveCount(0);
+    await expect(page.locator(".dtm__statement")).toHaveCount(1);
+    expect(await page.locator(".dtm__statement").innerText()).toMatch(/[Ⴀ-ჿ]/);
   });
 });
 
@@ -1015,8 +1047,10 @@ test.describe("§03-§12 the profile collapses and expands with its content", ()
     expect(m.work).toBe(0);
     expect(m.portfolio).toBe(0);
     expect(m.contact).toBe(0);
-    // it says why instead, in one line, and the sheet stays compact
-    expect(m.awaiting).toBe(1);
+    // it carries a responsibility line instead of a reserved-seat notice, and
+    // the sheet still stays compact rather than opening onto a long column
+    expect(m.awaiting).toBe(0);
+    await expect(page.locator(".dtm__statement")).toHaveCount(1);
     expect(m.content).toBeLessThan(620);
     // and a profile this short never needs scrolling to read
     expect(m.scrolls).toBe(false);
@@ -1057,11 +1091,11 @@ test.describe("§23-§29 the external portfolio CTA", () => {
     // next still steps
     await controls.nth(1).click();
     await page.waitForTimeout(400);
-    expect(new URL(page.url()).searchParams.get("person")).toBe("production-02");
+    expect(new URL(page.url()).searchParams.get("person")).toBe("beka-jokharidze");
     // previous still steps back
     await page.locator(".dtm__dossier .dtm__tcta").first().click();
     await page.waitForTimeout(400);
-    expect(new URL(page.url()).searchParams.get("person")).toBe("production-01");
+    expect(new URL(page.url()).searchParams.get("person")).toBe("mariam-kandiashvili");
     // close still closes and restores focus
     await page.locator(".dtm__dossier .dtm__tcta").last().click();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);

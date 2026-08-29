@@ -251,15 +251,15 @@ test.describe("§03 the Studio team slate", () => {
     await expect(page.locator(".dst__slate")).toHaveAttribute("href", "/ka/team");
   });
 
-  // SUPERSEDED: /team was a pre-content notice when this was written. It is now
-  // the approved contact sheet, built from provisional seats, so what matters is
-  // that none of those seats is a fabricated person.
-  test("invents no people on the page it leads to", async ({ page }) => {
+  // SUPERSEDED TWICE: /team was a pre-content notice, then a roster of
+  // provisional seats. It now carries the studio's confirmed thirteen, so what
+  // matters is that the slate leads to those thirteen and to nobody invented.
+  test("leads to the confirmed team, and to nobody invented", async ({ page }) => {
     await gotoRoute(page, "/team");
-    const cards = await page.locator(".dtm__person").count();
-    expect(cards).toBeGreaterThan(0);
-    await expect(page.locator(".dtm__slot")).toHaveCount(cards);
-    await expect(page.locator(".dtm__provisional")).toHaveCount(1);
+    await expect(page.locator(".dtm__person")).toHaveCount(13);
+    await expect(page.locator(".dtm__slot")).toHaveCount(0);
+    await expect(page.locator(".dtm__provisional")).toHaveCount(0);
+    expect(await page.locator(".dtm__framein img").count()).toBe(0);
   });
 });
 

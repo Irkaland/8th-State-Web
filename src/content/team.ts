@@ -1,70 +1,92 @@
 import type { LocalizedText, TeamDepartment, TeamMember } from "./types";
 
 /**
- * The departments, in the approved display order.
+ * The groups, in the approved display order.
  *
- * All seven are declared so the architecture is ready, but the page renders a
- * section only when that department actually has members - an empty heading is
- * never drawn.
+ * These are NOT corporate departments and they are not drawn as boxed sections:
+ * the landing roster is one continuous contact sheet, and a person's group is
+ * stated inside their own profile. What the group actually controls is SEQUENCE -
+ * it decides the order the frames are numbered in, which is how the studio's
+ * working hierarchy is expressed on this page: by placement and numbering rather
+ * than by an org chart.
+ *
+ * A group is only rendered when it has members, so the architecture can hold a
+ * group the studio has not filled without ever drawing an empty heading.
  */
 export const TEAM_DEPARTMENTS: { id: TeamDepartment; name: LocalizedText }[] = [
-  { id: "production", name: { en: "Production", ka: "პროდაქშენი" } },
-  { id: "direction", name: { en: "Direction", ka: "რეჟისურა" } },
-  { id: "creative", name: { en: "Creative", ka: "კრეატივი" } },
-  { id: "photography", name: { en: "Photography", ka: "ფოტოგრაფია" } },
-  { id: "art-department", name: { en: "Art Department", ka: "სამხატვრო განყოფილება" } },
-  { id: "post-production", name: { en: "Post-Production", ka: "პოსტ-პროდაქშენი" } },
-  { id: "studio-lab", name: { en: "Studio Lab", ka: "სტუდიო ლაბი" } },
+  {
+    id: "creative-leadership",
+    name: { en: "Creative Leadership", ka: "კრეატიული ხელმძღვანელობა" },
+  },
+  {
+    id: "direction-production",
+    name: { en: "Direction & Production", ka: "რეჟისურა და პროდიუსინგი" },
+  },
+  { id: "camera-coordination", name: { en: "Camera & Coordination", ka: "კამერა და კოორდინაცია" } },
+  { id: "art-department", name: { en: "Art Department", ka: "არტ დეპარტამენტი" } },
+  { id: "studio-support", name: { en: "Studio Support", ka: "სტუდიის მხარდაჭერა" } },
 ];
 
 /**
- * The roster.
+ * The roster - the CURRENT team, thirteen people.
  *
  * WHAT IS REAL HERE AND WHAT IS NOT
  * ---------------------------------
- * No approved people content exists in this repository. Audited again on this
- * pass: there are still no real names, roles, biographies, portraits, statements,
- * clients, credits, awards, education or contact details anywhere in the codebase.
- * The only person-shaped data is `credits[].name` on projects, which is literally
- * the string "Name Surname" carrying provisional: true.
+ * Names, roles and responsibilities are the studio's own supplied record and are
+ * confirmed. Everything else on the schema is genuinely absent rather than
+ * invented: no biographies, no clients, no awards, no credits, no education, no
+ * languages, no contact details, no external profiles, and no `selectedWork` -
+ * a project is never attached to a person without a confirmed credit. The
+ * profile sheet renders exactly the blocks that carry content, so each person
+ * opens onto identity, roles and responsibilities and nothing padded.
  *
- * The approved design asks for the contact sheet to be built rather than left as
- * a pre-content notice, so the entries below are PROVISIONAL SLOTS: seats in two
- * departments, each carrying `provisional: true` and NO name. The UI renders them
- * as an explicit marked blank - "[ NAME PENDING ]" - so a visitor cannot read one
- * as a person. The page also states, above the roster, that the roster itself is
- * unconfirmed, so the number of slots is not readable as a headcount claim.
+ * PORTRAITS
+ * ---------
+ * No portrait exists for anyone yet, and none is fabricated. `portrait` is
+ * optional on the schema, so the frame falls back to the studio's own drawn
+ * device - initials inside the hand-ruled rectangle under a localised PORTRAIT
+ * PENDING mark, both aria-hidden so no meaningless alt text reaches a screen
+ * reader. That is an intentional state, not a broken image.
  *
- * Every optional field is genuinely absent rather than filled with sample copy,
- * which is what makes the conditional profile sheet observable: the sheet shows
- * exactly the blocks that have content, and for a provisional slot that is very
- * few. In particular `selectedWork` is empty on every slot - a project is never
- * attached to a person without a confirmed credit.
+ * Adding a portrait later is a data edit and needs no code change:
  *
- * Filling this in is a data edit and needs no code change:
+ *   portrait: {
+ *     src: "/media/team/mariam-kandiashvili.webp",
+ *     alt: { en: "Mariam Kandiashvili", ka: "მარიამ კანდიაშვილი" },
+ *   },
  *
- *   {
- *     id: "some-person",
- *     slug: "some-person",
- *     name: "Real Name",
- *     provisional: false,
- *     department: "production",
- *     role: { en: "Executive Producer", ka: "..." },
- *     shortStatement: { en: "...", ka: "..." },
- *     selectedWork: [{ slug: "aom-summer-collection" }],
- *     order: 1,
- *   }
+ * ROLE ORDER
+ * ----------
+ * The source lists each person's roles slash-separated. `role` takes the one
+ * that identifies the person, and `secondaryRoles` carries the rest - no role is
+ * dropped and none is added. The landing frame shows the first two, the profile
+ * shows all of them.
  *
- * A slot flips from marked blank to a full profile the moment `name` is set and
- * `provisional` is false.
+ * NAMES
+ * -----
+ * Georgian names are exactly as the studio supplied them, including the surname
+ * spellings that differ from the English transliteration. They are not
+ * "corrected" against any outside source.
  */
 export const TEAM: TeamMember[] = [
+  /* ---- 01 creative leadership ---- */
   {
-    id: "production-01",
-    slug: "production-01",
-    provisional: true,
-    department: "production",
-    secondaryRoles: [],
+    id: "mariam-kandiashvili",
+    slug: "mariam-kandiashvili",
+    name: { en: "Mariam Kandiashvili", ka: "მარიამ კანდიაშვილი" },
+    provisional: false,
+    department: "creative-leadership",
+    role: { en: "Co-Founder", ka: "თანადამფუძნებელი" },
+    secondaryRoles: [
+      { en: "Creative Director", ka: "კრეატიული დირექტორი" },
+      { en: "Head of Art Department", ka: "არტ დეპარტამენტის ხელმძღვანელი" },
+      { en: "Multimedia Artist", ka: "მულტიმედია არტისტი" },
+      { en: "Graphic Designer", ka: "გრაფიკული დიზაინერი" },
+    ],
+    shortStatement: {
+      en: "Leads creative direction, production design, art direction, concept development, visual development and graphic design.",
+      ka: "ხელმძღვანელობს კრეატიულ მიმართულებას, Production Design-ს, არტ დირექტინგს, კონცეფციების შექმნას, ვიზუალურ განვითარებასა და გრაფიკულ დიზაინს.",
+    },
     expertise: [],
     experience: [],
     selectedWork: [],
@@ -74,14 +96,25 @@ export const TEAM: TeamMember[] = [
     education: [],
     languages: [],
     order: 1,
-    featured: false,
+    featured: true,
   },
   {
-    id: "production-02",
-    slug: "production-02",
-    provisional: true,
-    department: "production",
-    secondaryRoles: [],
+    id: "beka-jokharidze",
+    slug: "beka-jokharidze",
+    name: { en: "Beka Jokharidze", ka: "ბექა ჯოხარიძე" },
+    provisional: false,
+    department: "creative-leadership",
+    role: { en: "Co-Founder", ka: "თანადამფუძნებელი" },
+    secondaryRoles: [
+      { en: "Director of Photography", ka: "ოპერატორი-დამდგმელი (Director of Photography)" },
+      { en: "Photographer", ka: "ფოტოგრაფი" },
+      { en: "Art Director", ka: "არტ დირექტორი" },
+      { en: "Multimedia Artist", ka: "მულტიმედია არტისტი" },
+    ],
+    shortStatement: {
+      en: "Leads photography and works as Director of Photography on film and audiovisual productions. Also works as Art Director and Artist, second in the Art Department after Mariam.",
+      ka: "ხელმძღვანელობს ფოტოგრაფიის მიმართულებას და კინოში მუშაობს როგორც Director of Photography. ასევე არის არტ დირექტორი და არტისტი, არტ დეპარტამენტში მარიამის შემდეგ მეორე პოზიციაზე.",
+    },
     expertise: [],
     experience: [],
     selectedWork: [],
@@ -91,14 +124,22 @@ export const TEAM: TeamMember[] = [
     education: [],
     languages: [],
     order: 2,
-    featured: false,
+    featured: true,
   },
+
+  /* ---- 02 direction & production ---- */
   {
-    id: "production-03",
-    slug: "production-03",
-    provisional: true,
-    department: "production",
+    id: "david-gurgulia",
+    slug: "david-gurgulia",
+    name: { en: "David Gurgulia", ka: "დავით გურგულია" },
+    provisional: false,
+    department: "direction-production",
+    role: { en: "Director", ka: "რეჟისორი" },
     secondaryRoles: [],
+    shortStatement: {
+      en: "Directs film, commercial, music video and other audiovisual projects.",
+      ka: "მუშაობს ფილმებზე, რეკლამებზე, მუსიკალურ ვიდეოებსა და სხვა აუდიოვიზუალურ პროექტებზე.",
+    },
     expertise: [],
     experience: [],
     selectedWork: [],
@@ -111,11 +152,20 @@ export const TEAM: TeamMember[] = [
     featured: false,
   },
   {
-    id: "direction-01",
-    slug: "direction-01",
-    provisional: true,
-    department: "direction",
-    secondaryRoles: [],
+    id: "beka-siradze",
+    slug: "beka-siradze",
+    name: { en: "Beka Siradze", ka: "ბექა სირაძე" },
+    provisional: false,
+    department: "direction-production",
+    role: { en: "Producer", ka: "პროდიუსერი" },
+    secondaryRoles: [
+      { en: "Main Communicator", ka: "მთავარი კომუნიკატორი" },
+      { en: "Business Development", ka: "ბიზნესის განვითარება" },
+    ],
+    shortStatement: {
+      en: "Handles producing, client communication, external relations, partnerships and new project opportunities.",
+      ka: "პასუხისმგებელია პროდიუსინგზე, კლიენტებთან კომუნიკაციაზე, პარტნიორობებზე, გარე ურთიერთობებსა და ახალი პროექტების მოძიებაზე.",
+    },
     expertise: [],
     experience: [],
     selectedWork: [],
@@ -128,11 +178,20 @@ export const TEAM: TeamMember[] = [
     featured: false,
   },
   {
-    id: "direction-02",
-    slug: "direction-02",
-    provisional: true,
-    department: "direction",
-    secondaryRoles: [],
+    id: "irakli-kalandadze",
+    slug: "irakli-kalandadze",
+    name: { en: "Irakli Kalandadze", ka: "ირაკლი კალანდაძე" },
+    provisional: false,
+    department: "direction-production",
+    role: { en: "Producer", ka: "პროდიუსერი" },
+    secondaryRoles: [
+      { en: "Company Manager", ka: "კომპანიის მენეჯერი" },
+      { en: "Business Development", ka: "ბიზნესის განვითარება" },
+    ],
+    shortStatement: {
+      en: "Produces projects, manages daily company operations, and develops clients, partnerships and new business opportunities.",
+      ka: "მართავს პროექტებსა და კომპანიის ყოველდღიურ საქმიანობას, მუშაობს კლიენტების, პარტნიორებისა და ახალი შესაძლებლობების მოძიებაზე.",
+    },
     expertise: [],
     experience: [],
     selectedWork: [],
@@ -142,6 +201,207 @@ export const TEAM: TeamMember[] = [
     education: [],
     languages: [],
     order: 5,
+    featured: false,
+  },
+  {
+    id: "nona-kandiashvili",
+    slug: "nona-kandiashvili",
+    name: { en: "Nona Kandiashvili", ka: "ნონა ყანდიაშვილი" },
+    provisional: false,
+    department: "direction-production",
+    role: { en: "Head Producer", ka: "მთავარი პროდიუსერი" },
+    secondaryRoles: [
+      {
+        en: "International News, Documentary & Television",
+        ka: "საერთაშორისო ახალი ამბები, დოკუმენტალისტიკა და ტელევიზია",
+      },
+    ],
+    shortStatement: {
+      en: "Leads international news, documentary and television productions, and manages foreign broadcasters, journalists and television clients.",
+      ka: "ხელმძღვანელობს საერთაშორისო ახალი ამბების, დოკუმენტური და სატელევიზიო პროექტების მიმართულებას და მუშაობს უცხოურ ტელევიზიებთან, ჟურნალისტებთან და მაუწყებლებთან.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 6,
+    featured: false,
+  },
+  {
+    id: "tea-kandiashvili",
+    slug: "tea-kandiashvili",
+    name: { en: "Tea Kandiashvili", ka: "თეა ყანდიაშვილი" },
+    provisional: false,
+    department: "direction-production",
+    role: {
+      en: "Research & Editorial Director",
+      ka: "კვლევისა და სარედაქციო მიმართულების დირექტორი",
+    },
+    secondaryRoles: [],
+    shortStatement: {
+      en: "Analyses projects, conducts research, and oversees treatments, synopses, proposals, presentations, grant texts, website copy and other written material.",
+      ka: "აანალიზებს პროექტებს, ატარებს კვლევას და პასუხისმგებელია ტექსტებზე — ტრიტმენტებზე, სინოფსისებზე, განაცხადებზე, პრეზენტაციებზე, საგრანტო ტექსტებზე, ვებგვერდის ტექსტებსა და სხვა წერილობით მასალაზე.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 7,
+    featured: false,
+  },
+
+  /* ---- 03 camera & coordination ---- */
+  {
+    id: "vako-kvinikadze",
+    slug: "vako-kvinikadze",
+    name: { en: "Vako Kvinikadze", ka: "ვაკო კვინიკაძე" },
+    provisional: false,
+    department: "camera-coordination",
+    role: { en: "Camera Operator", ka: "კამერის ოპერატორი" },
+    secondaryRoles: [],
+    shortStatement: {
+      en: "Responsible for camera operation and filming.",
+      ka: "პასუხისმგებელია კამერის მუშაობასა და გადაღებაზე.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 8,
+    featured: false,
+  },
+  {
+    id: "yuko-chubinidze",
+    slug: "yuko-chubinidze",
+    name: { en: "Yuko Chubinidze", ka: "იუკო ჩუბინიძე" },
+    provisional: false,
+    department: "camera-coordination",
+    role: { en: "Production Coordinator", ka: "Production Coordinator" },
+    secondaryRoles: [{ en: "Director's Assistant", ka: "რეჟისორის ასისტენტი" }],
+    shortStatement: {
+      en: "Handles schedules, logistics, documentation and production coordination, and assists the Director.",
+      ka: "პასუხისმგებელია გრაფიკებზე, ლოჯისტიკაზე, დოკუმენტაციაზე, კოორდინაციასა და რეჟისორის მხარდაჭერაზე.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 9,
+    featured: false,
+  },
+
+  /* ---- 04 art department ---- */
+  {
+    id: "luka-abazashvili",
+    slug: "luka-abazashvili",
+    name: { en: "Luka Abazashvili", ka: "ლუკა აბაზაშვილი" },
+    provisional: false,
+    department: "art-department",
+    role: { en: "First Assistant to Mariam", ka: "მარიამის პირველი ასისტენტი" },
+    secondaryRoles: [{ en: "Art Department Assistant", ka: "არტ დეპარტამენტის ასისტენტი" }],
+    shortStatement: {
+      en: "Supports production design, research, preparation and Art Department execution.",
+      ka: "ეხმარება Production Design-ში, კვლევაში, მომზადებასა და არტ დეპარტამენტის სამუშაოებში.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 10,
+    featured: false,
+  },
+  {
+    id: "nutsa-revazishvili",
+    slug: "nutsa-revazishvili",
+    name: { en: "Nutsa Revazishvili", ka: "ნუცა რევაზიშვილი" },
+    provisional: false,
+    department: "art-department",
+    role: { en: "Prop Maker", ka: "რეკვიზიტორი" },
+    secondaryRoles: [{ en: "Second Assistant", ka: "მეორე ასისტენტი" }],
+    shortStatement: {
+      en: "Creates props and supports Art Department work, set preparation and production.",
+      ka: "ამზადებს რეკვიზიტებს და ეხმარება არტ დეპარტამენტს, დეკორაციის მომზადებასა და წარმოებაში.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 11,
+    featured: false,
+  },
+
+  /* ---- 05 studio support ---- */
+  {
+    id: "lasha-bedianashvili",
+    slug: "lasha-bedianashvili",
+    name: { en: "Lasha Bedianashvili", ka: "ლაშა ბედიაშვილი" },
+    provisional: false,
+    department: "studio-support",
+    role: {
+      en: "Technical Assistant to Beka Jokharidze",
+      ka: "ბექა ჯოხარიძის ტექნიკური ასისტენტი",
+    },
+    secondaryRoles: [],
+    shortStatement: {
+      en: "Supports photography, lighting, equipment and technical setups.",
+      ka: "ეხმარება ფოტოგრაფიის, განათების, ტექნიკისა და ტექნიკური setup-ების მიმართულებით.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 12,
+    featured: false,
+  },
+  {
+    id: "keto-kiladze",
+    slug: "keto-kiladze",
+    name: { en: "Keto Kiladze", ka: "ქეთო კილაძე" },
+    provisional: false,
+    department: "studio-support",
+    role: { en: "General Assistant", ka: "გენერალური ასისტენტი" },
+    secondaryRoles: [],
+    shortStatement: {
+      en: "Supports the whole company with production, studio work and day-to-day tasks.",
+      ka: "ეხმარება მთლიან გუნდს გადაღებებზე, სტუდიის საქმიანობასა და ყოველდღიურ საორგანიზაციო სამუშაოებში.",
+    },
+    expertise: [],
+    experience: [],
+    selectedWork: [],
+    clients: [],
+    awards: [],
+    credits: [],
+    education: [],
+    languages: [],
+    order: 13,
     featured: false,
   },
 ];

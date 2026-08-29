@@ -37,7 +37,7 @@ const QUERY_ROUTES = [
   "/work?capability=art-direction",
   "/work?capability=production-design",
   "/work?status=in-development",
-  "/team?person=production-01",
+  "/team?person=mariam-kandiashvili",
 ] as const;
 
 /** The ident plays over whatever route was requested; wait for it to leave. */
@@ -301,7 +301,7 @@ test.describe("§P0 canonical metadata describes the page, not the homepage", ()
 test.describe("§P0 direct loads are clean", () => {
   test("no console errors on a deep direct load", async ({ page }) => {
     const errors = collectConsoleErrors(page);
-    for (const route of ["/studio", "/work", "/team?person=production-01", "/ka/services"]) {
+    for (const route of ["/studio", "/work", "/team?person=mariam-kandiashvili", "/ka/services"]) {
       await page.goto(route);
       await settle(page);
     }

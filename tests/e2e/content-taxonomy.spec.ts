@@ -551,23 +551,28 @@ test.describe("§18-§23 Team", () => {
     await expect(page.locator("[data-dao-team-cta]")).toHaveAttribute("href", "/ka/team");
   });
 
-  // SUPERSEDED: /team used to be a pre-content notice with no roster, so this
-  // asserted a .dtm__pending block and zero cards. The approved contact-sheet
-  // implementation builds the roster from provisional SEATS, so the claim that
-  // has to hold is no longer "there are no people" but the stronger "no seat
-  // carries a fabricated person" - which is what is asserted now.
-  test("loads in EN and KA with no fabricated people", async ({ page }) => {
+  // SUPERSEDED TWICE. /team was first a pre-content notice, then a roster of
+  // provisional SEATS, and the claim each time was that nobody on it was
+  // fabricated. The studio has now confirmed thirteen real people, so the
+  // claim becomes the stronger "these are exactly those thirteen, and nothing
+  // about them is invented" - no portrait, and no leftover marked blank.
+  test("loads in EN and KA showing only the confirmed team", async ({ page }) => {
     for (const route of ["/team", "/ka/team"]) {
       await gotoRoute(page, route);
       await expect(page.locator(".dtm__cover")).toBeVisible();
-      const cards = await page.locator(".dtm__person").count();
-      expect(cards).toBeGreaterThan(0);
-      // every seat is a marked blank, never a name
-      await expect(page.locator(".dtm__slot")).toHaveCount(cards);
-      // and the roster says of itself that it is unconfirmed
-      await expect(page.locator(".dtm__provisional")).toHaveCount(1);
-      // no portrait is invented either
+      await expect(page.locator(".dtm__person")).toHaveCount(13);
+      // every seat is a named person now, so no marked blank is left
+      await expect(page.locator(".dtm__slot")).toHaveCount(0);
+      // and the roster no longer declares itself unconfirmed
+      await expect(page.locator(".dtm__provisional")).toHaveCount(0);
+      // no portrait is invented - there are none yet, and none is faked
       expect(await page.locator(".dtm__framein img").count()).toBe(0);
+      // and every card carries a real name rather than a placeholder
+      const names = await page
+        .locator(".dtm__pname")
+        .evaluateAll((els) => els.map((e) => (e.textContent ?? "").trim()));
+      expect(names).toHaveLength(13);
+      for (const n of names) expect(n.length, route).toBeGreaterThan(3);
     }
   });
 

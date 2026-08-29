@@ -100,7 +100,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
 
       return {
         slug: p.slug,
-        name: p.name,
+        name: p.name ? t(p.name, locale) : undefined,
         provisional: p.provisional,
         department: g.id,
         departmentName: t(g.name, locale),

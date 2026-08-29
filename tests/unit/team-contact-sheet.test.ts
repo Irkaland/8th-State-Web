@@ -19,15 +19,13 @@ import ka from "@/i18n/messages/ka";
 const read = (p: string) => readFileSync(p, "utf8");
 
 describe("department architecture", () => {
-  it("declares all seven departments in the approved order", () => {
+  it("declares the five approved groups in the approved order", () => {
     expect(TEAM_DEPARTMENTS.map((d) => d.id)).toEqual([
-      "production",
-      "direction",
-      "creative",
-      "photography",
+      "creative-leadership",
+      "direction-production",
+      "camera-coordination",
       "art-department",
-      "post-production",
-      "studio-lab",
+      "studio-support",
     ]);
   });
 
@@ -352,8 +350,9 @@ describe("the roster is one continuous grid", () => {
   it("keeps department on the person, and states it in the profile", () => {
     // the schema is untouched...
     expect(
-      teamMemberSchema.parse({ id: "x", slug: "x", department: "direction", order: 1 }).department,
-    ).toBe("direction");
+      teamMemberSchema.parse({ id: "x", slug: "x", department: "direction-production", order: 1 })
+        .department,
+    ).toBe("direction-production");
     // ...the sections are still built, because the flat order comes from them...
     expect(teamByDepartment().length).toBeGreaterThan(1);
     // ...and the profile still prints it
