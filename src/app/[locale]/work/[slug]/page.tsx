@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale, LOCALES } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
-import { routeAlternates } from "@/lib/route-metadata";
+import { routeAlternates, routeOpenGraph } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { getProject, projectSlugs, projectsSorted } from "@/content/projects";
 import { disciplineOf, disciplineLabel } from "@/content/dao-work";
@@ -31,7 +31,22 @@ export async function generateMetadata({
     // home. The slug comes from generateStaticParams, so it is always a real
     // project by the time this runs.
     alternates: routeAlternates(locale, `/work/${project.slug}`),
-    openGraph: { images: [{ url: (project.hero ?? project.cover).src }] },
+    // §P1: composed rather than replaced - a bare `openGraph` object here
+    // dropped type, siteName, locale, title and description, taking og:locale
+    // with them. The helper restores the shared identity and lets the case
+    // study override only what is genuinely its own.
+    openGraph: routeOpenGraph(
+      locale,
+      {
+        siteName: "8th State Production",
+        title: `${project.title} - ${t(project.categoryLabel, locale as Locale)}`,
+        description: t(project.summary, locale as Locale),
+      },
+      {
+        type: "article",
+        images: [{ url: (project.hero ?? project.cover).src }],
+      },
+    ),
   };
 }
 

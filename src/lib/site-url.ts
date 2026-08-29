@@ -40,9 +40,33 @@ const PRODUCTION_ORIGIN = "https://8th-state-production.netlify.app";
 
 const DEV_ORIGIN = "http://localhost:3000";
 
+/**
+ * §P7: the platform's own idea of the PRODUCTION origin, for a deploy that has
+ * not been given NEXT_PUBLIC_SITE_URL yet.
+ *
+ * Netlify's URL / DEPLOY_PRIME_URL were already here. Vercel is the stated
+ * final platform, so its equivalent is read too - and deliberately only
+ * `VERCEL_PROJECT_PRODUCTION_URL`, which is the project's production domain
+ * even when the code is running in a preview deployment. `VERCEL_URL` is NOT
+ * consulted: it is the per-deployment hostname, so trusting it would let every
+ * preview publish itself as its own canonical, which is the one thing §13
+ * rules out. Vercel gives a bare host, so the scheme is added here.
+ *
+ * This is not a deployment migration and adds nothing platform-specific to the
+ * app: it is the same "ask the host what it is called" rule the file already
+ * applied, extended so that moving hosts cannot silently leave production
+ * canonicalising at the old one.
+ */
+function platformOrigin(): string | undefined {
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercel) return vercel.startsWith("http") ? vercel : `https://${vercel}`;
+  return undefined;
+}
+
 function firstConfigured(): string | undefined {
   const candidates = [
     process.env.NEXT_PUBLIC_SITE_URL,
+    platformOrigin(),
     process.env.URL,
     process.env.DEPLOY_PRIME_URL,
   ];
