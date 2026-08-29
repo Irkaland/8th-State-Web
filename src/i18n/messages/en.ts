@@ -16,43 +16,26 @@ const en = {
     georgiaProduction: "Georgia Production",
     contact: "Contact",
     startProject: "Start a Project",
-    allWork: "All Work",
     menu: "Menu",
-    openMenu: "Open menu",
-    closeMenu: "Close menu",
     primary: "Primary",
   },
   common: {
-    exploreWork: "Explore Selected Work",
     contactStudio: "Contact the Studio",
-    viewCaseStudy: "View Case Study",
-    viewProject: "View Project",
-    startSimilar: "Start a similar project",
     tbilisi: "Tbilisi, Georgia",
-    scroll: "Scroll",
-    backToWork: "All Work",
-    requestPrivatePortfolio: "Request a private portfolio",
     clearFilter: "Clear filter",
     skipToContent: "Skip to content",
-    languageSwitcher: "Language",
     switchToGeorgian: "Switch to Georgian",
     switchToEnglish: "Switch to English",
     instagram: "Instagram",
-    demoBadge: "Demo",
   },
   home: {
     hero: {
-      eyebrow: "Independent Visual Production Studio",
       headline: "From visual concept to final frame.",
       sub: "Photography, film, creative direction and production design for brands, culture and people.",
-      showreel: "Showreel",
-      showreelNote: "Showreel in production",
     },
     positioning: {
-      eyebrow: "The studio",
       statement:
         "We build carefully constructed visual worlds through photography, film, creative direction and production design.",
-      imageCaption: "On set · documentary series",
     },
     selectedWork: {
       index: "01",
@@ -60,7 +43,6 @@ const en = {
       note: "Curated - not the Instagram feed",
     },
     featured: {
-      eyebrow: "Featured Case Study",
       labels: {
         client: "Client",
         type: "Type",
@@ -72,7 +54,6 @@ const en = {
     services: {
       index: "02",
       title: "Services",
-      subtitle: "Organized by outcome - an editorial index, not five identical cards.",
     },
     capabilities: {
       index: "03",
@@ -87,11 +68,8 @@ const en = {
       title: "How we work",
     },
     georgia: {
-      eyebrow: "For international clients & agencies",
       title: "Production Partner in Georgia",
       desc: "Locations, crew, casting, coordination, transport, permits, set design and local production management - planned and executed from Tbilisi.",
-      planCta: "Plan a Production in Georgia",
-      credentialsCta: "Request Credentials",
     },
     partnerships: {
       badge: "In development",
@@ -114,25 +92,18 @@ const en = {
     copyright: "© 2026 8th State Production",
   },
   work: {
-    eyebrow: "Work",
     title: "Campaigns, editorials and productions - curated, not imported.",
     description:
       "A selection of commissioned and self-initiated work across photography, film, creative direction and production design.",
-    resultsOne: "Showing 1 project",
-    resultsOther: "Showing {count} projects",
-    showingOf: "Showing {shown} of {total}",
     filterLabel: "Filter work by category",
-    requestLead: "Looking for a specific reference?",
     empty: {
       title: "Nothing in this category yet.",
       desc: "New work is added as campaigns are released. Meanwhile, browse everything or ask for a private selection.",
       viewAll: "View All Work",
     },
-    resultsAnnounce: "{count} projects shown",
   },
   caseStudy: {
     labels: {
-      overview: "Overview",
       creativeIdea: "Creative idea",
       productionApproach: "Production approach",
       studioRole: "Studio role",
@@ -140,99 +111,51 @@ const en = {
       deliverables: "Deliverables",
       usage: "Usage",
       credits: "Credits",
-      relatedProject: "Related project",
-      behindScenes: "Behind the scenes",
-      processNote: "Process · not retouched",
       client: "Client",
       location: "Location",
       year: "Year",
     },
-    startSimilar: "Start a similar project",
-    tbc: "To be confirmed",
     demoNote:
       "Editorial demo content. Project names, credits and imagery are placeholders pending studio confirmation.",
   },
   georgia: {
-    eyebrow: "Georgia Production · For international clients & agencies",
     title: "Shoot in Georgia with a local production partner.",
     intro:
       "8th State plans and executes productions from Tbilisi - locations, crew, casting, logistics and set construction - so visiting teams arrive to a production that is already running.",
-    planCta: "Plan a Production in Georgia",
-    credentialsCta: "Request Credentials",
-    scopeTitle: "Scope of local support",
-    scopeNote: "Planned & managed from Tbilisi",
-    stillsNote: "Location & set references",
-    processTitle: "How a production comes together",
-    ctaTitle: "Planning a shoot in Georgia?",
     ctaDesc:
       "Send the brief and dates - we will come back with feasibility, a production approach and an estimate. A credentials overview is available on request.",
-    ctaPlan: "Plan a Production",
     honestNote:
       "No confirmed permits, partnerships or response times are claimed on this page. Permit coordination does not constitute a legal guarantee.",
   },
   brief: {
     title: "Start a Project",
     intro: "Tell us about the project. Five short steps - your progress is saved on this device.",
-    stepOf: "Step {current} of {total}",
     steps: {
       contact: "Contact",
       project: "Project",
       production: "Production details",
       deliverables: "Deliverables",
-      review: "Review & submit",
     },
     headings: {
       contact: "Who are we talking to?",
       project: "What are we making?",
       production: "When and where?",
       deliverables: "What do you need in hand?",
-      review: "Check the brief",
     },
     fields: {
-      fullName: "Full name",
-      company: "Company or brand",
       email: "Email",
       phone: "Phone",
-      countryCity: "Country or city",
-      projectType: "Project type",
-      requiredServices: "Required services",
       description: "Short project description",
       audience: "Intended audience",
       references: "Reference links",
-      preferredDate: "Preferred production date",
-      deadline: "Final delivery deadline",
       location: "Estimated location",
-      shootType: "Studio or location shoot",
-      productionDays: "Production days",
-      budget: "Approximate budget range",
       deliverables: "Deliverables",
       channels: "Intended channels",
-      formats: "Formats",
-      files: "Files or references",
-      notes: "Additional notes",
-      referral: "How did you find us?",
     },
     hints: {
       optional: "(optional)",
-      single: "- single choice",
-      multiple: "- multiple",
-      ifKnown: "(if known)",
-      budgetNote: "Ranges help us recommend the right production scale. No fixed public prices.",
       filesNote:
         "Demo only - files are listed locally and are not uploaded anywhere. Max 25 MB each.",
-      filesDrop: "Choose files to list them (not uploaded)",
-      descriptionPlaceholder: "What is the project, for whom, and what should it achieve?",
-      audiencePlaceholder: "Who should this reach?",
-      referencesPlaceholder: "URLs, moodboards, examples",
-      locationPlaceholder: "City, country or “studio”",
-      channelsPlaceholder: "Social, e-commerce, OOH, TV…",
-      formatsPlaceholder: "e.g. 4:5 + 9:16 + 16:9",
-      referralPlaceholder: "Instagram, referral, search…",
-      companyPlaceholder: "e.g. AOM",
-      emailPlaceholder: "name@company.com",
-      phonePlaceholder: "+995 …",
-      countryPlaceholder: "Tbilisi, Georgia",
-      daysPlaceholder: "e.g. 2",
     },
     shootType: {
       studio: "Studio",
@@ -240,18 +163,11 @@ const en = {
       both: "Both / not sure",
     },
     budget: {
-      small: "Small Production",
-      medium: "Medium Production",
-      full: "Full Campaign Production",
       undefined: "Not Defined Yet",
     },
     buttons: {
-      continue: "Continue",
       back: "Back",
       submit: "Submit Project Brief",
-      edit: "Edit",
-      submitting: "Submitting…",
-      removeFile: "Remove",
     },
     review: {
       contact: "Contact",
@@ -260,17 +176,9 @@ const en = {
       deliverables: "Deliverables",
       consent:
         "I agree to the processing of my personal data for the purpose of responding to this request.",
-      privacyPolicy: "Privacy policy",
-      filesCount: "{count} file(s)",
     },
     validation: {
-      required: "This field is required.",
       email: "Enter a complete email address, e.g. name@company.com",
-      minName: "Please enter your full name.",
-      projectType: "Please choose a project type.",
-      consent: "Please accept the privacy terms to continue.",
-      summaryTitle: "Please fix the following:",
-      fixField: "Fix “{field}”",
     },
     submitting: {
       title: "Sending your brief…",
@@ -279,37 +187,26 @@ const en = {
     success: {
       title: "Brief received.",
       desc: "Thank you - we will review the project and come back with the recommended next step and any questions.",
-      reference: "Demo reference № {ref}",
-      explore: "Explore Selected Work",
-      download: "Download a copy of this brief (PDF)",
       demoNote:
         "This is a demo submission - your brief was not sent to a server. Nothing was stored or emailed.",
     },
     draft: {
-      restored: "We restored your saved draft on this device.",
-      dismiss: "Dismiss",
     },
-    demoBanner: "Demo form - submission is simulated locally. No data is sent, stored or emailed.",
   },
   privacy: {
     title: "Privacy",
-    updated: "Demo document · last reviewed 2026",
     body: [
       "This is a demonstration website for 8th State Production. It does not operate a production backend, database, CRM or email delivery. The Start a Project form simulates submission entirely in your browser: nothing you enter is transmitted to, stored on, or processed by any server.",
       "Any draft of the project brief is saved only in your browser's local storage on this device, with an expiry, so you can return to it. It never leaves your device and is cleared automatically after a successful demo submission or when it expires.",
       "Selected files are listed by name and size only for a realistic preview - their contents are never read or uploaded.",
       "Before this site goes to production, a complete privacy policy covering real data processing, lawful basis, retention and contact details will replace this notice.",
     ],
-    backHome: "Back to home",
   },
   credits: {
     title: "Credits",
     intro:
       "Design and engineering credits for this demonstration build. Studio credits per project are recorded with each case study and remain provisional pending confirmation.",
     sections: {
-      design: "Design direction",
-      build: "Demo build",
-      imagery: "Demo imagery",
       type: "Typography",
     },
     designBody:
@@ -318,8 +215,6 @@ const en = {
       "High-fidelity interactive demo built with Next.js, React and TypeScript. Form submission is simulated; no production infrastructure is included in this phase.",
     imageryBody:
       "Editorial placeholder photography sourced from Pexels (Pexels License) and clearly documented in DEMO_MEDIA_SOURCES.md. All imagery is provisional and will be replaced with 8th State studio masters.",
-    typeBody: "Space Grotesk · Instrument Sans · Space Mono · Noto Sans Georgian.",
-    backHome: "Back to home",
   },
   // "One Continuous Take" - approved Digital Art Object homepage (Direction 01).
   dao: {
@@ -452,7 +347,6 @@ const en = {
       caseStudy: "Case Study",
       end: "End of archive - {count} projects shown",
       startProduction: "Start a Production",
-      inDevelopment: "Projects in Development",
       // shown when the archive was entered through a Services "Related Work"
       // link, so the visitor can see why only some projects are listed
       showing: "Showing",
@@ -486,7 +380,6 @@ const en = {
       completion: "The completion layer",
       postDesc:
         "Sixteen confirmed sub-capabilities - more internal depth than any other service - offered standalone, including on footage shot by others. Motion graphics and VFX are offered at a basic level.",
-      captureDesc: "The active name controls which media plays behind the strip.",
     },
     studio: {
       whoWeAre: "Who we are",
