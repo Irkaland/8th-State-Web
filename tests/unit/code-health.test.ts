@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
+import { readSource } from "./read-source";
 
 /**
  * §P8: the structural facts this phase established.
@@ -19,7 +20,7 @@ import ka from "@/i18n/messages/ka";
  */
 
 const ROOT = process.cwd();
-const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
+const read = (p: string) => readSource(p);
 
 const walk = (dir: string, out: string[] = []): string[] => {
   const abs = join(ROOT, dir);
@@ -91,7 +92,10 @@ describe("§P8 removed translation keys stay removed", () => {
 
   for (const [group, keys] of GONE) {
     it(`${group} no longer carries ${keys.length} dead keys`, () => {
-      for (const locale of [["en", en], ["ka", ka]] as const) {
+      for (const locale of [
+        ["en", en],
+        ["ka", ka],
+      ] as const) {
         const node = at(locale[1], group) as Record<string, unknown> | undefined;
         if (!node) continue; // the whole group went with them
         for (const k of keys) {
@@ -112,8 +116,14 @@ describe("§P8 removed translation keys stay removed", () => {
     };
     const e = paths(en).sort();
     const g = paths(ka).sort();
-    expect(e.filter((p) => !g.includes(p)), "missing from ka").toEqual([]);
-    expect(g.filter((p) => !e.includes(p)), "missing from en").toEqual([]);
+    expect(
+      e.filter((p) => !g.includes(p)),
+      "missing from ka",
+    ).toEqual([]);
+    expect(
+      g.filter((p) => !e.includes(p)),
+      "missing from en",
+    ).toEqual([]);
   });
 
   it("keeps the keys that are read indirectly", () => {

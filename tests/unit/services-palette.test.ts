@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import fs from "node:fs";
-import path from "node:path";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS } from "@/content/dao-services";
+import { readSource } from "./read-source";
 
 /**
  * The approved palette, read from the token block in dao.css rather than
  * duplicated here - if a hex is ever added or corrected there, this test keeps
  * telling the truth instead of drifting from it.
  */
-const CSS = fs.readFileSync(path.join(process.cwd(), "src/app/dao.css"), "utf8");
+const CSS = readSource("src/app/dao.css");
 const PALETTE = new Set(
   [...CSS.matchAll(/--dao-[a-z-]+:\s*(#[0-9a-fA-F]{6})\s*;/g)].map((m) => m[1]!.toLowerCase()),
 );

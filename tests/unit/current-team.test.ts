@@ -1,6 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import {
   TEAM,
   TEAM_DEPARTMENTS,
@@ -10,6 +8,7 @@ import {
   hasConfirmedTeam,
 } from "@/content/team";
 import { teamMemberSchema } from "@/content/types";
+import { readSource } from "./read-source";
 
 /**
  * The CURRENT TEAM, guarded.
@@ -25,8 +24,6 @@ import { teamMemberSchema } from "@/content/types";
  * tests check that the content EXISTS, is localised, and stays factual in shape -
  * not that it matches the source document character for character.
  */
-
-const ROOT = process.cwd();
 
 /**
  * The thirteen, in the approved hierarchy order: slug, English name, Georgian
@@ -205,7 +202,7 @@ describe("portraits are optional and none is fabricated", () => {
 
   it("draws the image-less state without an alt string a reader would hear", () => {
     // initials and the PORTRAIT PENDING mark are decoration, so both are hidden
-    const jsx = readFileSync(join(ROOT, "src/components/dao/TeamContactSheet.tsx"), "utf8");
+    const jsx = readSource("src/components/dao/TeamContactSheet.tsx");
     const frame = jsx.slice(jsx.indexOf("function Frame({"), jsx.indexOf("/** A person's name"));
     expect(frame).toContain('<span className="dtm__initials" aria-hidden="true">');
     expect(frame).toContain('<span className="dtm__pendingmark" aria-hidden="true">');
@@ -240,7 +237,7 @@ describe("the hiring document never reaches the public page", () => {
     "Financial Administrator",
   ];
 
-  const TEAM_SRC = readFileSync(join(ROOT, "src/content/team.ts"), "utf8");
+  const TEAM_SRC = readSource("src/content/team.ts");
 
   it("carries none of the unfilled roles in the roster data", () => {
     for (const role of UNFILLED) {

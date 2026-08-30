@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readSource } from "./read-source";
 
 /**
  * UI/UX refinement pass - the parts that are decided in FILES rather than in
@@ -8,7 +9,7 @@ import { readFileSync, existsSync } from "node:fs";
  * declarations carry each fix. The rendered behaviour of the same fixes is
  * covered by tests/e2e/ui-refinement.spec.ts.
  */
-const read = (p: string) => readFileSync(p, "utf8");
+const read = (p: string) => readSource(p);
 const routes = read("src/app/dao-routes.css");
 const dao = read("src/app/dao.css");
 

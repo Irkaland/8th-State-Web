@@ -1,6 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import {
   LAB_COURSES,
   LAB_DISCIPLINES,
@@ -12,6 +10,7 @@ import {
 } from "@/content/lab-courses";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
+import { readSource } from "./read-source";
 
 /**
  * The approved Studio Lab, guarded.
@@ -26,7 +25,6 @@ import ka from "@/i18n/messages/ka";
  * These tests pin the handoff's own values. They are not a style opinion.
  */
 
-const ROOT = process.cwd();
 /**
  * Read a file with its line endings normalised.
  *
@@ -35,7 +33,7 @@ const ROOT = process.cwd();
  * in another - the same file, the same commit. Normalising at the read makes
  * every assertion below independent of how the tree was materialised.
  */
-const read = (p: string) => readFileSync(join(ROOT, p), "utf8").replace(/\r\n/g, "\n");
+const read = (p: string) => readSource(p);
 const dao = read("src/app/dao.css");
 const routes = read("src/app/dao-routes.css");
 const kit = read("src/components/dao/LabKit.tsx");

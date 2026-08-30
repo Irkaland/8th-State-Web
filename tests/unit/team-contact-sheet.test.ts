@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
 import {
   TEAM,
   TEAM_DEPARTMENTS,
@@ -15,8 +14,9 @@ import { isCapabilityId } from "@/content/dao-services";
 import { teamMemberSchema } from "@/content/types";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
+import { readSource } from "./read-source";
 
-const read = (p: string) => readFileSync(p, "utf8");
+const read = (p: string) => readSource(p);
 
 describe("department architecture", () => {
   it("declares the five approved groups in the approved order", () => {

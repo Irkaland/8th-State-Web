@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import ka from "@/i18n/messages/ka";
 import en from "@/i18n/messages/en";
+import { readSource } from "./read-source";
 
 /**
  * §P4: the Georgian typography architecture.
@@ -30,7 +29,7 @@ import en from "@/i18n/messages/en";
  * architecture; how a given component consumes them is the browser test's job.
  */
 
-const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
+const read = (p: string) => readSource(p);
 const dao = read("src/app/dao.css");
 const layout = read("src/app/[locale]/layout.tsx");
 
@@ -93,7 +92,9 @@ describe("§P4 no synthesized Georgian weight", () => {
 describe("§P4 the font files are declared as what they contain", () => {
   it("declares 400 for each single-style face", () => {
     for (const family of ["Adevas-Regular", "Glacier-Regular", "ALK-Sanet-Regular"]) {
-      const decl = layout.match(new RegExp(`src: "[^"]*${family}\\.woff2",\\s*\\n\\s*weight: "(\\d+)"`));
+      const decl = layout.match(
+        new RegExp(`src: "[^"]*${family}\\.woff2",\\s*\\n\\s*weight: "(\\d+)"`),
+      );
       expect(decl?.[1], `${family} does not declare its weight`).toBe("400");
     }
   });
@@ -132,7 +133,11 @@ describe("§P4 the role utilities stay, and state Georgian's real weight", () =>
 
 describe("§P4 the Georgian copy stays inside what the stack can render", () => {
   const strings = (o: unknown): string[] =>
-    typeof o === "string" ? [o] : o && typeof o === "object" ? Object.values(o).flatMap(strings) : [];
+    typeof o === "string"
+      ? [o]
+      : o && typeof o === "object"
+        ? Object.values(o).flatMap(strings)
+        : [];
 
   /**
    * ALK Sanet holds the 32 Mkhedruli letters the site uses and nothing else of
@@ -147,10 +152,16 @@ describe("§P4 the Georgian copy stays inside what the stack can render", () => 
   it("every character in the Georgian dictionary has a brand face that can render it", () => {
     const chars = new Set(strings(ka).join(""));
     const orphans = [...chars].filter(
-      (c) => !/\s/.test(c) && !SANET_MKHEDRULI.test(c) && !OPTIKA_COVERED.test(c) && !KNOWN_UNCOVERED.has(c),
+      (c) =>
+        !/\s/.test(c) &&
+        !SANET_MKHEDRULI.test(c) &&
+        !OPTIKA_COVERED.test(c) &&
+        !KNOWN_UNCOVERED.has(c),
     );
-    expect(orphans, `no brand face covers: ${orphans.map((c) => `${c} U+${c.codePointAt(0)!.toString(16)}`).join(", ")}`)
-      .toEqual([]);
+    expect(
+      orphans,
+      `no brand face covers: ${orphans.map((c) => `${c} U+${c.codePointAt(0)!.toString(16)}`).join(", ")}`,
+    ).toEqual([]);
   });
 
   it("uses no archaic Mkhedruli letter, which ALK Sanet does not contain", () => {

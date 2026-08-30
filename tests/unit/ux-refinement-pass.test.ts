@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
 import { DAO_SERVICES, DAO_SERVICE_GROUPS, projectHasCapability } from "@/content/dao-services";
 import { PROJECTS, projectsSorted } from "@/content/projects";
 import { applyWorkFilter, capabilityPreview, parseWorkFilter } from "@/content/work-filters";
 import { switchLocalePath } from "@/i18n/locales";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
+import { readSource } from "./read-source";
 
-const read = (p: string) => readFileSync(p, "utf8");
+const read = (p: string) => readSource(p);
 
 describe("§15 locale switching preserves the query", () => {
   it("carries a category filter across both directions", () => {

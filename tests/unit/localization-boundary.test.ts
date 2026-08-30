@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
@@ -17,6 +17,7 @@ import {
   labMessages,
   briefMessages,
 } from "@/i18n/slices";
+import { readSource } from "./read-source";
 
 /**
  * §P3: the client localization boundary.
@@ -33,7 +34,7 @@ import {
  *      write `messages={m}` again, and the payload silently triples.
  */
 
-const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
+const read = (p: string) => readSource(p);
 
 /** Every leaf path in an object, as dot notation. */
 function paths(o: unknown, prefix = ""): string[] {
