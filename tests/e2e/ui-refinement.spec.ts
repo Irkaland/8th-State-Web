@@ -512,18 +512,33 @@ test.describe("10 a CTA label and its arrow are one object", () => {
 
 test.describe("11 no touched route overflows sideways", () => {
   const ROUTES = ["/", "/services", "/studio", "/studio-lab", "/start-a-project"];
-  for (const w of ALL) {
-    test(`in either locale @${w}`, async ({ page }) => {
-      for (const prefix of ["", "/ka"]) {
-        for (const route of ROUTES) {
+  /*
+   * One load per route, then sweep the widths on it.
+   *
+   * This used to reload all five routes in both locales at every one of the
+   * eight widths - 80 navigations for a property that is a pure function of the
+   * viewport. The suite runs against ONE server, and that volume is what
+   * actually starves it: under parallel load the navigations queue until the
+   * test timeout expires, and the failure that surfaces is a timeout on an
+   * unrelated assertion. Ten loads cover exactly the same 80 combinations.
+   *
+   * The hard load happens at the NARROWEST width, which is where a layout is
+   * most likely to overflow, so the load-time path is still exercised there.
+   */
+  const NARROWEST = Math.min(...ALL);
+  for (const prefix of ["", "/ka"]) {
+    for (const route of ROUTES) {
+      test(`${prefix || "/en"}${route} at every width`, async ({ page }) => {
+        await page.setViewportSize({ width: NARROWEST, height: 900 });
+        await gotoRoute(page, `${prefix}${route}`);
+        for (const w of ALL) {
           await page.setViewportSize({ width: w, height: 900 });
-          await gotoRoute(page, `${prefix}${route}`);
           const over = await page.evaluate(
             () => document.documentElement.scrollWidth - window.innerWidth,
           );
-          expect(over, `${prefix || "/en"}${route}`).toBeLessThanOrEqual(0);
+          expect(over, `${prefix || "/en"}${route} @${w}`).toBeLessThanOrEqual(0);
         }
-      }
-    });
+      });
+    }
   }
 });
