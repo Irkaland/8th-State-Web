@@ -16,6 +16,7 @@ import {
   workFilterLabel,
 } from "@/content/work-filters";
 import { DaoShell } from "@/components/dao/DaoShell";
+import { Reveal } from "@/components/dao/Reveal";
 import { WorkArchive, type ArchiveItem } from "@/components/dao/WorkArchive";
 import { cn, up } from "@/lib/cn";
 import { workArchiveMessages } from "@/i18n/slices";
@@ -93,7 +94,10 @@ export default async function WorkPage({
         <header className="dwk__plane">
           <div className="dao-grain--strong" aria-hidden="true" />
           <div className="dao-weave" aria-hidden="true" />
-          <div className="dwk__head" style={{ position: "relative" }}>
+          {/* the archive head is the route's own entrance, so it is one
+              reveal boundary: the title (A) and the count (C) resolve from a
+              single observation */}
+          <Reveal as="div" className="dwk__head" style={{ position: "relative" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div className="dwk__title-row">
                 {/* A - masked reveal, route-entry scale */}
@@ -165,7 +169,7 @@ export default async function WorkPage({
                 />
               </Link>
             </nav>
-          </div>
+          </Reveal>
         </header>
 
         <WorkArchive

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
 import { getMessages } from "@/i18n";
@@ -10,12 +11,14 @@ import { capabilityById, isCapabilityId } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { MastheadBack } from "@/components/dao/MastheadBack";
+import { Reveal } from "@/components/dao/Reveal";
 import {
   TeamContactSheet,
   type TeamCard,
   type TeamSection,
   type TeamWorkCredit,
 } from "@/components/dao/TeamContactSheet";
+import { TeamDecor } from "@/components/dao/TeamDecor";
 import { up } from "@/lib/cn";
 import { teamSheetMessages } from "@/i18n/slices";
 
@@ -141,8 +144,14 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
 
   return (
     <DaoShell locale={locale} messages={m} veil="paper">
-      <div className="dao-page dao-page--paper dtm" data-dao-scene="light">
-        <div className="dao-grain" aria-hidden="true" />
+      {/* §32: the approved Team ground - the studio yellow, with the paper
+          grain and the canvas weave printed into it and an oxide stain in the
+          upper right, so the page reads as a tinted stock rather than a flat
+          fill. `--paper` is deliberately NOT used here any more. */}
+      <div className="dao-page dtm" data-dao-scene="light">
+        <div className="dao-grain--strong" aria-hidden="true" />
+        <div className="dao-weave" aria-hidden="true" />
+        <TeamDecor />
 
         {/* §03/§04: the contextual masthead back. /team's canonical parent is
             /studio, and it is a real link there - never history.back(), which a
@@ -191,6 +200,27 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
             />
           </InView>
         )}
+
+        {/* §32: the closing moment. /team has a designed ending, which is why
+            FINAL UX §02 gives it no footer - this is the ending, and the one
+            conversion the page offers. */}
+        <Reveal as="div" className="dtm__close">
+          <span className="dtm__closerule" aria-hidden="true" />
+          <div className="dtm__closerow">
+            <p className="dtm__closeline mo-c">{R.closing}</p>
+            <Link href={localeHref(locale, "/start-a-project")} className="dtm__closecta mo-h">
+              {up(R.startProject)}
+              <svg viewBox="0 0 46 12" aria-hidden="true">
+                <path
+                  d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
+                  strokeWidth="1.2"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </Link>
+          </div>
+        </Reveal>
       </div>
     </DaoShell>
   );

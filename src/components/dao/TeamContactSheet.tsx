@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { format } from "@/i18n/format";
 import type { TeamSheetMessages } from "@/i18n/slices";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
 import { IDENT_ATTR } from "@/lib/session-lifecycle";
+import { Reveal } from "./Reveal";
 
 /** One project a person is credited on, resolved against the real Work archive. */
 export type TeamWorkCredit = {
@@ -540,7 +542,24 @@ export function TeamContactSheet({
   // normally, which is the honest safe state.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("person");
-    if (!q || !order.includes(q)) return;
+    if (!q) return;
+    if (!order.includes(q)) {
+      /**
+       * FINAL UX §11: an unknown person renders the roster - which IS the
+       * recovery - but the URL must not go on claiming a person the page is not
+       * showing. The dead parameter is cleared with replaceState: no redirect,
+       * no 404 (the route itself is perfectly valid), no extra history entry,
+       * and Back still leads where the reader came from.
+       */
+      const url = new URL(window.location.href);
+      url.searchParams.delete("person");
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+      return;
+    }
     const id = requestAnimationFrame(() => openFrom(q, null, false));
     return () => cancelAnimationFrame(id);
   }, [openFrom, order]);
@@ -639,15 +658,26 @@ export function TeamContactSheet({
   const step = (dir: 1 | -1) => {
     if (!openSlug) return;
     const i = order.indexOf(openSlug);
-    const next = order[i + dir];
-    if (!next) return;
+    // FINAL UX: the roster WRAPS. An archive is a sequence with a first and a
+    // last entry, which is why /work/[slug] is finite; a roster is a wheel, and
+    // a reader stepping through colleagues should not hit a wall at the
+    // thirteenth. The asymmetry between the two is deliberate.
+    const next = order[(i + dir + order.length) % order.length];
+    if (!next || next === openSlug) return;
     setOpenSlug(next);
     setPhase("open");
     setFrom(null);
-    moved.current = null;
+    // Route focus rule: focus STAYS on the pressed control. The reader is
+    // comparing people with one repeated keystroke, and throwing focus into the
+    // sheet on every step would make them tab back out to press it again.
+    // `moved` is left pointing at the newly opened person so the focus effect
+    // below treats this swap as already handled.
+    moved.current = next;
     const url = new URL(window.location.href);
     url.searchParams.set("person", next);
-    // replace, not push: stepping should not stack history entries
+    // replace, not push: stepping must not stack history entries, so Back after
+    // A -> B -> C closes the file and returns to /team rather than walking back
+    // through the people one at a time
     window.history.replaceState({ dtmPerson: next }, "", `${url.pathname}${url.search}`);
   };
 
@@ -721,6 +751,22 @@ export function TeamContactSheet({
 
     return (
       <div className="dtm__stage" data-dtm-phase={phase}>
+        {/*
+          The ONLY live region on this route, and the only one on the site. It
+          exists for one reason: prev/next swaps the person inside a dialog that
+          stays mounted, so nothing else would tell a screen-reader user that
+          the content changed. It says the minimum useful thing and nothing
+          else - no role, no department, no repeated heading. The dialog is
+          labelled by the visible name, so opening it needs no announcement of
+          its own; dialog semantics already cover that.
+        */}
+        <span className="sr-only" role="status" aria-live="polite">
+          {format(R.personnelSwap, {
+            name: card.name ?? R.namePending,
+            n: index + 1,
+            total: order.length,
+          })}
+        </span>
         {/* the roster stays legible behind it - §04 asks for presence, not a
             generic dark backdrop */}
         <button
@@ -736,13 +782,17 @@ export function TeamContactSheet({
           ref={morphRef}
         >
           <article
-            className="dtm__dossier"
+            className={cn("dtm__dossier", phase !== "opening" && "is-in")}
             style={held}
             ref={sheetRef}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
-            aria-label={`${card.name ?? R.namePending} - ${card.departmentName}`}
+            /* Labelled BY the visible name rather than by a manufactured
+               string, so a screen reader announces exactly what a sighted
+               reader sees and the two cannot drift apart when the copy
+               changes. */
+            aria-labelledby="dtm-file-name"
           >
             {/* §01: the ONLY close control, beside prev/next. There is deliberately
               no second one at the foot of the sheet. */}
@@ -753,28 +803,20 @@ export function TeamContactSheet({
               </span>
               <span className="dtm__dept">{up(card.departmentName)}</span>
               <span className="dtm__nav">
-                <button
-                  type="button"
-                  className={cn("dtm__tcta", index <= 0 && "dtm__tcta--muted")}
-                  onClick={() => step(-1)}
-                  disabled={index <= 0}
-                >
-                  ← {up(R.previous)}
+                {/* a wheel has no ends, so neither control is ever disabled -
+                    and each is a >=44px target in its own right */}
+                <button type="button" className="dtm__tcta mo-h" onClick={() => step(-1)}>
+                  <span aria-hidden="true">&larr;</span> {up(R.previous)}
+                </button>
+                <button type="button" className="dtm__tcta mo-h" onClick={() => step(1)}>
+                  {up(R.nextPerson)} <span aria-hidden="true">&rarr;</span>
                 </button>
                 <button
                   type="button"
-                  className={cn("dtm__tcta", index >= order.length - 1 && "dtm__tcta--muted")}
-                  onClick={() => step(1)}
-                  disabled={index >= order.length - 1}
-                >
-                  {up(R.nextPerson)} →
-                </button>
-                <button
-                  type="button"
-                  className="dtm__tcta dtm__tcta--close"
+                  className="dtm__tcta dtm__tcta--close mo-h"
                   onClick={() => close()}
                 >
-                  {up(R.close)} ✕
+                  {up(R.close)} <span aria-hidden="true">&#10005;</span>
                 </button>
               </span>
             </div>
@@ -790,8 +832,10 @@ export function TeamContactSheet({
               </div>
 
               <div className="dtm__id">
-                <h2 className="dtm__dname">
-                  <NameOrSlot card={card} pending={R.namePending} />
+                <h2 id="dtm-file-name" className="dtm__dname mo-a">
+                  <span>
+                    <NameOrSlot card={card} pending={R.namePending} />
+                  </span>
                 </h2>
                 {card.role && <span className="dtm__role">{up(card.role)}</span>}
                 {card.secondaryRoles.map((r) => (
@@ -948,6 +992,13 @@ export function TeamContactSheet({
               </section>
             )}
 
+            {/* The studio stamp closes the sheet. The prototype printed
+                "FULL PROFILE - BIOGRAPHY, PRACTICE AND CREDITS PUBLISH ONCE THE
+                STUDIO CONFIRMS THEM" here; that is a note to the studio rather
+                than approved production copy, so it is not shipped - and
+                nothing is invented to fill the space it leaves. */}
+            <span className="dtm__stamp mo-c">8TH STATE PRODUCTION &middot; {up(R.city)}</span>
+
             {/* ---- §09 CONTACT against the professional links ---- */}
             {hasContact && (
               <section className="dtm__block dtm__block--split" id={`contact-${card.slug}`}>
@@ -1009,7 +1060,12 @@ export function TeamContactSheet({
           const isOpen = openSlug === card.slug;
           const n = order.indexOf(card.slug) + 1;
           return (
-            <div key={card.slug} className="dtm__cell" style={{ display: "contents" }}>
+            <Reveal
+              key={card.slug}
+              as="div"
+              className="dtm__cell"
+              style={{ ["--d" as string]: `${(order.indexOf(card.slug) % 4) * 70}ms` }}
+            >
               <button
                 type="button"
                 data-dtm-card={card.slug}
@@ -1018,6 +1074,10 @@ export function TeamContactSheet({
                 }}
                 className={cn(
                   "dtm__person",
+                  // C - the frame arrives with the sheet as it is read down.
+                  // This is the prototype's tm-reveal, in the site's own
+                  // language rather than a second implementation.
+                  "mo-c",
                   isOpen && "is-active",
                   // §06: the seat stays in the grid at full size, only unseen,
                   // so nothing reflows while its content is out on the stage
@@ -1034,8 +1094,14 @@ export function TeamContactSheet({
                   pending={R.portraitPending}
                 />
                 <span className="dtm__pbody">
-                  <span className="dtm__pno" aria-hidden="true">
-                    {String(n).padStart(2, "0")}
+                  {/* the index row - frame number against department, the way
+                      a contact sheet annotates a strip. D registers the
+                      number, F settles the department's tracking. */}
+                  <span className="dtm__prow">
+                    <span className="dtm__pno mo-d" aria-hidden="true">
+                      {String(n).padStart(2, "0")}
+                    </span>
+                    <span className="dtm__dept mo-f">{up(card.departmentName)}</span>
                   </span>
                   <span className="dtm__pname">
                     <NameOrSlot card={card} pending={R.namePending} />
@@ -1052,7 +1118,7 @@ export function TeamContactSheet({
                   </span>
                 </span>
               </button>
-            </div>
+            </Reveal>
           );
         })}
       </div>

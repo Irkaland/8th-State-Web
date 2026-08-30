@@ -5960,3 +5960,267 @@ html:has(.dsc) {
   font-size: 10px;
   letter-spacing: 0.24em;
 }
+
+/* ============================================================
+   TEAM - the approved contact-sheet ground and its furniture
+   ============================================================ */
+
+/* The page prints on the studio YELLOW, not the cream paper stock. The colour
+   is the base and the material sits on top of it - the strong grain multiplied
+   into the tint, the canvas weave over that - so it reads as a tinted stock
+   rather than a flat fill. The rubber-band canvas behind the document follows
+   it, so overscroll never exposes a different ground. */
+.dtm {
+  background: var(--dao-yellow);
+  color: var(--dao-ink);
+}
+html:has(.dtm) {
+  background: var(--dao-yellow);
+}
+.dtm > .dao-grain--strong {
+  opacity: 0.34;
+}
+.dtm > .dao-weave {
+  opacity: 0.1;
+  mix-blend-mode: multiply;
+}
+
+/* ---------- contact-sheet traces ---------- */
+
+.dtm__decor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.dtm__stain {
+  position: absolute;
+  right: -240px;
+  top: -140px;
+  width: 900px;
+  height: 900px;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background: url("/assets/textures/oxide-stain.webp") center / contain no-repeat;
+}
+.dtm__wreath,
+.dtm__sun {
+  position: absolute;
+  display: block;
+  background: var(--dao-ink);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+.dtm__wreath {
+  right: -150px;
+  top: 210px;
+  width: clamp(280px, 30vw, 470px);
+  aspect-ratio: 1;
+  opacity: 0.09;
+  transform: rotate(8deg);
+  -webkit-mask-image: url("/assets/graphics/wreath.webp");
+  mask-image: url("/assets/graphics/wreath.webp");
+}
+.dtm__sun {
+  left: -70px;
+  bottom: 16%;
+  width: 210px;
+  aspect-ratio: 1;
+  opacity: 0.07;
+  transform: rotate(-9deg);
+  -webkit-mask-image: url("/assets/graphics/sun.webp");
+  mask-image: url("/assets/graphics/sun.webp");
+}
+.dtm__mark {
+  position: absolute;
+  stroke: var(--dao-ink);
+}
+.dtm__marktext {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  fill: var(--dao-ink);
+  stroke: none;
+}
+.dtm__mark--sheet {
+  left: clamp(16px, 2.5vw, 40px);
+  top: 46%;
+  width: 150px;
+  height: 40px;
+  opacity: 0.12;
+  transform: rotate(-1.5deg);
+}
+.dtm__mark--reg {
+  right: clamp(18px, 3vw, 44px);
+  bottom: 5%;
+  width: 34px;
+  height: 34px;
+  opacity: 0.14;
+}
+.dtm__mark--crop {
+  left: 7px;
+  top: 7px;
+  width: 26px;
+  height: 26px;
+  opacity: 0.16;
+}
+/* the phone composition keeps the registration mark and the crop corner and
+   nothing else - a 375px viewport is mostly the artwork */
+@media (max-width: 760px) {
+  .dtm__sun,
+  .dtm__mark--sheet {
+    display: none;
+  }
+  .dtm__wreath {
+    right: -190px;
+    width: 300px;
+    opacity: 0.07;
+  }
+}
+
+/* every text layer sits above the traces */
+.dtm__mast,
+.dtm__cover,
+.dtm__sheet,
+.dtm__pending,
+.dtm__close {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- the roster card's index row ---------- */
+
+/* Frame number against department, the way a contact sheet annotates a strip.
+   Both ends are pinned to the card's own measure so the department never
+   drifts away from the portrait it belongs to. */
+.dtm__prow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  max-width: 286px;
+}
+.dtm__grid .dtm__dept {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 8.5px;
+  --ls: 0.2em;
+  letter-spacing: var(--ls);
+  color: var(--dao-brown);
+  text-align: right;
+}
+:lang(ka) .dtm__grid .dtm__dept {
+  font-family: var(--dao-f-ka);
+  --ls: 0.06em;
+}
+
+/* ---------- the closing moment ---------- */
+
+/* /team ends on its own terms, which is why FINAL UX gives it no footer: this
+   IS the ending, and the single conversion the page offers. */
+.dtm__close {
+  margin: clamp(30px, 6vh, 64px) var(--dao-gutter) 0;
+}
+.dtm__closerule {
+  display: block;
+  height: 1px;
+  background: rgb(19 18 16 / 0.34);
+}
+.dtm__closerow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: clamp(26px, 4.5vh, 44px) 2px clamp(20px, 4vh, 40px);
+}
+.dtm__closeline {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-size: clamp(22px, 2.4vw, 34px);
+  line-height: 1.15;
+  max-width: 18em;
+  text-wrap: pretty;
+}
+.dtm__closecta {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  /* a real touch target without changing the printed line */
+  min-height: 44px;
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: 12px;
+  --ls: 0.32em;
+  letter-spacing: var(--ls);
+  color: var(--dao-ink);
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgb(19 18 16 / 0.6);
+}
+.dtm__closecta svg {
+  width: 46px;
+  height: 12px;
+  opacity: 0.75;
+  stroke: currentcolor;
+  flex: none;
+}
+:lang(ka) .dtm__closecta {
+  font-family: var(--dao-f-ka);
+  --ls: 0.12em;
+}
+
+/* ---------- the personnel file's closing stamp ---------- */
+
+.dtm__stamp {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  line-height: 2;
+  color: rgb(19 18 16 / 0.45);
+}
+:lang(ka) .dtm__stamp {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.06em;
+}
+
+/* ---------- the file bar on a phone ---------- */
+
+/* At 430 / 390 / 375 / 320 the bar has to stay usable rather than shrink: the
+   controls keep >=44px of vertical target, the position counter drops to its
+   own line rather than squeezing the three controls, and nothing depends on
+   hover. */
+.dtm__tcta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+@media (max-width: 560px) {
+  .dtm__slug {
+    gap: 10px 14px;
+  }
+  .dtm__nav {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .dtm__tcta {
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+  }
+}
+
+/* §31/§37: VIEW PROFILE must never be a hover-only affordance. A pointer that
+   cannot hover gets it printed at rest - quieter than the hover state, but
+   present - so a phone reader is told the frame opens onto something. */
+@media (hover: none) {
+  .dtm__view {
+    opacity: 0.6;
+    transform: none;
+  }
+}

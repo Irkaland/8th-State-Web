@@ -14,6 +14,7 @@ import {
   labCourseBySlug,
 } from "@/content/lab-courses";
 import { DaoShell } from "@/components/dao/DaoShell";
+import { Reveal } from "@/components/dao/Reveal";
 import {
   DisciplineIcon,
   LabArrow,
@@ -276,7 +277,10 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               <h2 className="dsl__feattitle" id="dsl-s05">
                 {t(photography.name, locale)}
               </h2>
-              <div className="dsl__meta">
+              {/* the F labels need a reveal boundary to settle against, and
+                  the block they sit in is the natural one - it replaces the
+                  div rather than wrapping it, so the layout is untouched */}
+              <Reveal as="div" className="dsl__meta">
                 <span>
                   <span className="dsl__metak mo-f">{up(R.lecturerLabel)}</span>
                   <span>{photography.lecturer}</span>
@@ -289,7 +293,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                   <span className="dsl__metak mo-f">{up(R.disciplineLabel)}</span>
                   <span>{t(photography.disc, locale)}</span>
                 </span>
-              </div>
+              </Reveal>
               <div className="dsl__featindex">
                 {LAB_FEATURED_INDEX.map((f) => (
                   <div key={f.n} className="dsl__featrowwrap">

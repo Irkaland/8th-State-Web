@@ -275,26 +275,33 @@ test.describe("the roster is one continuous contact sheet", () => {
     ]) {
       expect(await page.locator(sel).count(), sel).toBe(0);
     }
-    // and no element in the roster IS a group label. This has to compare whole
-    // element text, not search for the words: real roles legitimately read
-    // "Production Coordinator" and "Art Department Assistant", and neither of
-    // those is a section heading.
-    const labels = await page
-      .locator(".dtm__sheet *")
-      .evaluateAll((els) =>
-        els
-          .map((e) => (e.textContent ?? "").trim().toUpperCase())
-          .filter((t) =>
-            [
-              "CREATIVE LEADERSHIP",
-              "DIRECTION & PRODUCTION",
-              "CAMERA & COORDINATION",
-              "ART DEPARTMENT",
-              "STUDIO SUPPORT",
-            ].includes(t),
-          ),
-      );
-    expect(labels, labels.join(", ")).toEqual([]);
+    // The approved design prints the department on every CARD, as metadata in
+    // the index row beside the frame number - that is a contact sheet
+    // annotating a strip, not a directory heading. What must not exist is a
+    // department acting as a HEADING: one label standing over a group of
+    // people. So the shape is checked rather than the words - there are as many
+    // department labels as there are people, each inside a card, and none of
+    // them is a heading element.
+    const shape = await page.locator(".dtm__sheet *").evaluateAll((els) => {
+      const GROUPS = [
+        "CREATIVE LEADERSHIP",
+        "DIRECTION & PRODUCTION",
+        "CAMERA & COORDINATION",
+        "ART DEPARTMENT",
+        "STUDIO SUPPORT",
+      ];
+      const hits = els.filter((e) => GROUPS.includes((e.textContent ?? "").trim().toUpperCase()));
+      return {
+        count: hits.length,
+        headings: hits.filter((e) => /^H[1-6]$/.test(e.tagName)).length,
+        outsideACard: hits.filter((e) => !e.closest(".dtm__person")).length,
+      };
+    });
+    // one per person, not one per group - so no label can be standing over a
+    // set of people
+    expect(shape.count).toBe(await page.locator(".dtm__person").count());
+    expect(shape.headings, "a department is metadata, never a heading").toBe(0);
+    expect(shape.outsideACard, "a department label outside a card is a divider").toBe(0);
     // still no filter bar
     expect(await page.locator("[role='tablist'], .dtm__filters").count()).toBe(0);
   });
@@ -350,8 +357,10 @@ test.describe("the roster is one continuous contact sheet", () => {
     const card = await park(page, 4);
     await card.click();
     await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
-    // the fifth seat is in Direction, and its profile says so
-    await expect(page.locator(".dtm__dept")).toContainText("DIRECTION");
+    // the fifth seat is in Direction, and its profile says so. Scoped to the
+    // file bar: the approved design also prints the department on every roster
+    // card, so the bare class is no longer unique to the profile.
+    await expect(page.locator(".dtm__slug .dtm__dept")).toContainText("DIRECTION");
   });
 
   test("states the page over two lines, not as a Meet the Team banner", async ({ page }) => {
@@ -705,20 +714,61 @@ test.describe("§08/§11 the expanded profile", () => {
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
   });
 
-  test("steps to the next person and disables the ends", async ({ page }) => {
+  /**
+   * SUPERSEDES "steps to the next person and disables the ends".
+   *
+   * FINAL UX settles the two sequences differently and deliberately: /work is
+   * an editorial archive with a first and a last entry, so its PREV/NEXT is
+   * finite and the last project offers an explicit end-of-archive route. A
+   * roster has no first or last person, so it wraps. Neither control is ever
+   * disabled here, and stepping never stacks a history entry.
+   */
+  test("steps between people, wraps at both ends, and adds no history", async ({ page }) => {
     await gotoRoute(page, "/team");
     await openFirst(page);
-    await expect(page.locator(".dtm__nav .dtm__tcta").first()).toBeDisabled();
-    await page.locator(".dtm__nav .dtm__tcta").nth(1).click();
+    const prev = page.locator(".dtm__nav .dtm__tcta").first();
+    const next = page.locator(".dtm__nav .dtm__tcta").nth(1);
+    await expect(prev).toBeEnabled();
+
+    const before = await page.evaluate(() => history.length);
+
+    await next.click();
     await page.waitForTimeout(400);
     expect(new URL(page.url()).searchParams.get("person")).toBe("beka-jokharidze");
-    await expect(page.locator(".dtm__nav .dtm__tcta").first()).toBeEnabled();
+
+    // back past the first person: the wheel turns to the last one
+    await prev.click();
+    await page.waitForTimeout(400);
+    await prev.click();
+    await page.waitForTimeout(400);
+    expect(new URL(page.url()).searchParams.get("person")).toBe("keto-kiladze");
+
+    // forward past the last: round to the first again
+    await next.click();
+    await page.waitForTimeout(400);
+    expect(new URL(page.url()).searchParams.get("person")).toBe("mariam-kandiashvili");
+
+    expect(await page.evaluate(() => history.length), "stepping stacked history").toBe(before);
+  });
+
+  test("keeps focus on the control that is being pressed", async ({ page }) => {
+    await gotoRoute(page, "/team");
+    await openFirst(page);
+    const next = page.locator(".dtm__nav .dtm__tcta").nth(1);
+    await next.focus();
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(400);
+    // the reader is comparing people with one repeated keystroke - throwing
+    // focus into the sheet would make them tab back out to press it again
+    expect(await page.evaluate(() => document.activeElement?.textContent?.trim() ?? "")).toMatch(
+      /NEXT/i,
+    );
   });
 
   test("deep links straight into a person", async ({ page }) => {
     await gotoRoute(page, "/team?person=beka-siradze");
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-    await expect(page.locator(".dtm__dept")).toContainText("DIRECTION");
+    await expect(page.locator(".dtm__slug .dtm__dept")).toContainText("DIRECTION");
   });
 
   test("shows only the blocks that have content", async ({ page }) => {
@@ -893,8 +943,12 @@ test.describe("§13 EN and KA", () => {
     const card = await park(page, 0);
     await card.click();
     await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
-    // and the department, which now lives in the profile, is Georgian there
-    expect(await page.locator(".dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    // and the department is Georgian in both places it appears - the file bar
+    // and the roster card's own index row
+    expect(await page.locator(".dtm__slug .dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    // NOT the first card - its seat is deliberately visibility:hidden while its
+    // own profile is on the stage, and innerText reports nothing for it
+    expect(await page.locator(".dtm__grid .dtm__dept").nth(1).innerText()).toMatch(/[Ⴀ-ჿ]/);
   });
 
   test("leaves no English marked blank on the Georgian route", async ({ page }) => {

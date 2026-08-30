@@ -228,9 +228,13 @@ describe("§23/§42 one observer", () => {
     }
   });
 
-  it("uses the approved thresholds", () => {
+  it("uses the approved reveal points, measured against the viewport", () => {
     const s = reveal();
-    expect(s).toContain("threshold: mobile ? [0.1, DEEP] : [0.15, DEEP]");
+    // 15% desktop / 10% at <=768 - as a fraction of the VIEWPORT, so the top of
+    // a section several screens tall is not held back by its own height
+    expect(s).toContain("const reveal = mobile ? 0.1 : 0.15;");
+    expect(s).toContain("window.innerHeight * reveal");
+    expect(s).toContain("entry.intersectionRect.height < need");
   });
 
   it("reveals once - the element is unobserved as it lands", () => {

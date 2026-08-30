@@ -22,8 +22,15 @@
  *    back to where you were should feel like return, not like a fresh
  *    theatrical page entrance (§26).
  *
- * THRESHOLDS are the approved ones: ~15% on desktop, ~10% at <=768. They are
- * read once, from a media query, at the moment the observer is created.
+ * THRESHOLDS are the approved ones: ~15% on desktop, ~10% at <=768 - but they
+ * are measured against the VIEWPORT, not against the observed element. That
+ * distinction matters for exactly the case the approved page map creates: a
+ * section can be two or three viewports tall, and an element ratio of 15% then
+ * means several hundred pixels of it must be on screen before anything inside
+ * it appears. Its own masthead - the first line the reader meets - would sit
+ * invisible for most of a screen of scrolling, which is the failure §21 names.
+ * Measuring the visible SLICE against the viewport gives an identical result
+ * for ordinary blocks and the right one for tall ones.
  */
 
 /** Set on <html> by the pre-paint script when entrances are allowed to run. */
@@ -31,6 +38,18 @@ export const MOTION_ATTR = "data-dao-motion";
 
 /** Ratio at or above which a first sighting counts as "already scrolled past". */
 const DEEP = 0.6;
+
+/**
+ * Sampling points for the observer.
+ *
+ * A granular list rather than the two decision points, because the decision is
+ * made against the viewport: a section three screens tall has to be able to
+ * report progress while its own ratio is still in single figures, or it would
+ * be told about its arrival only once far more of it than we asked for is on
+ * screen. Ten thresholds is a negligible cost and removes the whole class of
+ * "the top of a long section appears late" defect.
+ */
+const STEPS = [0, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.45, DEEP, 0.8];
 
 /**
  * How long after the runtime starts a deep first sighting is still treated as a
@@ -61,12 +80,18 @@ function ensureObserver(): IntersectionObserver | null {
   if (observer) return observer;
   if (typeof IntersectionObserver === "undefined") return null;
   const mobile = window.matchMedia("(max-width: 768px)").matches;
+  // the approved reveal point, as a fraction of the VIEWPORT
+  const reveal = mobile ? 0.1 : 0.15;
   startedAt = performance.now();
   observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         const el = entry.target as HTMLElement;
+        // enough of it is on screen: the approved fraction of the viewport, or
+        // the whole element when it is shorter than that
+        const need = Math.min(entry.boundingClientRect.height, window.innerHeight * reveal);
+        if (entry.intersectionRect.height < need) continue;
         const now = performance.now();
         if (now < quietUntil) {
           el.classList.add("is-quiet");
@@ -77,9 +102,7 @@ function ensureObserver(): IntersectionObserver | null {
         observer?.unobserve(el);
       }
     },
-    // the two thresholds are the reveal point and the "already scrolled past"
-    // point; nothing else needs to be sampled
-    { threshold: mobile ? [0.1, DEEP] : [0.15, DEEP] },
+    { threshold: STEPS },
   );
   // A history traversal is a return, not an arrival. Registered with the
   // observer rather than at module scope so it exists only in a document that

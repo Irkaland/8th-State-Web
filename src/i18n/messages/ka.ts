@@ -409,6 +409,8 @@ const ka: Messages = {
     team: {
       kicker: "სტუდია → ადამიანები",
       mastLabel: "პერსონალის ფურცელი",
+      // the studio stamp that closes a personnel file
+      city: "თბილისი, საქართველო",
       personnelSwap: "{name} - {n} / {total}",
       closing: "ეს არის ჯგუფი, რომელსაც პროდაქშენი იღებს.",
       startProject: "დაიწყე პროექტი",

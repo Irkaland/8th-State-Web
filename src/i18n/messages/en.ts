@@ -417,6 +417,8 @@ const en = {
     team: {
       kicker: "Studio → The people",
       mastLabel: "Personnel sheet",
+      // the studio stamp that closes a personnel file
+      city: "Tbilisi, Georgia",
       // §09: the ONE polite announcement on this route - nothing else is spoken
       personnelSwap: "{name} - {n} of {total}",
       closing: "This is the crew a production gets.",
