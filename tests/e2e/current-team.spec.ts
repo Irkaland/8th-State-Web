@@ -108,11 +108,11 @@ test.describe("the roster is the current team", () => {
     expect(names).toHaveLength(13);
     // a Latin name left standing on /ka is the failure this catches
     for (const n of names) expect(n, n).toMatch(/^[Ⴀ-ჿ\s]+$/);
-    // and the studio's own spellings are used, including the ones that do not
-    // transliterate back to the English surname
+    // and the spellings are the owner's confirmed ones, not the ones the
+    // written brief carried for these three
     expect(names[0]).toBe("მარიამ კანდიაშვილი");
-    expect(names[5]).toBe("ნონა ყანდიაშვილი");
-    expect(names[11]).toBe("ლაშა ბედიაშვილი");
+    expect(names[5]).toBe("ნონა ყანდიშვილი");
+    expect(names[11]).toBe("ლაშა ბედიანაშვილი");
   });
 
   test("numbers the roster 01 to 13, which is where the hierarchy shows", async ({ page }) => {

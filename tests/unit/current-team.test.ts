@@ -32,10 +32,11 @@ const ROOT = process.cwd();
  * The thirteen, in the approved hierarchy order: slug, English name, Georgian
  * name, group.
  *
- * The Georgian names are the studio's own spellings. Three of them do not
- * transliterate back to the English surname - ყანდიაშვილი for Nona and Tea
- * against Kandiashvili, and ბედიაშვილი for Lasha against Bedianashvili - and
- * that is deliberate: the source is authoritative, so they are not "corrected".
+ * The Georgian names are the studio owner's confirmed spellings. The written
+ * brief spelled three of them differently - ყანდიაშვილი for Nona and Tea, and
+ * ბედიაშვილი for Lasha - and the owner corrected all three. These values are
+ * the correction, so a revert to the brief's spelling is a regression, which
+ * is exactly what this fixture is here to catch.
  */
 const CURRENT = [
   ["mariam-kandiashvili", "Mariam Kandiashvili", "მარიამ კანდიაშვილი", "creative-leadership"],
@@ -43,13 +44,13 @@ const CURRENT = [
   ["david-gurgulia", "David Gurgulia", "დავით გურგულია", "direction-production"],
   ["beka-siradze", "Beka Siradze", "ბექა სირაძე", "direction-production"],
   ["irakli-kalandadze", "Irakli Kalandadze", "ირაკლი კალანდაძე", "direction-production"],
-  ["nona-kandiashvili", "Nona Kandiashvili", "ნონა ყანდიაშვილი", "direction-production"],
-  ["tea-kandiashvili", "Tea Kandiashvili", "თეა ყანდიაშვილი", "direction-production"],
+  ["nona-kandiashvili", "Nona Kandiashvili", "ნონა ყანდიშვილი", "direction-production"],
+  ["tea-kandiashvili", "Tea Kandiashvili", "თეა ყანდიშვილი", "direction-production"],
   ["vako-kvinikadze", "Vako Kvinikadze", "ვაკო კვინიკაძე", "camera-coordination"],
   ["yuko-chubinidze", "Yuko Chubinidze", "იუკო ჩუბინიძე", "camera-coordination"],
   ["luka-abazashvili", "Luka Abazashvili", "ლუკა აბაზაშვილი", "art-department"],
   ["nutsa-revazishvili", "Nutsa Revazishvili", "ნუცა რევაზიშვილი", "art-department"],
-  ["lasha-bedianashvili", "Lasha Bedianashvili", "ლაშა ბედიაშვილი", "studio-support"],
+  ["lasha-bedianashvili", "Lasha Bedianashvili", "ლაშა ბედიანაშვილი", "studio-support"],
   ["keto-kiladze", "Keto Kiladze", "ქეთო კილაძე", "studio-support"],
 ] as const;
 

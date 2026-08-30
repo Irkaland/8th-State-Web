@@ -64,9 +64,11 @@ export const TEAM_DEPARTMENTS: { id: TeamDepartment; name: LocalizedText }[] = [
  *
  * NAMES
  * -----
- * Georgian names are exactly as the studio supplied them, including the surname
- * spellings that differ from the English transliteration. They are not
- * "corrected" against any outside source.
+ * Georgian names are the studio owner's confirmed spellings, which is the
+ * authority here - not the transliteration, and not the written brief. The
+ * brief had ყანდიაშვილი for Nona and Tea and ბედიაშვილი for Lasha; the owner
+ * corrected all three, and those corrections are what stand. Nothing in this
+ * file is spelled from an outside source or from guesswork.
  */
 export const TEAM: TeamMember[] = [
   /* ---- 01 creative leadership ---- */
@@ -206,7 +208,7 @@ export const TEAM: TeamMember[] = [
   {
     id: "nona-kandiashvili",
     slug: "nona-kandiashvili",
-    name: { en: "Nona Kandiashvili", ka: "ნონა ყანდიაშვილი" },
+    name: { en: "Nona Kandiashvili", ka: "ნონა ყანდიშვილი" },
     provisional: false,
     department: "direction-production",
     role: { en: "Head Producer", ka: "მთავარი პროდიუსერი" },
@@ -234,7 +236,7 @@ export const TEAM: TeamMember[] = [
   {
     id: "tea-kandiashvili",
     slug: "tea-kandiashvili",
-    name: { en: "Tea Kandiashvili", ka: "თეა ყანდიაშვილი" },
+    name: { en: "Tea Kandiashvili", ka: "თეა ყანდიშვილი" },
     provisional: false,
     department: "direction-production",
     role: {
@@ -358,7 +360,7 @@ export const TEAM: TeamMember[] = [
   {
     id: "lasha-bedianashvili",
     slug: "lasha-bedianashvili",
-    name: { en: "Lasha Bedianashvili", ka: "ლაშა ბედიაშვილი" },
+    name: { en: "Lasha Bedianashvili", ka: "ლაშა ბედიანაშვილი" },
     provisional: false,
     department: "studio-support",
     role: {
