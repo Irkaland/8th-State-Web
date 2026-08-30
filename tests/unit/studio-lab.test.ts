@@ -27,7 +27,15 @@ import ka from "@/i18n/messages/ka";
  */
 
 const ROOT = process.cwd();
-const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
+/**
+ * Read a file with its line endings normalised.
+ *
+ * Git checks these files out with CRLF on Windows (core.autocrlf is on here),
+ * so a pattern written with a bare newline matches in one working tree and not
+ * in another - the same file, the same commit. Normalising at the read makes
+ * every assertion below independent of how the tree was materialised.
+ */
+const read = (p: string) => readFileSync(join(ROOT, p), "utf8").replace(/\r\n/g, "\n");
 const dao = read("src/app/dao.css");
 const routes = read("src/app/dao-routes.css");
 const kit = read("src/components/dao/LabKit.tsx");
