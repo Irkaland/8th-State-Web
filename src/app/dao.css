@@ -533,7 +533,8 @@ html {
   font-family: var(--dao-f-ui);
   font-weight: var(--dao-w-copy);
   font-size: 10px;
-  letter-spacing: 0.22em;
+  --ls: 0.22em;
+  letter-spacing: var(--ls);
   text-transform: uppercase;
 }
 @media (max-width: 960px) {
@@ -578,62 +579,13 @@ button:focus-visible > .dao-strike {
   transform: scaleX(1);
 }
 
-/* ---------- motion primitives (spec table 2h) ---------- */
-
-/* text-masked-rise: translateY 100% under clip → 0 · 550ms/line · 90ms stagger */
-.dao-rise {
-  display: block;
-  overflow: hidden;
-}
-.dao-rise > * {
-  display: block;
-  transform: translateY(110%);
-  transition: transform 550ms var(--dao-ease-out);
-  transition-delay: var(--d, 0ms);
-}
-.is-in .dao-rise > *,
-.dao-rise.is-in > * {
-  transform: translateY(0);
-}
-
-/* v7 5e E1: masked horizontal entrance - content enters from its own side */
-.dao-rise--x > * {
-  transform: translateX(var(--x, -60px));
-}
-.is-in .dao-rise--x > *,
-.dao-rise--x.is-in > * {
-  transform: translateX(0);
-}
-
-/* soft fade-up for secondary elements (fields, metadata) */
-.dao-fade {
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 500ms ease,
-    transform 500ms var(--dao-ease-out);
-  transition-delay: var(--d, 0ms);
-}
-.is-in .dao-fade,
-.dao-fade.is-in {
-  opacity: 1;
-  transform: none;
-}
-
-/* text-side-entry: translateX ±60px + clip → 0 · 700ms ease-out */
-.dao-side {
-  opacity: 0;
-  transform: translateX(var(--x, 60px));
-  transition:
-    opacity 700ms ease,
-    transform 700ms var(--dao-ease-out);
-  transition-delay: var(--d, 0ms);
-}
-.is-in .dao-side,
-.dao-side.is-in {
-  opacity: 1;
-  transform: none;
-}
+/* ---------- motion primitives ----------
+   MOVED. .dao-rise / .dao-rise--x / .dao-fade / .dao-side now live in
+   dao-motion.css, retuned onto the V3 responsive tokens so the site has ONE
+   timing vocabulary and one set of tiers. Their behaviour is unchanged in
+   character; what changed is that the durations are now tokens, the travel
+   retunes per breakpoint, and the hidden pre-state is gated on the reveal
+   runtime so nothing is left invisible without JavaScript. */
 
 @keyframes dao-ticker {
   from {
@@ -649,22 +601,6 @@ button:focus-visible > .dao-strike {
   }
   to {
     transform: rotate(3deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dao-rise > *,
-  .dao-fade,
-  .dao-side {
-    transform: none !important;
-    transition: opacity 200ms ease !important;
-  }
-  .dao-rise > * {
-    opacity: 0;
-  }
-  .is-in .dao-rise > *,
-  .dao-rise.is-in > * {
-    opacity: 1;
   }
 }
 

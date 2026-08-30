@@ -108,7 +108,9 @@ export function StudioIntro({ locale, intro }: { locale: Locale; intro: IntroMes
     };
   }, [reduced, sectionRef]);
 
-  const statementGroups = splitGroups(m.statement, 3);
+  // §22: authored groups from the dictionary - no word counting, no
+  // measurement, and the same three clauses in both languages
+  const statementGroups = m.statementGroups;
 
   return (
     <section
@@ -284,8 +286,8 @@ export function StudioIntro({ locale, intro }: { locale: Locale; intro: IntroMes
         />
         <p className="dao-intro__statement">
           {statementGroups.map((group, i) => (
-            <span key={i} className="dao-rise">
-              <span style={{ ["--d" as string]: `${i * 120}ms` }}>{group}</span>
+            <span key={group} className="dao-rise">
+              <span style={{ ["--d" as string]: `${i * 120}ms` }}>{group} </span>
             </span>
           ))}
         </p>
@@ -308,15 +310,4 @@ function Sat({ a, children }: { a: number; children: React.ReactNode }) {
       <div>{children}</div>
     </div>
   );
-}
-
-/** Split a statement into n word groups for the masked line rise. */
-function splitGroups(text: string, n: number): string[] {
-  const words = text.split(" ");
-  const per = Math.ceil(words.length / n);
-  const groups: string[] = [];
-  for (let i = 0; i < words.length; i += per) {
-    groups.push(words.slice(i, i + per).join(" ") + " ");
-  }
-  return groups;
 }

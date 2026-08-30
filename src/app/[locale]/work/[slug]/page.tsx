@@ -132,7 +132,9 @@ export default async function ProjectPage({
                   label={up(m.nav.work)}
                   slug={project.slug}
                 />
-                <span className="dpj__prj">PRJ-{pad(idx)}</span>
+                <span className="dpj__prj mo-d" style={{ ["--ls" as string]: "0em" }}>
+                  PRJ-{pad(idx)}
+                </span>
                 <span className="dpj__casestudy">{up(L.caseStudy)}</span>
               </div>
               <h1 className="dpj__title">

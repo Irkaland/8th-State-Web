@@ -309,11 +309,13 @@ function Frame({
         className="object-cover"
       />
       {badge ? (
-        <span className="dwk__badge">
+        <span className="dwk__badge mo-d">
           {n} · {up(badge)}
         </span>
       ) : (
-        <span className="dwk__id">{n}</span>
+        <span className="dwk__id mo-d" style={{ ["--ls" as string]: "0em" }}>
+          {n}
+        </span>
       )}
       {lab && <span className="dwk__bloom dao-mask" aria-hidden="true" />}
       <span className="dwk__caption">
@@ -323,11 +325,16 @@ function Frame({
             so it becomes one. `.dwk__name` already computes display:block with
             zero margin inside a flex caption, and preflight makes a heading
             inherit size and weight, so the swap is semantics only. */}
-        <h2 className="dwk__name" style={big ? undefined : { fontSize: "clamp(22px,2.4vw,34px)" }}>
+        {/* G - cropped horizontal reveal on desktop; the family becomes a
+            C-style fade at <=768 on its own, so a wrapped title never clips */}
+        <h2
+          className="dwk__name mo-g"
+          style={big ? undefined : { fontSize: "clamp(22px,2.4vw,34px)" }}
+        >
           {p.title}
           <span className="dao-strike" aria-hidden="true" />
         </h2>
-        <span className="dwk__meta">
+        <span className="dwk__meta mo-c" style={{ ["--d" as string]: "120ms" }}>
           <span className="dwk__tick" aria-hidden="true" />
           {p.role} · {p.discipline} · {p.year}
         </span>

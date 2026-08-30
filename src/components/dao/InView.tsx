@@ -3,9 +3,13 @@
 import { useInViewOnce } from "./hooks";
 
 /**
- * Generic scroll-entrance wrapper: adds `is-in` once ~15% visible so
- * .dao-rise / .dao-fade / .dao-side / .dbr__deal children run their
- * approved entrances (once, never replayed on scroll-up).
+ * Generic scroll-entrance wrapper: adds `is-in` once the block is inside the
+ * viewport, so every V3 family within it - .mo-a ... .mo-g and the retuned
+ * .dao-rise / .dao-fade / .dao-side / .dbr__deal - runs from ONE observation.
+ *
+ * The reveal point, the fast-scroll safety and the reduced-motion behaviour all
+ * live in the shared runtime (lib/reveal.ts), not here. `threshold` is retained
+ * for source compatibility and is ignored - see useInViewOnce.
  */
 export function InView({
   className,

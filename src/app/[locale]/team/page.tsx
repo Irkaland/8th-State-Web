@@ -154,7 +154,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
         </div>
 
         <InView className="dtm__cover" threshold={0.05}>
-          <span className="dao-kicker dao-fade" style={{ color: "var(--dao-red)" }}>
+          <span className="dao-kicker mo-f" style={{ color: "var(--dao-red)" }}>
             {up(R.kicker)}
           </span>
           {/* §03: the page states what it is over two lines, not "Meet the team" */}

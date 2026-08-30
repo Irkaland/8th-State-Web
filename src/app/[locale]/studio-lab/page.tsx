@@ -278,15 +278,15 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
               </h2>
               <div className="dsl__meta">
                 <span>
-                  <span className="dsl__metak">{up(R.lecturerLabel)}</span>
+                  <span className="dsl__metak mo-f">{up(R.lecturerLabel)}</span>
                   <span>{photography.lecturer}</span>
                 </span>
                 <span>
-                  <span className="dsl__metak">{up(R.formatLabel)}</span>
+                  <span className="dsl__metak mo-f">{up(R.formatLabel)}</span>
                   <span className="dsl__pre">{t(photography.format, locale)}</span>
                 </span>
                 <span>
-                  <span className="dsl__metak">{up(R.disciplineLabel)}</span>
+                  <span className="dsl__metak mo-f">{up(R.disciplineLabel)}</span>
                   <span>{t(photography.disc, locale)}</span>
                 </span>
               </div>

@@ -1,0 +1,457 @@
+/* ============================================================
+   RESPONSIVE TEXT MOTION SYSTEM - V3
+   ============================================================
+
+   ONE motion language for the whole site. Nine families (A-H plus S), four
+   responsive tiers, one set of tokens, one observer.
+
+   WHY THIS FILE EXISTS
+   --------------------
+   Before this pass the site had two text-entrance vocabularies: the three
+   primitives in dao.css (.dao-rise / .dao-fade / .dao-side) plus per-page
+   copies of the same idea, each with its own durations and its own
+   IntersectionObserver. V3 does not add a third. The three primitives are
+   RETUNED onto the tokens below, so the whole site reads from one timing
+   vocabulary and a tier change moves every entrance on the site together.
+
+   THE TIERS (approved V3)
+   -----------------------
+   TIER 1  1280+      CINEMATIC   full travel, full stagger
+   TIER 2  769-1279   EDITORIAL   travel x.85, duration x.92, all families kept
+   TIER 3  481-768    QUIETER     opacity leads, G falls back to a fade
+   TIER 4  <=480      IMMEDIATE   C is the workhorse, page readable <=700ms
+
+   Everything responsive here is a MEDIA QUERY, never a measured viewport
+   width in JavaScript: nothing about presentation depends on hydration, and
+   there is no resize listener anywhere in the motion system.
+
+   PROGRESSIVE ENHANCEMENT
+   -----------------------
+   Every hidden pre-state is scoped to html[data-dao-motion], which is set by
+   a tiny inline script before first paint. If scripting is off, unavailable or
+   broken, the attribute never lands and EVERY element renders in its final
+   state - no text is ever left at opacity 0 waiting for a class that is not
+   coming. The attribute is also the reduced-motion switch: the same script
+   declines to set it when the user asks for reduced motion, so those readers
+   get final states with no transition rather than a fast one.
+
+   NO TEXT IS EVER SPLIT
+   ---------------------
+   There is no per-character animation, no line measurement, no text cloning
+   and no resize re-measurement. A staggered block is composed of AUTHORED
+   spans that mean something ("the first clause", "the second clause"), so
+   wrapping - English or Georgian - can reorganise the lines freely without
+   the choreography noticing. See §22 of the implementation contract. */
+
+:root {
+  /* the three approved curves */
+  --mo-editorial: cubic-bezier(0.22, 0.65, 0.25, 1);
+  --mo-soft: cubic-bezier(0.33, 0.6, 0.35, 1);
+  --mo-register: cubic-bezier(0.6, 0.05, 0.25, 1);
+
+  /* TIER 1 - large desktop (1280+) - CINEMATIC */
+  --moA-entry-travel: 74%;
+  --moA-entry-dur: 720ms;
+  --moA-stagger: 110ms;
+  --moA-travel: 46%;
+  --moA-dur: 620ms;
+  --moB-y: 6px;
+  --moB-dur: 520ms;
+  --moB-stagger: 140ms;
+  --moC-y: 5px;
+  --moC-dur: 300ms;
+  --moC-stagger: 60ms;
+  --moD-x: 5px;
+  --moD-ls: 0.08em;
+  --moD-dur: 200ms;
+  --moD-stagger: 40ms;
+  --moE-o: 0.45;
+  --moE-y: 2px;
+  --moF-ls: 0.1em;
+  --moF-dur: 520ms;
+  --moG-x: 10px;
+  --moG-dur: 540ms;
+}
+
+/* TIER 2 - small desktop / tablet landscape (769-1279): travel x.85, duration x.92 */
+@media (max-width: 1279px) {
+  :root {
+    --moA-entry-travel: 63%;
+    --moA-entry-dur: 660ms;
+    --moA-stagger: 94ms;
+    --moA-travel: 39%;
+    --moA-dur: 570ms;
+    --moB-y: 5px;
+    --moB-dur: 480ms;
+    --moB-stagger: 120ms;
+    --moC-y: 4px;
+    --moC-dur: 280ms;
+    --moD-x: 4px;
+    --moG-x: 9px;
+    --moG-dur: 500ms;
+  }
+}
+
+/* TIER 3 - tablet / large mobile (481-768): quieter, opacity leads, G falls back */
+@media (max-width: 768px) {
+  :root {
+    --moA-entry-travel: 40%;
+    --moA-entry-dur: 560ms;
+    --moA-stagger: 60ms;
+    --moA-travel: 18%;
+    --moA-dur: 440ms;
+    --moB-y: 4px;
+    --moB-dur: 420ms;
+    --moB-stagger: 70ms;
+    --moC-y: 4px;
+    --moC-dur: 260ms;
+    --moC-stagger: 40ms;
+    --moD-x: 3px;
+    --moD-ls: 0.05em;
+    --moD-dur: 200ms;
+    --moD-stagger: 30ms;
+    --moE-o: 0.6;
+    --moE-y: 1px;
+    --moF-ls: 0.05em;
+    --moF-dur: 360ms;
+  }
+}
+
+/* TIER 4 - mobile (<=480): immediate, editorial punctuation */
+@media (max-width: 480px) {
+  :root {
+    --moA-entry-travel: 32%;
+    --moA-entry-dur: 520ms;
+    --moA-stagger: 50ms;
+    --moA-travel: 14%;
+    --moA-dur: 400ms;
+    --moB-y: 3px;
+    --moB-dur: 380ms;
+    --moB-stagger: 55ms;
+    --moC-y: 3px;
+    --moC-dur: 240ms;
+    --moC-stagger: 30ms;
+    --moD-x: 2px;
+    --moD-ls: 0.04em;
+    --moD-dur: 180ms;
+    --moE-o: 0.7;
+    --moE-y: 0px;
+    --moF-ls: 0.04em;
+    --moF-dur: 320ms;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The families. Every pre-state is inside html[data-dao-motion], so the
+   markup's resting state IS the final state and enhancement is additive.
+   ------------------------------------------------------------------ */
+
+html[data-dao-motion] {
+  /* A - MASKED REVEAL. The line rises out of a mask. `--moA-entry-*` is the
+     bigger version used for a route's own title; the plain one is the scroll
+     level. The travel is a PERCENTAGE of the group's own height, so a group
+     that wraps to two lines travels proportionally and is never left clipped. */
+  .mo-a {
+    display: block;
+    overflow: hidden;
+  }
+  .mo-a > span {
+    display: block;
+    transform: translateY(var(--moA-travel));
+    opacity: 0;
+    transition:
+      transform var(--moA-dur) var(--mo-editorial) var(--d, 0ms),
+      opacity calc(var(--moA-dur) * 0.7) var(--mo-soft) var(--d, 0ms);
+  }
+  .mo-a--entry > span {
+    transform: translateY(var(--moA-entry-travel));
+    transition-duration: var(--moA-entry-dur), calc(var(--moA-entry-dur) * 0.7);
+  }
+  .is-in .mo-a > span,
+  .mo-a.is-in > span {
+    transform: none;
+    opacity: 1;
+  }
+
+  /* B - EDITORIAL ASSEMBLY. A statement arrives in authored clauses. The
+     groups are SPANS THE AUTHOR WROTE, never rendered lines, which is what
+     makes it safe in Georgian: re-wrapping cannot desynchronise it. */
+  .mo-b > span {
+    display: block;
+    opacity: 0;
+    transform: translateY(var(--moB-y));
+    transition:
+      opacity var(--moB-dur) var(--mo-soft) var(--d, 0ms),
+      transform calc(var(--moB-dur) + 140ms) var(--mo-editorial) var(--d, 0ms);
+  }
+  .is-in .mo-b > span,
+  .mo-b.is-in > span {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* C - SOFT FADE / MICRO SHIFT. Metadata, intros, secondary copy - and the
+     workhorse the heavier families fall back to on small screens. */
+  .mo-c {
+    opacity: 0;
+    transform: translateY(var(--moC-y));
+    transition:
+      opacity var(--moC-dur) var(--mo-soft) var(--d, 0ms),
+      transform var(--moC-dur) var(--mo-soft) var(--d, 0ms);
+  }
+  .is-in .mo-c,
+  .mo-c.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* D - INDEX REGISTRATION. Numerals settling into register, like a plate
+     being aligned. The tracking delta shrinks per tier so the settle never
+     changes how the surrounding line wraps. */
+  .mo-d {
+    opacity: 0;
+    transform: translateX(calc(var(--moD-x) * -1));
+    letter-spacing: calc(var(--ls, 0.2em) + var(--moD-ls));
+    transition:
+      opacity var(--moD-dur) var(--mo-register) var(--d, 0ms),
+      transform var(--moD-dur) var(--mo-register) var(--d, 0ms),
+      letter-spacing calc(var(--moD-dur) + 120ms) var(--mo-register) var(--d, 0ms);
+  }
+  .is-in .mo-d,
+  .mo-d.is-in {
+    opacity: 1;
+    transform: none;
+    letter-spacing: var(--ls, 0.2em);
+  }
+
+  /* E - TEXT EMPHASIS. Already legible at rest; it resolves rather than
+     appears. On mobile it is opacity alone (--moE-y drops to 0). */
+  .mo-e {
+    opacity: var(--moE-o);
+    transform: translateY(var(--moE-y));
+    letter-spacing: calc(var(--ls, 0.26em) - 0.02em);
+    transition:
+      opacity 380ms var(--mo-soft) var(--d, 120ms),
+      transform 380ms var(--mo-editorial) var(--d, 120ms),
+      letter-spacing 420ms var(--mo-editorial) var(--d, 120ms);
+  }
+  .is-in .mo-e,
+  .mo-e.is-in {
+    opacity: 1;
+    transform: none;
+    letter-spacing: var(--ls, 0.26em);
+  }
+
+  /* F - TRACKING SETTLE. A label's letter-spacing closing to its printed
+     value. Applied only to elements that own their line, because tracking is
+     the one property here that CAN change wrapping. */
+  .mo-f {
+    opacity: 0;
+    letter-spacing: calc(var(--ls, 0.26em) + var(--moF-ls));
+    transition:
+      opacity 360ms var(--mo-soft) var(--d, 0ms),
+      letter-spacing var(--moF-dur) var(--mo-editorial) var(--d, 0ms);
+  }
+  .is-in .mo-f,
+  .mo-f.is-in {
+    opacity: 1;
+    letter-spacing: var(--ls, 0.26em);
+  }
+
+  /* G - CROPPED HORIZONTAL REVEAL. A title uncovered left to right. */
+  .mo-g {
+    display: block;
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(calc(var(--moG-x) * -1));
+    transition:
+      clip-path var(--moG-dur) var(--mo-editorial) var(--d, 0ms),
+      transform var(--moG-dur) var(--mo-editorial) var(--d, 0ms);
+  }
+  .is-in .mo-g,
+  .mo-g.is-in {
+    clip-path: inset(0 0% 0 0);
+    transform: none;
+  }
+  /* <=768: G becomes a C-style fade. A horizontal crop is only honest on a
+     title that fits one line; at tablet and phone widths the same string wraps
+     and the crop would uncover the lines in the wrong order and leave the tail
+     of a wrapped title clipped mid-animation. Wrapped titles must never clip -
+     readability wins over the effect (§21/§22). */
+  @media (max-width: 768px) {
+    .mo-g {
+      clip-path: none;
+      opacity: 0;
+      transform: translateY(4px);
+      transition:
+        opacity 280ms var(--mo-soft) var(--d, 0ms),
+        transform 280ms var(--mo-soft) var(--d, 0ms);
+    }
+    .is-in .mo-g,
+    .mo-g.is-in {
+      clip-path: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* FAST-SCROLL SAFETY. A section already deep in the viewport when it is
+     first observed has been scrolled past, not read into - it finishes at once
+     rather than queueing a stagger the reader has already left behind. */
+  .is-fast .mo-a > span,
+  .is-fast .mo-b > span,
+  .is-fast .mo-c,
+  .is-fast .mo-d,
+  .is-fast .mo-e,
+  .is-fast .mo-f,
+  .is-fast .mo-g,
+  .is-fast .dao-rise > *,
+  .is-fast .dao-fade,
+  .is-fast .dao-side {
+    transition-duration: 180ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  /* A CONTEXTUAL RETURN IS NOT A PAGE ENTRANCE. Coming back to where you were
+     must feel like return, not like a fresh theatrical arrival, so the whole
+     page resolves instantly (§26). */
+  .is-quiet .mo-a > span,
+  .is-quiet .mo-b > span,
+  .is-quiet .mo-c,
+  .is-quiet .mo-d,
+  .is-quiet .mo-e,
+  .is-quiet .mo-f,
+  .is-quiet .mo-g,
+  .is-quiet .dao-rise > *,
+  .is-quiet .dao-fade,
+  .is-quiet .dao-side {
+    transition: none !important;
+  }
+}
+
+/* H - TEXT INTERACTION. The only family that is not an entrance, so it is not
+   gated on the runtime attribute: it is a hover/focus affordance and must work
+   whether or not the reveal runtime ever started. Tracking closes very
+   slightly and the control edges forward - a printed nudge, never a jump, and
+   never a layout shift, because the element is inline-flex and the delta is
+   inside its own box. */
+.mo-h {
+  transition:
+    letter-spacing 200ms var(--mo-soft),
+    transform 200ms var(--mo-soft),
+    opacity 200ms var(--mo-soft);
+}
+.mo-h:hover,
+.mo-h:focus-visible,
+.mo-h:active {
+  letter-spacing: calc(var(--ls, 0.32em) - 0.02em);
+  transform: translateX(2px);
+}
+/* touch: no sticky hover state, no shift - a tap acknowledges with opacity */
+@media (max-width: 768px) {
+  .mo-h:hover {
+    letter-spacing: var(--ls, 0.32em);
+    transform: none;
+  }
+  .mo-h:active,
+  .mo-h:focus-visible {
+    letter-spacing: var(--ls, 0.32em);
+    transform: none;
+    opacity: 0.7;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The three original primitives, RETUNED onto the V3 tokens.
+
+   These are family A (.dao-rise), family C (.dao-fade) and a horizontal
+   variant of A (.dao-side) under their existing names, so every entrance
+   already on the site now answers to the same tiers as the new families and
+   there is exactly one timing vocabulary. Their pre-states move inside the
+   runtime gate at the same time, which is what makes §41 true site-wide: with
+   no JavaScript, nothing anywhere is left invisible.
+   ------------------------------------------------------------------ */
+
+/* no runtime: the resting state IS the final state, everywhere */
+.dao-rise > * {
+  transform: none;
+}
+.dao-fade,
+.dao-side {
+  opacity: 1;
+  transform: none;
+}
+
+html[data-dao-motion] {
+  .dao-rise > * {
+    transform: translateY(110%);
+    transition: transform var(--moA-entry-dur) var(--mo-editorial) var(--d, 0ms);
+  }
+  .is-in .dao-rise > *,
+  .dao-rise.is-in > * {
+    transform: translateY(0);
+  }
+  .dao-rise--x > * {
+    transform: translateX(var(--x, -60px));
+  }
+  .is-in .dao-rise--x > *,
+  .dao-rise--x.is-in > * {
+    transform: translateX(0);
+  }
+
+  .dao-fade {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity calc(var(--moC-dur) + 200ms) var(--mo-soft) var(--d, 0ms),
+      transform calc(var(--moC-dur) + 200ms) var(--mo-editorial) var(--d, 0ms);
+  }
+  .is-in .dao-fade,
+  .dao-fade.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  .dao-side {
+    opacity: 0;
+    transform: translateX(var(--x, 60px));
+    transition:
+      opacity var(--moA-entry-dur) var(--mo-soft) var(--d, 0ms),
+      transform var(--moA-entry-dur) var(--mo-editorial) var(--d, 0ms);
+  }
+  .is-in .dao-side,
+  .dao-side.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   REDUCED MOTION - §24.
+
+   The runtime attribute is not set at all when the preference is on, so every
+   rule above is inert and the markup's own resting state (final) is what
+   renders. This block is the belt to that braces: it resets every property
+   any family touches, including the ones the older dao.css rules set, so that
+   nothing anywhere can be left mid-transition or hidden. No content waits, no
+   delay applies, and no transition runs.
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .mo-a > span,
+  .mo-b > span,
+  .mo-c,
+  .mo-d,
+  .mo-e,
+  .mo-f,
+  .mo-g,
+  .mo-h,
+  .dao-rise > *,
+  .dao-fade,
+  .dao-side {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    letter-spacing: var(--ls, inherit) !important;
+    transition: none !important;
+    transition-delay: 0ms !important;
+  }
+}

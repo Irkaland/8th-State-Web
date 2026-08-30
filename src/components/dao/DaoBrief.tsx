@@ -305,7 +305,7 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
               flexWrap: "wrap",
             }}
           >
-            <button type="submit" className="dbr__send">
+            <button type="submit" className="dbr__send mo-h">
               {up(m.send)}
               <span
                 className="dao-chipcta__glyph dao-mask"

@@ -236,6 +236,13 @@ const en = {
       act: "The Studio",
       statement:
         "A multidisciplinary production company and creative studio dedicated to visual storytelling, art direction, design, education and experimental artistic practice.",
+      // §22: the same sentence, split at its own clause boundaries. Joined with
+      // a single space it IS `statement` - tests/unit/text-motion.test.ts.
+      statementGroups: [
+        "A multidisciplinary production company and creative studio",
+        "dedicated to visual storytelling, art direction, design,",
+        "education and experimental artistic practice.",
+      ],
       cta: "The Studio",
       chipPhotography: "Photography",
       chipLab: "Studio Lab",

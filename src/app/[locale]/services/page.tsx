@@ -72,11 +72,23 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
             <p className="dsv__intro dao-fade" style={{ ["--d" as string]: "120ms" }}>
               {m.dao.services.intro}
             </p>
-            <div className="dsv__index dao-fade" style={{ ["--d" as string]: "220ms" }}>
-              <span style={{ color: g1.colour }}>I&nbsp;&nbsp;{t(g1.name, locale)}</span>
-              <span style={{ color: g2.colour }}>II&nbsp;&nbsp;{t(g2.name, locale)}</span>
-              <span style={{ color: g3.colour }}>III&nbsp;&nbsp;{t(g3.name, locale)}</span>
-              <span style={{ color: g4.colour }}>IV&nbsp;&nbsp;{t(g4.name, locale)}</span>
+            <div className="dsv__index">
+              {/* D - index registration, one step apart. --ls is 0em because
+                  the roman index carries no designed tracking of its own, so
+                  the settle closes to zero rather than inventing spacing. */}
+              {[g1, g2, g3, g4].map((g, i) => (
+                <span
+                  key={g.id}
+                  className="mo-d"
+                  style={{
+                    color: g.colour,
+                    ["--ls" as string]: "0em",
+                    ["--d" as string]: `${220 + i * 40}ms`,
+                  }}
+                >
+                  {["I", "II", "III", "IV"][i]}&nbsp;&nbsp;{t(g.name, locale)}
+                </span>
+              ))}
             </div>
           </div>
           <div
@@ -89,7 +101,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
         {/* I · CREATIVE & ART DIRECTION - typography-led split */}
         <InView className="dsv__group" threshold={0.1}>
           <div
-            className="dsv__grouplabel"
+            className="dsv__grouplabel mo-f"
             style={{ color: g1.colour, padding: "60px var(--dao-gutter) 0" }}
           >
             I - {up(t(g1.name, locale))} · {up(R.thinking)}
@@ -165,7 +177,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
         <InView className="dsv__g2" threshold={0.08} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
           <div
-            className="dsv__grouplabel"
+            className="dsv__grouplabel mo-f"
             style={{ color: g2.colour, padding: "0 var(--dao-gutter)", position: "relative" }}
           >
             II - {up(t(g2.name, locale))} · {up(R.madeWorld)}
@@ -228,7 +240,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
         <InView className="dsv__g3" threshold={0.08} scene="dark">
           <div className="dao-grain--strong" aria-hidden="true" />
           <div
-            className="dsv__grouplabel"
+            className="dsv__grouplabel mo-f"
             style={{
               color: "var(--dao-yellow)",
               padding: "0 var(--dao-gutter)",
@@ -269,7 +281,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
         {/* IV · FINISHING - quiet completion layer */}
         <InView className="dsv__g4" threshold={0.1}>
           <div
-            className="dsv__grouplabel"
+            className="dsv__grouplabel mo-f"
             style={{ color: g4.colour, padding: "0 var(--dao-gutter)" }}
           >
             IV - {up(t(g4.name, locale))} · {up(R.completion)}

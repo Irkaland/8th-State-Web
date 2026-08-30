@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "./dao.css";
 @import "./dao-routes.css";
+/* the V3 responsive text motion system - families, tiers and the retuned
+   entrance primitives. Imported last so it owns the timing vocabulary. */
+@import "./dao-motion.css";
 
 /* ============================================================
    8th State Production - design tokens

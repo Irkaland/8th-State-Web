@@ -54,7 +54,7 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
           {/* §16: this label was orange on cream. On the orange ground it has to
               leave the ground colour entirely - the brand ink gives the
               strongest editorial reading and needs no new colour. */}
-          <span className="dao-kicker dao-fade" style={{ color: "var(--dao-ink)" }}>
+          <span className="dao-kicker mo-f" style={{ color: "var(--dao-ink)" }}>
             {up(R.kicker)}
           </span>
           <h1 className="dao-cover__title dao-side" style={{ ["--x" as string]: "-60px" }}>
@@ -85,8 +85,14 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
                 style={{ ["--d" as string]: `${i * 80}ms` }}
               >
                 <div className="dpr__sheethead">
-                  <span className="dpr__num">{s.n}</span>
-                  <span className="dpr__stagename">{t(s.name, locale)}</span>
+                  {/* D - the step registers; G - the heading is uncovered.
+                      G falls back to a C-style fade at <=768 on its own. */}
+                  <span className="dpr__num mo-d" style={{ ["--ls" as string]: "0em" }}>
+                    {s.n}
+                  </span>
+                  <span className="dpr__stagename mo-g" style={{ ["--d" as string]: "90ms" }}>
+                    {t(s.name, locale)}
+                  </span>
                 </div>
                 <p className="dpr__stagedesc">{t(s.desc, locale)}</p>
                 <span className="dpr__callsheet">
@@ -102,7 +108,7 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
           <div className="dao-weave" aria-hidden="true" />
           <div className="dpr__practicegrid" style={{ position: "relative" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              <span className="dao-kicker dao-fade" style={{ color: "var(--dao-orange)" }}>
+              <span className="dao-kicker mo-f" style={{ color: "var(--dao-orange)" }}>
                 {up(R.inPractice)}
               </span>
               <p className="dpr__practicetext dao-fade" style={{ ["--d" as string]: "120ms" }}>

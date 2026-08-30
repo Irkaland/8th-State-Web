@@ -65,20 +65,16 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 {locale === "en" ? "სტუდია" : "STUDIO"}
               </span>
             </header>
+            {/* B - editorial assembly over AUTHORED clauses (§22). The
+                statement used to be chopped by dividing its word count by
+                three, which cut the Georgian sentence somewhere else entirely
+                and re-cut both the moment the copy changed. */}
             <p className="dst__statement">
-              {m.dao.intro.statement
-                .split(" ")
-                .reduce<string[][]>((groups, word, i, arr) => {
-                  const per = Math.ceil(arr.length / 3);
-                  const g = Math.floor(i / per);
-                  (groups[g] = groups[g] || []).push(word);
-                  return groups;
-                }, [])
-                .map((group, i) => (
-                  <span key={i} className="dao-rise">
-                    <span style={{ ["--d" as string]: `${i * 90}ms` }}>{group.join(" ")} </span>
-                  </span>
-                ))}
+              {m.dao.intro.statementGroups.map((group, i) => (
+                <span key={group} className="dao-rise">
+                  <span style={{ ["--d" as string]: `${i * 90}ms` }}>{group} </span>
+                </span>
+              ))}
             </p>
             <div
               className="dao-fade"
@@ -123,7 +119,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
               <span className="dst__sun dao-mask" aria-hidden="true" />
             </div>
             <div className="dst__abouttext">
-              <span className="dao-kicker dao-fade" style={{ color: "var(--dao-red)" }}>
+              <span className="dao-kicker mo-f" style={{ color: "var(--dao-red)" }}>
                 {up(R.whoWeAre)}
               </span>
               <p
@@ -198,7 +194,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
         <InView className="dst__rooms" threshold={0.1} scene="dark">
           <div className="dao-weave" aria-hidden="true" />
           <div className="dst__roomsbody">
-            <span className="dao-kicker dao-fade" style={{ color: "var(--dao-blue)" }}>
+            <span className="dao-kicker mo-f" style={{ color: "var(--dao-blue)" }}>
               {up(R.oneInstitution)}
             </span>
             <p className="dst__roomstext dao-fade" style={{ ["--d" as string]: "120ms" }}>

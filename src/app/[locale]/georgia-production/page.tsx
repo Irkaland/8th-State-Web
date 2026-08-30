@@ -59,7 +59,7 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
         {/* dossier cover */}
         <InView className="dgp__cover" threshold={0.05}>
           <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 800 }}>
-            <span className="dao-kicker dao-fade" style={{ color: "var(--dao-blue)" }}>
+            <span className="dao-kicker mo-f" style={{ color: "var(--dao-blue)" }}>
               {up(R.kicker)}
             </span>
             {/* §12: the size lived here as an inline override - clamp(40px,7.6vw,110px)
@@ -199,11 +199,18 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
               {index.map((row, i) => (
                 <div
                   key={row.letter}
-                  className="dgp__indexrow dao-fade"
+                  className="dgp__indexrow"
                   style={{ ["--d" as string]: `${i * 80}ms` }}
                 >
-                  <span className="dgp__letter">{row.letter}</span>
-                  <span className="dgp__indexname">{row.name}</span>
+                  {/* D - the category letter registers, the name follows in C.
+                      --ls is 0em: the letter carries no designed tracking, so
+                      the settle closes to zero rather than inventing spacing. */}
+                  <span className="dgp__letter mo-d" style={{ ["--ls" as string]: "0em" }}>
+                    {row.letter}
+                  </span>
+                  <span className="dgp__indexname mo-c" style={{ ["--d" as string]: "80ms" }}>
+                    {row.name}
+                  </span>
                   {row.desc && <span className="dgp__indexdesc">{t(row.desc, locale)}</span>}
                 </div>
               ))}

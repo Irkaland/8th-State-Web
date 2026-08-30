@@ -96,7 +96,10 @@ export default async function WorkPage({
           <div className="dwk__head" style={{ position: "relative" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div className="dwk__title-row">
-                <h1 className="dwk__title">{up(m.nav.work)}</h1>
+                {/* A - masked reveal, route-entry scale */}
+                <h1 className="dwk__title mo-a mo-a--entry">
+                  <span>{up(m.nav.work)}</span>
+                </h1>
                 <span
                   className="dao-cover__ka"
                   lang={locale === "en" ? "ka" : "en"}
@@ -105,7 +108,7 @@ export default async function WorkPage({
                   {locale === "en" ? "ნამუშევრები" : "WORK"}
                 </span>
               </div>
-              <span className="dwk__count">
+              <span className="dwk__count mo-c" style={{ ["--d" as string]: "120ms" }}>
                 {up(w.archive)} - {up(format(w.projectsShown, { count: filtered.length }))}
               </span>
               {/* §17: arriving through a Related Work link must be legible. The

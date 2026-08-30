@@ -52,7 +52,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
 
         <InView className="dct__grid" threshold={0.05}>
           <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-            <span className="dao-kicker dao-fade" style={{ color: "rgba(242,237,227,.55)" }}>
+            <span className="dao-kicker mo-f" style={{ color: "rgba(242,237,227,.55)" }}>
               {up(R.kicker)}
             </span>
             <h1 className="dct__title">

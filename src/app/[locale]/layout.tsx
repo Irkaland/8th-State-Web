@@ -167,6 +167,26 @@ export default async function LocaleLayout({
       className={`${georgian.variable} ${adevas.variable} ${optika.variable} ${glacier.variable} ${sanet.variable} ${caveat.variable}`}
     >
       <body>
+        {/* Text Motion V3 §24/§41 - the reveal runtime's own switch, set before
+            first paint.
+
+            Every hidden pre-state in dao-motion.css is scoped to this
+            attribute, so two things are true by construction. With scripting
+            off, unavailable or broken, the attribute never lands and the page
+            renders in its FINAL state - no heading is ever left at opacity 0
+            waiting for a class that is not coming. And when the reader asks for
+            reduced motion the attribute is withheld, so they get final states
+            with no transition at all rather than a shortened one.
+
+            It is inline and synchronous on purpose: an attribute set after
+            hydration would show the settled page and then animate it. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches)' +
+              'document.documentElement.setAttribute("data-dao-motion","")}catch(e){}',
+          }}
+        />
         <a href="#main" className="skip-link">
           {m.common.skipToContent}
         </a>
