@@ -245,24 +245,11 @@ describe("05 the favicon is the red brandbook sun", () => {
 
 /* ------------------------------------------------- 06 the Lab Work slash -- */
 
-describe("06 the Studio Lab filter separator", () => {
-  it("is removed exactly where the row wraps, and leaves no gap behind", () => {
-    // the INDENTED occurrence is the one inside a media query
-    const at = routes.indexOf("\n  .dlb__filtersep {");
-    expect(at, "the separator is hidden somewhere").toBeGreaterThan(-1);
-    // measured: the row is one line at 560 in both locales and wraps below it
-    expect(routes.lastIndexOf("@media", at)).toBe(
-      routes.lastIndexOf("@media (max-width: 560px)", at),
-    );
-    // display:none, not visibility/colour - a hidden flex item takes no gap
-    expect(routes.slice(at, routes.indexOf("\n  }", at))).toContain("display: none");
-  });
-
-  it("keeps a real space between LAB WORK and its arrow", () => {
-    // the link is inline-flex, which collapses the whitespace in the markup
-    expect(rule(routes, ".dlb__labworklink {")).toMatch(/gap:\s*0?\.\d+em/);
-  });
-});
+/* REMOVED: "06 the Studio Lab filter separator".
+   The Lab field-notes page it belonged to - filter row, LAB WORK link and
+   all - is superseded by the approved Studio Lab design, which has neither a
+   filter row nor a separator to hide. The Lab's own guards live in
+   tests/unit/studio-lab.test.ts. */
 
 /* ------------------------------------------------ 07 the burger menu size - */
 

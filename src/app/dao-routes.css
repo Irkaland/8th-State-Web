@@ -20,7 +20,8 @@ html:has(.dlg),
 html:has(.dgp__cover) {
   background: var(--dao-paper);
 }
-html:has(.dlb) {
+html:has(.dsl),
+html:has(.dsc) {
   background: var(--dao-green);
 }
 
@@ -1972,359 +1973,1614 @@ html:has(.dlb) {
 }
 
 /* ============================================================
-   /studio-lab - experimental botanical room (4b)
+   /studio-lab + /studio-lab/[course] - the approved Lab system
    ============================================================ */
 
-.dlb {
-  background: var(--dao-green);
-  /* ink text on the olive field (§07) - cream no longer reaches contrast */
-  color: var(--dao-ink);
-}
-.dlb__cover {
-  position: relative;
-  padding: 40px var(--dao-gutter) 140px;
-  /* §03B: this is what crops the oversized stem at the right edge. The hero had
-     no containment of its own and relied on an ancestor; making it explicit is
-     what keeps a negatively-offset decoration from ever widening the document.
-     overflow-x only, deliberately: plain `hidden` would also cut the stem with
-     a hard horizontal line at the cover's bottom edge. */
-  overflow-x: clip;
-}
-/* §02: same recession as the Home act - the rose drops to a background
-   density so the STUDIO LAB title dominates. Artwork, colour, corner and scale
-   unchanged. */
-.dlb__rose {
-  position: absolute;
-  left: -80px;
-  bottom: -60px;
-  width: clamp(240px, 39vw, 560px);
-  aspect-ratio: 1;
-  background: rgba(242, 237, 227, 0.14);
-  --m: url("/assets/graphics/floral-rose.webp");
-}
-/* §10: the two botanicals on the right - the grown stem and the small wreath
-   below it - are replaced by ONE brandbook symbol, the open-winged bird from the
-   SYMBOLS sheet. Same faded, printed integration the botanicals had: cream, low
-   density, cropped by .dlb__cover's overflow. Sized to have presence without
-   competing with the STUDIO LAB title or the intro copy beside it, and turned a
-   few degrees so it reads as placed rather than centred. */
-.dlb__bird {
-  position: absolute;
-  right: clamp(-70px, -3vw, -10px);
-  top: clamp(56px, 8vw, 130px);
-  width: clamp(180px, 27vw, 400px);
-  aspect-ratio: 296 / 295;
-  background: rgba(242, 237, 227, 0.4);
-  --m: url("/assets/graphics/bb-bird-open.webp");
-  transform: rotate(-6deg);
-}
-/* §03A: the small yellow bloom is removed outright, rule and element both.
-   §10: and so is .dlb__wreath - it was positioned relative to the grown stem
-   that has now been replaced, so it had nothing left to sit against. The hero
-   carries one symbol on the right, not a scatter. */
+/* The Lab kit (textures, rules, marks, index) is defined once with Act 05 in
+   dao.css, because the homepage section and these routes are the same system.
+   What lives here is the composition: how the sheet lays its sections out
+   above and below the 760px break the handoff documents.
 
-.dlb__title {
-  font-family: var(--dao-f-display);
-  font-size: clamp(62px, 10.4vw, 150px);
-  line-height: 0.96;
-  color: var(--dao-ink);
-}
-.dlb__copy {
-  font-size: clamp(12.5px, 1.2vw, 17px);
-  line-height: 1.7;
-  color: rgba(19, 18, 16, 0.82);
-  max-width: 520px;
-  text-wrap: pretty;
-}
-.dlb__coverlinks {
-  display: flex;
-  gap: 26px;
-  font-weight: 600;
-  font-size: 10.5px;
-  letter-spacing: 0.26em;
-  color: var(--dao-ink);
-  flex-wrap: wrap;
-}
-.dlb__coverlinks a {
-  color: var(--dao-ink);
-}
-.dlb__coverlinks a:hover {
-  color: rgba(19, 18, 16, 0.6);
-}
-/* v7 #10 - three equal Field Notes filters + the separate LAB WORK link */
-.dlb__filterrow {
-  display: flex;
-  gap: 22px;
-  align-items: baseline;
-  flex-wrap: wrap;
-  font-weight: 600;
-  font-size: 10.5px;
-  letter-spacing: 0.26em;
-}
-.dlb__filter {
+   Note the two breakpoints are NOT the same number. The Lab pages recompose at
+   760px; the homepage act recomposes at 900px. That is what the approved
+   deliverables specify - each was designed against its own container - so each
+   keeps its own break rather than being averaged into one. */
+
+.dsl,
+.dsc {
   position: relative;
-  background: none;
-  border: 0;
-  padding: 0 0 7px;
-  min-height: 44px;
+  overflow: hidden;
+}
+
+/* the content layer sits above the ground. This is named per child rather
+   than written as `> *`, because a blanket child selector outranks the
+   .dsl-weave / .dsl-grain rules and would drop the texture stack out of its
+   absolute placement and into the flow. */
+.dsl > section,
+.dsl > footer,
+.dsc > section,
+.dsc > footer,
+.dsc__mast,
+.dsc__mastrule {
+  position: relative;
+  z-index: 1;
+}
+
+.dsl section,
+.dsc section {
+  position: relative;
+  padding: var(--lab-pad) var(--lab-gutter);
+}
+
+/* ---- section head: NN — LABEL / context, pencil rule beneath ---------- */
+
+.dsl-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.6);
+}
+
+:lang(ka) .dsl-head {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.12em;
+}
+
+.dsl-head__h {
+  display: inline;
+  margin: 0;
   font: inherit;
   letter-spacing: inherit;
-  color: rgba(19, 18, 16, 0.62);
-  cursor: pointer;
-  transition: color 240ms var(--dao-ease-ui);
 }
-.dlb__filter:hover,
-.dlb__filter:focus-visible {
+
+.dsl-head__r {
+  text-align: right;
+}
+
+.dsl-head__rule {
+  margin-top: 14px;
+}
+
+/* ---- media figure: a contractual ratio and its caption row ------------ */
+
+.dsl-fig {
+  margin: 0;
+}
+
+.dsl-fig__slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: var(--ar);
+  padding: 16px;
+  border: 1px dashed rgb(19 18 16 / 0.32);
+}
+
+.dsl-fig__pending {
+  max-width: 24ch;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  line-height: 1.8;
+  letter-spacing: 0.24em;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.5);
+}
+
+:lang(ka) .dsl-fig__pending {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+.dsl-fig__cap {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 10px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+:lang(ka) .dsl-fig__cap {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+/* ---- shared row / cta atoms ------------------------------------------ */
+
+.dsl__meta {
+  display: flex;
+  gap: clamp(24px, 3vw, 56px);
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+}
+
+.dsl__meta > span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsl__metak {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+.dsl__pre {
+  white-space: pre-line;
+}
+
+.is-tbd {
+  color: rgb(19 18 16 / 0.45);
+}
+
+.dsl__ctaquiet {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: rgb(19 18 16 / 0.72);
+  border-bottom: 1px solid rgb(19 18 16 / 0.4);
+  padding-bottom: 7px;
+}
+
+.dsl__ctaquiet:hover,
+.dsl__ctaquiet:focus-visible {
   color: var(--dao-ink);
 }
-/* §08: re-weighted with the shared .dao-strike base */
-.dlb__filter .dao-strike {
-  background: var(--dao-yellow);
-  bottom: 0;
-  height: 4px;
-}
-.dlb__filter[aria-pressed="true"] {
-  color: var(--dao-ink);
-}
-.dlb__filter[aria-pressed="true"] .dao-strike {
-  transform: scaleX(1);
-}
-.dlb__filtersep {
-  color: rgba(19, 18, 16, 0.3);
-}
-/* §Refinement 06: the slash separates the three Field Notes filters from the
-   LAB WORK route, which it can only do while the row is ONE line. Measured, the
-   row still fits at 560 in both locales and wraps below it - and once it wraps
-   the slash is no longer between anything: it either trails the filters or, on
-   a 390 phone, leads the next line, where it reads as a stray character in
-   front of "LAB WORK →". So it is removed exactly where it stops separating.
-   display:none, not a colour or a width: a hidden flex item takes no gap
-   either, so nothing is left behind where it was. */
-@media (max-width: 560px) {
-  .dlb__filtersep {
-    display: none;
-  }
-}
-.dlb__labworklink {
-  color: var(--dao-ink);
-  min-height: 44px;
+
+.dsl__regcta {
   display: inline-flex;
   align-items: center;
-  /* inline-flex collapses the space between the label and its arrow, so the
-     gap has to be declared: without it the row reads "LAB WORK→" */
-  gap: 0.3em;
-}
-.dlb__labworklink:hover {
-  color: rgba(19, 18, 16, 0.6);
-}
-/* whole-card interaction: lift 2px, deeper shadow, tinted marker (400ms
-   recompose on filter change) */
-.dlb__note--card {
-  border: 0;
-  text-align: left;
-  cursor: pointer;
-  animation: dao-caption-in 400ms var(--dao-ease-ui) backwards;
-  animation-delay: var(--d, 0ms);
-  transition:
-    transform 200ms var(--dao-ease-micro),
-    box-shadow 200ms var(--dao-ease-micro);
-}
-.dlb__note--card:hover,
-.dlb__note--card:focus-visible {
-  transform: translateY(-2px) rotate(0.2deg) !important;
-  box-shadow: 0 20px 44px rgba(19, 18, 16, 0.32);
-}
-.dlb__notedot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: var(--tint, var(--dao-mint));
-  margin-right: 7px;
-  transition: background-color 240ms ease;
-}
-.dlb__notesgrid--filtered {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  align-items: start;
-}
-@media (max-width: 720px) {
-  .dlb__notesgrid--filtered {
-    grid-template-columns: 1fr;
-  }
-}
-.dlb__notes {
-  position: relative;
-  background: var(--dao-paper);
+  align-self: flex-start;
+  gap: 18px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgb(19 18 16 / 0.65);
   color: var(--dao-ink);
-  padding: 80px var(--dao-gutter) 90px;
+  transition: gap 240ms ease;
 }
-.dlb__noteshead {
+
+.dsl__regcta:hover,
+.dsl__regcta:focus-visible {
+  gap: 28px;
+  color: var(--dao-ink);
+}
+
+.dsl__lect {
+  font-size: 12.5px;
+  color: rgb(19 18 16 / 0.8);
+}
+
+/* ---- §01 hero -------------------------------------------------------- */
+
+.dsl__hero {
+  min-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.dsl__mast {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: clamp(16px, 2.4vh, 26px) var(--lab-gutter) 14px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.72);
+  /* nowrap is the design; the wrap only engages where the two labels cannot
+     share a line - at and below 390 - and the right one would otherwise clip */
+  flex-wrap: wrap;
+  row-gap: 6px;
+  white-space: nowrap;
+}
+
+:lang(ka) .dsl__mast,
+:lang(ka) .dsc__mast {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+.dsl__mastr {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dsl__mastrule,
+.dsc__mastrule {
+  width: calc(100% - 2 * var(--lab-gutter));
+  margin: 0 auto;
+}
+
+.dsl__heroorn {
+  position: absolute;
+  right: -70px;
+  bottom: -40px;
+  z-index: 0;
+  width: clamp(280px, 26vw, 400px);
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.dsl__herobody {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6vw;
+  padding: clamp(40px, 8vh, 88px) clamp(24px, 3.3vw, 48px) clamp(40px, 8vh, 80px)
+    clamp(20px, 2.8vw, 40px);
+}
+
+.dsl__lede {
+  flex: 5;
+  min-width: min(100%, 380px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 4.5vh, 44px);
+}
+
+.dsl__title {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(68px, 8.4vw, 124px);
+  line-height: 0.92;
+  letter-spacing: -0.005em;
+}
+
+.dsl__title span {
+  display: block;
+}
+
+.dsl__copy {
+  margin: 0;
+  max-width: 400px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.86);
+  text-wrap: pretty;
+}
+
+.dsl__heroctas {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.dsl__herorows {
+  flex: 6;
+  min-width: min(100%, 320px);
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+}
+
+.dsl__herorow {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: clamp(20px, 3.2vh, 32px) 4px;
+  color: var(--dao-ink);
+  transition: padding-left 240ms ease;
+}
+
+.dsl__herorow:hover,
+.dsl__herorow:focus-visible {
+  padding-left: 12px;
+  color: var(--dao-ink);
+}
+
+.dsl__rowno {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dsl__rowtext {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.dsl__rowname {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(19px, 1.7vw, 26px);
+  letter-spacing: 0.2em;
+}
+
+:lang(ka) .dsl__rowname {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dsl__rowsub {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.62);
+}
+
+.dsl__heroindex {
+  display: flex;
+  gap: 14px 26px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 20px 4px 0;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.55);
+  white-space: nowrap;
+}
+
+/* ---- §02 the lab ----------------------------------------------------- */
+
+.dsl__about {
+  padding-block: clamp(56px, 10vh, 110px);
+}
+
+.dsl__aboutgrid {
+  display: flex;
+  gap: clamp(36px, 6vw, 100px);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-top: clamp(36px, 6vh, 64px);
+}
+
+.dsl__aboutmain {
+  position: relative;
+  flex: 7;
+  min-width: min(100%, 340px);
+}
+
+.dsl__statement {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-size: clamp(28px, 3.2vw, 46px);
+  line-height: 1.25;
+  max-width: 21em;
+  text-wrap: pretty;
+}
+
+.dsl__hand {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 34px;
+  margin-left: clamp(0px, 4vw, 60px);
+  transform: rotate(-6deg);
+}
+
+.dsl__handtext {
+  font-family: var(--f-caveat), cursive;
+  font-size: 21px;
+  line-height: 1.08;
+  text-align: center;
+  color: rgb(19 18 16 / 0.6);
+}
+
+.dsl__handtext span {
+  display: block;
+}
+
+.dsl__aboutside {
+  flex: 4;
+  min-width: min(100%, 300px);
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.dsl__keywords {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  margin: 0;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  color: rgb(19 18 16 / 0.72);
+}
+
+:lang(ka) .dsl__keywords {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+/* ---- §03 disciplines ------------------------------------------------- */
+
+.dsl__disc {
+  padding-block: clamp(40px, 7vh, 80px);
+}
+
+.dsl__discrow {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(18px, 3vw, 44px);
+  flex-wrap: wrap;
+  padding: clamp(28px, 4.5vh, 46px) 4px;
+  color: var(--dao-ink);
+  transition: padding-left 240ms ease;
+}
+
+.dsl__discrow:hover,
+.dsl__discrow:focus-visible {
+  padding-left: 14px;
+  color: var(--dao-ink);
+}
+
+.dsl__discno {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dsl__discname {
+  flex: 1;
+  min-width: min(100%, 280px);
+  font-family: var(--dao-f-display);
+  font-size: clamp(40px, 5vw, 74px);
+  line-height: 1;
+}
+
+.dsl__discmeta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 240px;
+  max-width: 300px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: right;
+  color: rgb(19 18 16 / 0.68);
+}
+
+.dsl__discnote {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+/* ---- §04 current program --------------------------------------------- */
+
+.dsl__programorn {
+  position: absolute;
+  right: -110px;
+  top: -40px;
+  z-index: 0;
+  width: clamp(180px, 18vw, 280px);
+  opacity: 0.14;
+  transform: rotate(7deg);
+  pointer-events: none;
+}
+
+.dsl__programtitle {
+  margin: clamp(22px, 4vh, 40px) 0 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(42px, 5.4vw, 80px);
+  line-height: 0.95;
+}
+
+.dsl__cols,
+.dsl__prow {
+  display: grid;
+  grid-template-columns: 40px minmax(200px, 1fr) minmax(130px, 170px) minmax(130px, 200px) 132px;
+  gap: clamp(12px, 1.6vw, 22px);
+  align-items: baseline;
+}
+
+.dsl__cols {
+  padding: 34px 4px 12px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+.dsl__prow {
+  padding: clamp(22px, 3.6vh, 36px) 4px;
+  color: var(--dao-ink);
+  transition: padding-left 240ms ease;
+}
+
+.dsl__prow:hover,
+.dsl__prow:focus-visible {
+  padding-left: 14px;
+  color: var(--dao-ink);
+}
+
+.dsl__prno {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dsl__prname {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dsl__prtitle {
+  font-family: var(--dao-f-display);
+  font-size: clamp(24px, 2.3vw, 34px);
+  line-height: 1.05;
+}
+
+.dsl__prdisc {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dsl__prlect {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgb(19 18 16 / 0.8);
+}
+
+.dsl__prfmt {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.75);
+}
+
+.dsl__prreg {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: end;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+}
+
+.dsl__prreg .dsl-arrow {
+  width: 30px;
+  height: 10px;
+  opacity: 0.7;
+}
+
+/* the 3-line mobile entry: hidden until the composition changes */
+.dsl__prmeta {
+  display: none;
+}
+
+.dsl__profoot {
+  margin: 26px 4px 0;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+:lang(ka) .dsl__profoot,
+:lang(ka) .dsl__heroindex,
+:lang(ka) .dsl__cols,
+:lang(ka) .dsl__prdisc,
+:lang(ka) .dsl__discnote {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+/* ---- §05 featured course --------------------------------------------- */
+
+.dsl__featgrid {
+  display: flex;
+  gap: clamp(32px, 5vw, 80px);
+  flex-wrap: wrap-reverse;
+  align-items: flex-end;
+  margin-top: clamp(32px, 5vh, 56px);
+}
+
+.dsl__featmedia {
+  flex: 4;
+  min-width: min(100%, 300px);
+}
+
+.dsl__featbody {
+  flex: 6;
+  min-width: min(100%, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(22px, 3.6vh, 34px);
+}
+
+.dsl__feattitle {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(34px, 4vw, 60px);
+  line-height: 1.02;
+  max-width: 12em;
+}
+
+.dsl__featindex {
+  display: flex;
+  flex-direction: column;
+}
+
+.dsl__featrow {
   display: flex;
   align-items: baseline;
   gap: 20px;
-  flex-wrap: wrap;
+  padding: 15px 2px;
 }
-/* in-page section titles - DISPLAY role */
-.dlb__notestitle {
-  font-family: var(--dao-f-display);
-  font-size: clamp(34px, 3.9vw, 56px);
-  /* darkened lab green on cream - the raw olive fails 3:1 at display size */
-  color: var(--dao-green-ink);
+
+.dsl__featn {
+  min-width: 30px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: rgb(19 18 16 / 0.5);
 }
-.dlb__notesgrid {
-  position: relative;
-  margin-top: 50px;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: 44px;
-  align-items: start;
+
+.dsl__featt {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.22em;
 }
-.dlb__note {
-  padding: 14px 14px 70px;
+
+.dsl__featnote {
+  margin-left: auto;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: right;
+  color: rgb(19 18 16 / 0.55);
 }
-.dlb__note .dlb__noteimg {
-  position: relative;
-  display: block;
-  aspect-ratio: 4 / 4.4;
-  background: #d8d2c6 url("/assets/textures/canvas-patch.webp");
-  background-size: cover;
-  overflow: hidden;
+
+/* ---- §06 portfolio --------------------------------------------------- */
+
+.dsl__folioorn {
+  position: absolute;
+  left: -70px;
+  bottom: -50px;
+  z-index: 0;
+  width: clamp(160px, 16vw, 240px);
+  opacity: 0.12;
+  transform: rotate(-14deg);
+  pointer-events: none;
 }
-.dlb__note--card .dlb__notecap {
-  position: relative;
-  left: auto;
-  bottom: auto;
-  margin-top: 14px;
+
+.dsl__foliogrid,
+.dsl__cinemagrid {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: clamp(32px, 5vw, 80px);
+  flex-wrap: wrap;
+  margin-top: clamp(32px, 5vh, 56px);
+}
+
+.dsl__cinemagrid {
   align-items: flex-start;
 }
-.dlb__noteimg img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.dlb__notecap {
-  position: absolute;
-  left: 16px;
-  bottom: 18px;
+
+.dsl__foliolede,
+.dsl__cinemalede {
+  flex: 5;
+  min-width: min(100%, 300px);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-/* §05: the study card title. All three cards render through this one class in
-   LabFieldNotes, so this is the whole set - no per-card override. The LAB-0n
-   reference line (.dlb__noteid) and the card image are untouched. */
-.dlb__notename {
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-editorial);
-  font-size: 15px;
-  color: var(--dao-ink);
-}
-.dlb__noteid {
-  font-weight: 500;
-  font-size: 8.5px;
-  letter-spacing: 0.2em;
-  color: var(--dao-green-ink);
-  text-transform: uppercase;
-}
-.dlb__notestar {
-  position: absolute;
-  right: -14px;
-  top: -14px;
-  width: 34px;
-  height: 34px;
-  background: var(--dao-red);
-  --m: url("/assets/graphics/star.webp");
-}
-.dlb__annotation {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 30px;
-}
-.dlb__work {
-  position: relative;
-  padding: 90px var(--dao-gutter) 150px;
-}
-.dlb__workgrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
-  margin-top: 50px;
 }
-.dlb__workframe {
-  position: relative;
-  aspect-ratio: 440 / 420;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-  background: #0e4d3a url("/assets/textures/moss-patch.webp") center/280px;
-  overflow: hidden;
-}
-.dlb__workframe:nth-child(1) {
-  transform: rotate(-0.8deg);
-}
-.dlb__workframe:nth-child(2) {
-  transform: rotate(0.6deg);
-  top: 36px;
-}
-.dlb__workframe:nth-child(3) {
-  transform: rotate(-0.5deg);
-}
-.dlb__workname {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
+
+.dsl__foliotitle,
+.dsl__cinematitle {
+  margin: 0;
   font-family: var(--dao-f-display);
-  font-size: 18px;
-  color: var(--dao-yellow);
+  font-weight: 400;
+  font-size: clamp(34px, 4vw, 60px);
+  line-height: 1.02;
 }
-.dlb__collab {
-  border-top: 1px solid rgba(19, 18, 16, 0.3);
-  margin-top: 90px;
-  padding-top: 34px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-/* lab collaboration copy - medium editorial copy, so strong Optika rather than the
-   display face (§02) */
-.dlb__collabtext {
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-editorial);
-  font-size: clamp(22px, 2.4vw, 34px);
-  line-height: 1.3;
-  color: var(--dao-ink);
-  max-width: 640px;
+
+.dsl__foliocopy,
+.dsl__cinemacopy {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.86);
   text-wrap: pretty;
 }
-.dlb__ticker {
+
+.dsl__steps,
+.dsl__frames {
+  position: relative;
+  flex: 6;
+  min-width: min(100%, 300px);
+}
+
+.dsl__step,
+.dsl__frame {
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  padding: 15px 2px;
+}
+
+.dsl__step {
+  padding: 16px 2px;
+}
+
+.dsl__stepn {
+  min-width: 34px;
+  font-family: var(--f-caveat), cursive;
+  font-size: 22px;
+  color: rgb(19 18 16 / 0.55);
+  transform: rotate(-4deg);
+}
+
+.dsl__stept,
+.dsl__framet {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(15px, 1.3vw, 19px);
+  letter-spacing: 0.22em;
+}
+
+:lang(ka) .dsl__stept,
+:lang(ka) .dsl__framet,
+:lang(ka) .dsl__featt {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.06em;
+}
+
+.dsl__steparrow {
+  margin-left: auto;
+  width: 34px;
+  height: 10px;
+  opacity: 0.45;
+}
+
+.dsl__framen {
+  min-width: 52px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+.dsl__folionote {
   position: absolute;
-  bottom: 56px;
+  right: 6px;
+  bottom: -44px;
+  font-family: var(--f-caveat), cursive;
+  font-size: 19px;
+  color: rgb(19 18 16 / 0.55);
+  transform: rotate(-5deg);
+}
+
+/* ---- §07 cinema ------------------------------------------------------ */
+
+.dsl__cinemarow {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.dsl__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border: 1px solid rgb(19 18 16 / 0.55);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  transform: rotate(-2deg);
+}
+
+/* ---- §08 the wider lab ----------------------------------------------- */
+
+.dsl__widerorn {
+  position: absolute;
+  right: -60px;
+  top: 40px;
+  z-index: 0;
+  width: clamp(140px, 14vw, 210px);
+  opacity: 0.11;
+  pointer-events: none;
+}
+
+.dsl__widertitle {
+  margin: clamp(22px, 4vh, 40px) 0 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(42px, 5.4vw, 80px);
+  line-height: 0.95;
+  max-width: 14em;
+}
+
+.dsl__ecolist {
+  margin-top: clamp(28px, 5vh, 48px);
+}
+
+.dsl__eco {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(20px, 3vw, 44px);
+  flex-wrap: wrap;
+  padding: clamp(24px, 4vh, 40px) 2px;
+}
+
+.dsl__ecot {
+  min-width: min(60%, 320px);
+  font-family: var(--dao-f-display);
+  font-size: clamp(24px, 2.6vw, 38px);
+  line-height: 1;
+}
+
+.dsl__ecod {
+  flex: 1;
+  min-width: min(100%, 280px);
+  max-width: 520px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgb(19 18 16 / 0.8);
+  text-wrap: pretty;
+}
+
+.dsl__ecotag {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-align: right;
+  color: rgb(19 18 16 / 0.5);
+}
+
+/* ---- §09 lecturers --------------------------------------------------- */
+
+.dsl__facgrid {
+  display: flex;
+  gap: clamp(28px, 4vw, 64px);
+  flex-wrap: wrap;
+  margin-top: clamp(32px, 5vh, 56px);
+}
+
+.dsl__fac {
+  flex: 1;
+  min-width: min(100%, 250px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dsl__facfig .dsl-fig__slot {
+  width: min(100%, 230px);
+}
+
+.dsl__facfig .dsl-fig__cap {
+  max-width: min(100%, 230px);
+  letter-spacing: 0.28em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dsl__facname {
+  font-family: var(--dao-f-display);
+  font-size: clamp(26px, 2.4vw, 36px);
+  line-height: 1.05;
+}
+
+.dsl__facbio {
+  max-width: 300px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgb(19 18 16 / 0.7);
+}
+
+.dsl__faclink {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 12px;
+  margin-top: 2px;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: var(--dao-ink);
+  transition: gap 240ms ease;
+}
+
+.dsl__faclink:hover,
+.dsl__faclink:focus-visible {
+  gap: 18px;
+  color: var(--dao-ink);
+}
+
+.dsl__faclink .dsl-arrow {
+  width: 26px;
+  height: 9px;
+  opacity: 0.7;
+}
+
+/* ---- §10 registration ------------------------------------------------ */
+
+.dsl__register {
+  padding-block: clamp(56px, 11vh, 130px);
+}
+
+.dsl__registerorn {
+  position: absolute;
+  left: -100px;
+  bottom: -120px;
+  z-index: 0;
+  width: clamp(240px, 24vw, 360px);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.dsl__reggrid {
+  display: flex;
+  gap: clamp(32px, 6vw, 100px);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-top: clamp(32px, 6vh, 60px);
+}
+
+.dsl__regmain {
+  flex: 6;
+  min-width: min(100%, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 4vh, 38px);
+}
+
+.dsl__regtitle {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(48px, 6.4vw, 96px);
+  line-height: 0.95;
+}
+
+.dsl__regcopy {
+  margin: 0;
+  max-width: 420px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.86);
+  text-wrap: pretty;
+}
+
+.dsl__regside {
+  flex: 5;
+  min-width: min(100%, 280px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dsl__regask {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+.dsl__regfields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: rgb(19 18 16 / 0.78);
+}
+
+.dsl__regnote {
+  margin-top: 6px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: rgb(19 18 16 / 0.45);
+}
+
+/* ---- §11 footer index ------------------------------------------------ */
+
+.dsl__foot,
+.dsc__foot {
+  position: relative;
+  padding: 0;
+}
+
+.dsl__footrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 20px var(--lab-gutter) 26px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+:lang(ka) .dsl__footrow {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dsl__footlink {
+  color: rgb(19 18 16 / 0.7);
+}
+
+.dsl__footlink:hover,
+.dsl__footlink:focus-visible {
+  color: var(--dao-ink);
+}
+
+/* ============================================================
+   /studio-lab/[course] - the course sheet
+   ============================================================ */
+
+.dsc__mast {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: clamp(16px, 2.4vh, 26px) var(--lab-gutter) 14px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.72);
+  white-space: nowrap;
+}
+
+.dsc__back {
+  color: rgb(19 18 16 / 0.72);
+}
+
+.dsc__back:hover,
+.dsc__back:focus-visible {
+  color: var(--dao-ink);
+}
+
+.dsc__hero {
+  display: flex;
+  gap: clamp(32px, 5vw, 90px);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding-block: clamp(36px, 6.5vh, 72px) 0;
+}
+
+.dsc__herobody {
+  flex: 6;
+  min-width: min(100%, 340px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(22px, 3.6vh, 34px);
+}
+
+.dsc__kicker {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgb(19 18 16 / 0.6);
+}
+
+.dsc__title {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(40px, 5.6vw, 84px);
+  line-height: 0.98;
+  max-width: 10em;
+  text-wrap: pretty;
+}
+
+.dsc__blurb {
+  margin: 0;
+  max-width: 460px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.86);
+  text-wrap: pretty;
+}
+
+.dsc__heromedia {
+  flex: 5;
+  min-width: min(100%, 300px);
+}
+
+.dsc__two {
+  display: flex;
+  gap: clamp(32px, 5vw, 90px);
+  flex-wrap: wrap;
+}
+
+.dsc__col {
+  flex: 1;
+  min-width: min(100%, 300px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dsc__collabel {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgb(19 18 16 / 0.6);
+}
+
+.dsc__list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsc__list li {
+  position: relative;
+  padding-left: 21px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgb(19 18 16 / 0.84);
+  text-wrap: pretty;
+}
+
+.dsc__list li::before {
+  content: "";
+  position: absolute;
   left: 0;
-  right: 0;
-  overflow: hidden;
-  border-top: 1px solid rgba(19, 18, 16, 0.3);
-  border-bottom: 1px solid rgba(19, 18, 16, 0.3);
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(19 18 16 / 0.5);
 }
-@media (max-width: 960px) {
-  .dlb__notesgrid {
-    grid-template-columns: 1fr 1fr;
+
+.dsc__programorn {
+  position: absolute;
+  right: -110px;
+  top: 0;
+  z-index: 0;
+  width: clamp(160px, 16vw, 250px);
+  opacity: 0.12;
+  transform: rotate(7deg);
+  pointer-events: none;
+}
+
+.dsc__modules {
+  max-width: 860px;
+}
+
+.dsc__mod {
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  padding: clamp(16px, 2.6vh, 24px) 2px;
+}
+
+.dsc__modn {
+  min-width: 60px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+.dsc__modt {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(14px, 1.25vw, 18px);
+  letter-spacing: 0.2em;
+}
+
+:lang(ka) .dsc__modt {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.06em;
+}
+
+.dsc__modnote {
+  margin-left: auto;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: right;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dsc__hand {
+  display: inline-block;
+  margin-top: 26px;
+  font-family: var(--f-caveat), cursive;
+  font-size: 20px;
+  color: rgb(19 18 16 / 0.55);
+  transform: rotate(-5deg);
+}
+
+.dsc__sheetgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: clamp(20px, 3vw, 44px);
+  margin: clamp(26px, 4.5vh, 44px) 0 0;
+}
+
+.dsc__sheetcell {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.dsc__sheetk {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+.dsc__sheetv {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  white-space: pre-line;
+  color: rgb(19 18 16 / 0.82);
+}
+
+.dsc__register {
+  padding-block: clamp(56px, 10vh, 110px) clamp(48px, 8vh, 80px);
+}
+
+.dsc__registerorn {
+  position: absolute;
+  right: -90px;
+  bottom: -110px;
+  z-index: 0;
+  width: clamp(240px, 24vw, 340px);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.dsc__reggrid {
+  display: flex;
+  gap: clamp(28px, 5vw, 80px);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: clamp(30px, 5vh, 52px);
+}
+
+.dsc__regtitle {
+  flex: 1;
+  min-width: min(100%, 300px);
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(40px, 5.4vw, 78px);
+  line-height: 0.95;
+}
+
+.dsc__regbody {
+  flex: 1;
+  min-width: min(100%, 300px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dsc__regcopy {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.86);
+  text-wrap: pretty;
+}
+
+/* Glacier is a Latin-only face. Every Lab label that can carry Georgian needs
+   the Georgian stack, or the text falls through `sans-serif` to a system font
+   (Sylfaen on Windows) - which is exactly what the Georgian typography guard
+   catches. Selectors whose content is only digits or Latin marks (row numbers,
+   FIG./M./FR. plates) are deliberately left on Glacier. */
+:lang(ka) .dsl-index,
+:lang(ka) .dao-lab__mast,
+:lang(ka) .dsl__metak,
+:lang(ka) .dsl__ctaquiet,
+:lang(ka) .dsl__badge,
+:lang(ka) .dsl__ecotag,
+:lang(ka) .dsl__regask,
+:lang(ka) .dsl__regnote,
+:lang(ka) .dsc__kicker,
+:lang(ka) .dsc__collabel,
+:lang(ka) .dsc__sheetk {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================
+   the Lab below 760px - the approved mobile compositions
+   ============================================================ */
+
+@media (max-width: 759px) {
+  .dsl__mastmid,
+  .dsc__mastmid {
+    display: none;
   }
-}
-@media (max-width: 720px) {
-  .dlb__notesgrid,
-  .dlb__workgrid {
+
+  /* §01 hero: stacked, with full-width discipline rows */
+  .dsl__hero {
+    min-height: 0;
+  }
+
+  .dsl__herobody {
+    flex-direction: column;
+    gap: 0;
+    padding: 4vh 20px 0;
+  }
+
+  .dsl__lede {
+    min-width: 0;
+    gap: 22px;
+  }
+
+  .dsl__title {
+    font-size: 17.5vw;
+  }
+
+  .dsl__copy {
+    max-width: 330px;
+    font-size: 14px;
+  }
+
+  .dsl__heroctas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dsl__cta {
+    gap: 14px;
+    letter-spacing: 0.3em;
+    padding: 8px 0;
+  }
+
+  .dsl__ctaquiet {
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    padding: 4px 0 6px;
+  }
+
+  .dsl__herorows {
+    max-width: none;
+    margin: 3vh 0 4vh;
+  }
+
+  .dsl__herorow {
+    gap: 18px;
+    padding: 17px 2px;
+  }
+
+  .dsl__herorow:hover,
+  .dsl__herorow:focus-visible {
+    padding-left: 2px;
+  }
+
+  .dsl__rowno {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+
+  .dsl__rowtext {
+    gap: 5px;
+  }
+
+  .dsl__rowname {
+    font-size: 17px;
+    letter-spacing: 0.18em;
+  }
+
+  .dsl__rowsub {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .dsl__heroindex {
+    display: none;
+  }
+
+  .dsl .dsl-icon,
+  .dsc .dsl-icon {
+    width: 32px;
+    height: 24px;
+  }
+
+  .dsl .dsl-icon--lg {
+    width: 40px;
+    height: 30px;
+  }
+
+  /* §03 disciplines */
+  .dsl__discname {
+    font-size: clamp(34px, 12vw, 48px);
+    min-width: 100%;
+  }
+
+  .dsl__discmeta {
+    min-width: 100%;
+    max-width: none;
+    text-align: left;
+  }
+
+  .dsl__discrow:hover,
+  .dsl__discrow:focus-visible {
+    padding-left: 4px;
+  }
+
+  /* §04 the program listing recomposes to 3-line entries */
+  .dsl__cols {
+    display: none;
+  }
+
+  .dsl__prow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    padding: 22px 2px;
+  }
+
+  .dsl__prow:hover,
+  .dsl__prow:focus-visible {
+    padding-left: 2px;
+  }
+
+  .dsl__prno,
+  .dsl__prdisc,
+  .dsl__prfmt {
+    display: none;
+  }
+
+  .dsl__prmeta {
+    order: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+    font-family: var(--f-glacier), sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: rgb(19 18 16 / 0.55);
+  }
+
+  .dsl__prname {
+    order: 2;
+    width: 100%;
+  }
+
+  .dsl__prtitle {
+    font-size: 26px;
+    line-height: 1.08;
+    text-wrap: pretty;
+  }
+
+  .dsl__prlect {
+    order: 3;
+    flex: 1;
+    font-size: 12.5px;
+  }
+
+  .dsl__prreg {
+    order: 4;
+    justify-self: auto;
+    margin-left: auto;
+    font-size: 10.5px;
+    letter-spacing: 0.24em;
+  }
+
+  .dsl__prreg .dsl-arrow {
+    width: 26px;
+    height: 9px;
+  }
+
+  /* §09 faculty stacks */
+  .dsl__fac {
+    min-width: 100%;
+  }
+
+  /* §10 registration */
+  .dsl__regfields {
     grid-template-columns: 1fr;
   }
-  .dlb__workframe:nth-child(2) {
-    top: 0;
+
+  /* §11 the index becomes a three-column grid */
+  .dsl .dsl-index,
+  .dsc .dsl-index {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 13px 6px;
+    padding: 16px 14px;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-align: center;
+    white-space: normal;
   }
-  .dlb__wreath {
+
+  .dsl .dsl-index__dot,
+  .dsc .dsl-index__dot {
     display: none;
+  }
+
+  /* the course sheet */
+  .dsc__kicker {
+    gap: 14px;
+    font-size: 10px;
+  }
+
+  .dsc__title {
+    max-width: none;
+  }
+
+  .dsc__modn {
+    min-width: 46px;
+  }
+
+  .dsc__modnote {
+    width: 100%;
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .dsl__folionote {
+    position: static;
+    display: block;
+    margin-top: 22px;
+  }
+
+  .dsl__hand {
+    margin-left: 0;
+  }
+}
+
+/* Reduced motion: the only motion here is the row shift and the arrow drift,
+   and both are removed rather than shortened. */
+@media (prefers-reduced-motion: reduce) {
+  .dsl__herorow,
+  .dsl__discrow,
+  .dsl__prow,
+  .dsl__cta,
+  .dao-lab__row,
+  .dao-lab__cta,
+  .dsl__regcta,
+  .dsl__faclink {
+    transition: none;
   }
 }
 

@@ -470,7 +470,7 @@ describe("typography cleanup - Optika at real weights only", () => {
     ["Services capability titles", ".dsv__name", "var(--dao-f-ui)"],
     ["Studio 'Make something with us.'", ".dst__make", "var(--dao-f-ui)"],
     ["Studio Lab green-card copy", ".dst__lablines", "var(--dao-f-ui)"],
-    ["Studio Lab study card title", ".dlb__notename", "var(--dao-f-ui)"],
+    // the study card went with the field-notes page; the Lab's discipline
   ];
 
   for (const [label, selector, family] of TARGETS) {

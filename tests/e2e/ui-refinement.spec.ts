@@ -329,57 +329,12 @@ test("05 the browser is served the red brandbook sun", async ({ page }) => {
 
 /* ------------------------------------------------- 06 the Lab Work slash -- */
 
-test.describe("06 the Studio Lab filter separator", () => {
-  for (const [label, prefix] of [
-    ["EN", ""],
-    ["KA", "/ka"],
-  ] as const) {
-    test(`is gone wherever the row wraps (${label})`, async ({ page }) => {
-      for (const w of PHONES) {
-        await page.setViewportSize({ width: w, height: 900 });
-        await gotoRoute(page, `${prefix}/studio-lab`);
-        const m = await page.locator(".dlb__filterrow").evaluate((row) => {
-          const sep = row.querySelector(".dlb__filtersep") as HTMLElement | null;
-          const link = row.querySelector(".dlb__labworklink") as HTMLElement;
-          const lr = link.getBoundingClientRect();
-          const arrow = link.querySelector("span")!.getBoundingClientRect();
-          return {
-            // no glyph AND no box: a display:none flex item takes no gap either
-            sepWidth: sep ? sep.getBoundingClientRect().width : 0,
-            sepShown: sep ? getComputedStyle(sep).display !== "none" : false,
-            // the arrow stays on the label's line, with a real space before it
-            arrowOnLine: Math.abs(arrow.top + arrow.height / 2 - (lr.top + lr.height / 2)) < 6,
-            gapBeforeArrow: arrow.left - (lr.right - arrow.width - 0),
-          };
-        });
-        expect(m.sepShown, `@${w} slash hidden`).toBe(false);
-        expect(m.sepWidth, `@${w} slash takes no space`).toBe(0);
-        expect(m.arrowOnLine, `@${w} arrow on the label's line`).toBe(true);
-      }
-    });
-  }
-
-  test("is still doing its job above the wrap", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoRoute(page, "/studio-lab");
-    await expect(page.locator(".dlb__filtersep")).toBeVisible();
-  });
-
-  test("leaves a real space between LAB WORK and its arrow", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await gotoRoute(page, "/studio-lab");
-    const gap = await page.locator(".dlb__labworklink").evaluate((el) => {
-      const arrow = el.querySelector("span")!.getBoundingClientRect();
-      const range = document.createRange();
-      range.setStart(el.firstChild!, 0);
-      range.setEnd(el.firstChild!, el.firstChild!.textContent!.trimEnd().length);
-      return arrow.left - range.getBoundingClientRect().right;
-    });
-    expect(gap, "the arrow must not be jammed against the K").toBeGreaterThan(1);
-  });
-});
-
-/* ----------------------------------------------------- 07 the burger menu -- */
+/* REMOVED: "06 the Studio Lab filter separator".
+   The Lab filter row - RESEARCH / EXPERIMENTS / EDUCATION with its separator
+   and the LAB WORK link beside it - belonged to the field-notes page that the
+   approved Studio Lab design replaces. There is no filter row, and so no
+   separator to hide at a wrap. The approved Lab has one divider system - the
+   drawn pencil rules - and it is guarded in studio-lab.spec.ts. */
 
 test.describe("07 the burger navigation is one scale", () => {
   test("every English label is the same size", async ({ page }) => {

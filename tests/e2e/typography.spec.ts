@@ -47,7 +47,7 @@ test.describe("Typography system - Latin", () => {
 
     for (const [route, sel] of [
       ["/work", ".dwk__title"],
-      ["/studio-lab", ".dlb__title"],
+      ["/studio-lab", ".dsl__title"],
       ["/start-a-project", ".dbr__title"],
       ["/contact", ".dct__title"],
     ] as const) {

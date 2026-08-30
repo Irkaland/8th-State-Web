@@ -163,8 +163,11 @@ test.describe("§04 the botanical assets are the brandbook originals", () => {
       return {
         stem: await load("/assets/graphics/stem.webp"),
         rose: await load("/assets/graphics/floral-rose.webp"),
+        // the homepage act now carries ONE botanical (the approved design
+        // dropped the stem from it); the stem still runs on /studio-lab §04,
+        // and both files are measured for resolution either way
         stemBox: Math.round(
-          document.querySelector(".dao-lab__stem")!.getBoundingClientRect().width,
+          document.querySelector(".dao-lab__orn .dsl-bot")!.getBoundingClientRect().width,
         ),
       };
     });
@@ -525,32 +528,12 @@ test.describe("§10-§12 Studio", () => {
 });
 
 test.describe("§14 / §19 the shared button system", () => {
-  test("WRITE TO THE LAB rests at full brand red", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    const got = await styles(page, ".dlb__collab .dao-chipcta", ["background-color", "color"]);
-    const bg = rgba(got!["background-color"]!);
-    expect(bg.slice(0, 3)).toEqual([...RED]);
-    expect(bg[3], "§14 asks for #d03e26 at rest").toBe(1);
-    expect(contrast(rgba(got!["color"]!), RED)).toBeGreaterThanOrEqual(4.5);
-  });
-
-  test("WRITE TO THE LAB changes state on hover, and never to blue", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    const cta = page.locator(".dlb__collab .dao-chipcta").first();
-    await cta.scrollIntoViewIfNeeded();
-    const bg = () => cta.evaluate((el) => getComputedStyle(el).backgroundColor);
-    const rest = await bg();
-    await cta.hover();
-    await page.waitForFunction(
-      () => document.querySelector(".dlb__collab .dao-chipcta")!.matches(":hover"),
-      null,
-      { timeout: 5000 },
-    );
-    await expect.poll(bg, { timeout: 4000 }).not.toBe(rest);
-    const hov = rgba(await bg());
-    // deepened red, not a shift into the blue
-    expect(hov[0]).toBeGreaterThan(hov[2]);
-  });
+  /* REMOVED: the two WRITE TO THE LAB cases. That red chip CTA lived on the
+     Lab's collaboration block, which the approved Studio Lab design replaces
+     with BEGIN REGISTRATION - a plain underlined call, not a chip. No red chip
+     CTA renders anywhere on the site now, so there is nothing left to measure.
+     The blue half of the shared button system is unchanged and still covered
+     by the cases below. */
 
   for (const sel of [".dct__sendnote", ".dct .dao-chipcta"]) {
     test(`${sel} rests on softened blue and reaches full #2374b3`, async ({ page }) => {

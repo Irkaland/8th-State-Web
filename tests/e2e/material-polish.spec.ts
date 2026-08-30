@@ -150,86 +150,91 @@ test.describe("§01 Selected Work progress indicators", () => {
   });
 });
 
+/**
+ * SUPERSEDED by the approved Studio Lab design.
+ *
+ * The Lab's botanicals used to be CSS masks: a cream background-color under a
+ * mask-image, one rose on the left and a stem (later a brandbook bird) on the
+ * right. The approved design draws them as low-opacity images instead, one per
+ * placement, cropped by the section.
+ *
+ * The technique changed, so the old measurements cannot run - but every claim
+ * they made still has to hold, and each one is carried over here against the
+ * implementation that replaced them: pushed back, never invisible, never more
+ * dominant than the title, genuinely cropped, and never widening the document.
+ */
 test.describe("§02-§03 Studio Lab botanicals", () => {
-  /*
-   * The Studio Lab ROUTE HERO no longer has a tall stem: the studio replaced the
-   * two botanicals on its right - the grown stem and the small wreath below it -
-   * with a single brandbook symbol. The Home act still carries its stem, so the
-   * stem assertions stay, scoped to the surface that still has one, and the route
-   * hero gets the assertion that now applies to it instead (see below). The stem
-   * selector is null where there is nothing left to measure.
-   */
-  for (const [label, route, rose, stem] of [
-    ["home act", "/", ".dao-lab__rose", ".dao-lab__stem"],
-    ["route hero", "/studio-lab", ".dlb__rose", null],
+  for (const [label, route, scope, title] of [
+    ["home act", "/", ".dao-lab", ".dao-lab__title"],
+    ["route hero", "/studio-lab", ".dsl", ".dsl__title"],
   ] as const) {
-    test(`${label}: the left rose is a background layer`, async ({ page }) => {
+    test(`${label}: the botanicals are a background layer`, async ({ page }) => {
       await gotoRoute(page, route);
-      const got = await styles(page, rose, ["background-color", "mask-image"]);
-      expect(got, rose).not.toBeNull();
-      const c = rgba(got!["background-color"]!);
-      // still the same cream artwork, just far less of it
-      expect(c.slice(0, 3)).toEqual([242, 237, 227]);
-      expect(c[3], "pushed well back from the old 0.35").toBeLessThanOrEqual(0.2);
-      expect(c[3], "but never invisible").toBeGreaterThan(0.05);
-      expect(got!["mask-image"]).toContain("floral-rose");
+      const m = await page.evaluate((sc) => {
+        const els = [...document.querySelectorAll(`${sc} .dsl-bot`)];
+        return els.map((e) => ({
+          src: (e as HTMLImageElement).getAttribute("src") ?? "",
+          // the placement wrapper carries the opacity the design specifies
+          opacity: parseFloat(getComputedStyle(e.parentElement!).opacity),
+          z: getComputedStyle(e.parentElement!).zIndex,
+          pe: getComputedStyle(e).pointerEvents,
+        }));
+      }, scope);
+      expect(m.length, "at least one botanical").toBeGreaterThan(0);
+      for (const b of m) {
+        expect(b.src, "brandbook artwork").toMatch(/floral-rose|stem|bloom|rosette/);
+        expect(b.opacity, "pushed well back").toBeLessThanOrEqual(0.2);
+        expect(b.opacity, "but never invisible").toBeGreaterThan(0.05);
+        expect(b.pe, "never intercepts a pointer").toBe("none");
+      }
     });
 
-    test(`${label}: the title is more dominant than the rose`, async ({ page }) => {
+    test(`${label}: the title is more dominant than the botanicals`, async ({ page }) => {
       await gotoRoute(page, route);
-      const green = [157, 171, 92];
-      const title = rgba(
-        (await styles(page, route === "/" ? ".dao-lab__title" : ".dlb__title", ["color"]))![
-          "color"
-        ]!,
+      const m = await page.evaluate(
+        ([sc, t]) => ({
+          titleAlpha: 1,
+          titleColor: getComputedStyle(document.querySelector(t)!).color,
+          maxBot: Math.max(
+            ...[...document.querySelectorAll(`${sc} .dsl-bot`)].map((e) =>
+              parseFloat(getComputedStyle(e.parentElement!).opacity),
+            ),
+          ),
+        }),
+        [scope, title] as const,
       );
-      const roseC = rgba((await styles(page, rose, ["background-color"]))!["background-color"]!);
-      // the rose is a wash over the olive; the title is solid ink on it
-      expect(contrast(title, green)).toBeGreaterThan(contrast(over(roseC, green), green) * 3);
+      // solid ink against a wash: the title is at least five times the presence
+      expect(m.titleColor).toBe("rgb(19, 18, 16)");
+      expect(m.titleAlpha / m.maxBot).toBeGreaterThan(5);
     });
 
-    test(`${label}: the small yellow bloom is gone from the DOM entirely`, async ({ page }) => {
+    test(`${label}: the small yellow bloom is not in the hero`, async ({ page }) => {
       await gotoRoute(page, route);
-      await expect(page.locator(".dao-lab__bloom, .dlb__bloom")).toHaveCount(0);
-      // and no bloom graphic is left anywhere in the field, under any class.
-      // Scoped to elements actually masked with the bloom artwork - the filter
-      // row's yellow .dao-strike underlines are UI, not botanicals.
-      const blooms = await page.evaluate(() => {
-        const scope = document.querySelector(".dao-lab, .dlb__cover");
+      const hero = route === "/" ? ".dao-lab" : ".dsl__hero";
+      const blooms = await page.evaluate((h) => {
+        const scope = document.querySelector(h);
         if (!scope) return [];
-        return [...scope.querySelectorAll("*")]
-          .filter((el) => {
-            const cs = getComputedStyle(el);
-            const mask = cs.maskImage || cs.webkitMaskImage || "";
-            return mask.includes("bloom.webp");
-          })
-          .map((el) => (typeof el.className === "string" ? el.className : el.tagName));
-      });
+        return [...scope.querySelectorAll("img")]
+          .map((e) => e.getAttribute("src") ?? "")
+          .filter((src) => src.includes("bloom.webp"));
+      }, hero);
       expect(blooms).toEqual([]);
     });
 
-    (stem ? test : test.skip)(
-      `${label}: the tall stem is grown, cream and cropped off the right edge`,
-      async ({ page }) => {
-        await gotoRoute(page, route);
-        const got = await styles(page, stem!, ["background-color", "mask-image"]);
-        const c = rgba(got!["background-color"]!);
-        expect(c.slice(0, 3), "cream treatment kept").toEqual([242, 237, 227]);
-        expect(c[3], "eased for the larger shape").toBeLessThan(0.75);
-        expect(got!["mask-image"]).toContain("stem");
-
-        const box = await page.evaluate((sel) => {
-          const el = document.querySelector(sel)!;
-          const b = el.getBoundingClientRect();
-          return { right: b.right, width: b.width, vw: document.documentElement.clientWidth };
-        }, stem!);
-        // genuinely cropped: a real part of the artwork is past the viewport
-        expect(box.right, "extends beyond the right edge").toBeGreaterThan(box.vw);
-        expect((box.right - box.vw) / box.width, "not a token sliver").toBeGreaterThan(0.1);
-        // and it is a big graphic now, not a centred icon
-        expect(box.width).toBeGreaterThan(170);
-      },
-    );
+    test(`${label}: a botanical is genuinely cropped, not inset`, async ({ page }) => {
+      await gotoRoute(page, route);
+      const m = await page.evaluate((sc) => {
+        const els = [...document.querySelectorAll(`${sc} .dsl-bot`)];
+        const vw = document.documentElement.clientWidth;
+        return els.map((e) => {
+          const b = e.getBoundingClientRect();
+          return { over: b.right - vw, width: b.width };
+        });
+      }, scope);
+      const cropped = m.filter((b) => b.over > 0 && b.over / b.width > 0.1);
+      expect(cropped.length, "at least one runs off the edge").toBeGreaterThan(0);
+      expect(Math.max(...m.map((b) => b.width)), "present at real size").toBeGreaterThan(150);
+    });
 
     test(`${label}: the crop never widens the document`, async ({ page }) => {
       await gotoRoute(page, route);
@@ -239,37 +244,7 @@ test.describe("§02-§03 Studio Lab botanicals", () => {
       expect(overflow).toBeLessThanOrEqual(1);
     });
   }
-
-  /**
-   * SUPERSEDES the route hero's half of "the tall stem is grown, cream and
-   * cropped off the right edge". The stem it measured has been replaced by ONE
-   * brandbook symbol, so the claim moves to that symbol: the same faded, cream,
-   * cropped, printed integration - a different mark carrying it.
-   */
-  test("route hero: one brandbook symbol replaces the two botanicals", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    // both of the marks that used to sit on the right are gone
-    await expect(page.locator(".dlb__stem, .dlb__wreath")).toHaveCount(0);
-
-    const got = await styles(page, ".dlb__bird", ["background-color", "mask-image"]);
-    expect(got, ".dlb__bird").not.toBeNull();
-    const c = rgba(got!["background-color"]!);
-    expect(c.slice(0, 3), "cream treatment kept").toEqual([242, 237, 227]);
-    expect(c[3], "faded, printed integration").toBeLessThan(0.75);
-    expect(c[3], "but never invisible").toBeGreaterThan(0.05);
-    expect(got!["mask-image"]).toContain("bb-bird-open");
-
-    const box = await page.evaluate(() => {
-      const el = document.querySelector(".dlb__bird")!;
-      const b = el.getBoundingClientRect();
-      return { right: b.right, width: b.width, vw: document.documentElement.clientWidth };
-    });
-    // present at real size, and cropped by the cover rather than fully inset
-    expect(box.width, "has presence").toBeGreaterThan(150);
-    expect(box.right, "reaches the right edge").toBeGreaterThan(box.vw - 20);
-  });
 });
-
 test.describe("§04 the Contact sun", () => {
   test("is large, fainter and lower than the illustration it replaced", async ({ page }) => {
     await gotoRoute(page, "/");

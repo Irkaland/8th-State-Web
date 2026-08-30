@@ -269,7 +269,16 @@ test.describe("§07-§10 the decoration comes from brandbook assets", () => {
     await gotoRoute(page, "/studio");
     await expect(page.locator(".dst__decor")).toHaveAttribute("aria-hidden", "true");
     await gotoRoute(page, "/studio-lab");
-    await expect(page.locator(".dlb__bird")).toHaveAttribute("aria-hidden", "true");
+    // the Lab's decoration is now its botanicals and drawn marks; the bird went
+    // with the field-notes page. Both are kept out of the accessibility tree.
+    for (const el of await page.locator(".dsl-bot").all()) {
+      await expect(el).toHaveAttribute("alt", "");
+    }
+    expect(
+      await page
+        .locator(".dsl svg")
+        .evaluateAll((els) => els.filter((e) => e.getAttribute("aria-hidden") !== "true").length),
+    ).toBe(0);
     await gotoRoute(page, "/start-a-project");
     await expect(page.locator(".dbr__swallow")).toHaveAttribute("aria-hidden", "true");
   });
@@ -300,50 +309,40 @@ test.describe("§07-§10 the decoration comes from brandbook assets", () => {
     expect(m.bandH).toBeLessThan(320);
   });
 
-  test("the Lab hero carries one symbol where two botanicals were", async ({ page }) => {
+  // SUPERSEDED AGAIN: the Lab hero's one brandbook symbol is now the approved
+  // design's single cropped floral-rose, drawn as a low-opacity image rather
+  // than a masked band. The claim is unchanged - one mark, at real size,
+  // cropped by the hero - only the mark and the technique differ.
+  test("the Lab hero carries one cropped botanical, at real size", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/studio-lab");
-    expect(await page.locator(".dlb__stem").count()).toBe(0);
-    expect(await page.locator(".dlb__wreath").count()).toBe(0);
-    const m = await page.locator(".dlb__bird").evaluate((el) => ({
-      mask: getComputedStyle(el).getPropertyValue("--m").trim(),
+    const hero = page.locator(".dsl__hero .dsl-bot");
+    await expect(hero).toHaveCount(1);
+    const m = await hero.evaluate((el) => ({
+      mask: (el as HTMLImageElement).getAttribute("src") ?? "",
       w: Math.round(el.getBoundingClientRect().width),
+      right: Math.round(el.getBoundingClientRect().right),
+      vw: document.documentElement.clientWidth,
+      opacity: parseFloat(getComputedStyle(el.parentElement!).opacity),
     }));
-    expect(m.mask).toContain("bb-bird-open.webp");
+    expect(m.mask).toContain("floral-rose");
+    expect(m.w, "present at real size").toBeGreaterThan(150);
+    expect(m.right, "cropped by the hero edge").toBeGreaterThan(m.vw);
+    expect(m.opacity, "a wash, not a subject").toBeLessThanOrEqual(0.2);
     // present, but not competing with the title
-    const title = await page.locator(".dlb__title").evaluate((el) => el.getBoundingClientRect());
-    expect(m.w).toBeGreaterThan(150);
-    expect(m.w).toBeLessThan(title.width * 1.2);
+    const title = await page
+      .locator(".dsl__title")
+      .evaluate((el) => el.getBoundingClientRect().width);
+    expect(m.w).toBeLessThan(title * 1.2);
   });
 });
 
-/* ------------------------------------------ §11 WRITE TO THE LAB paper --- */
-
-test.describe("§11 the red CTA is printed paper", () => {
-  test("carries the paper grain and no attached flower", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoRoute(page, "/studio-lab");
-    const btn = page.locator(".dao-btnfill--red").first();
-    await btn.scrollIntoViewIfNeeded();
-    const m = await btn.evaluate((el) => {
-      const before = getComputedStyle(el, "::before");
-      return {
-        bg: getComputedStyle(el).backgroundColor,
-        texture: before.backgroundImage,
-        blend: before.mixBlendMode,
-        glyphs: el.querySelectorAll(".dao-chipcta__glyph").length,
-      };
-    });
-    // still the brand red, now with a surface
-    expect(m.bg).toBe("rgb(208, 62, 38)");
-    expect(m.texture).toContain("paper-grain");
-    expect(m.blend).toBe("multiply");
-    // the bloom that hung off the corner is gone
-    expect(m.glyphs).toBe(0);
-  });
-});
-
-/* ------------------------------------- §12 Georgia Production hierarchy --- */
+/* REMOVED: "§11 the red CTA is printed paper".
+   The only red fill CTA on the site was WRITE TO THE LAB, on the Lab's
+   collaboration block. The approved Studio Lab design replaces that block with
+   BEGIN REGISTRATION - an underlined ink call, not a filled chip - so there is
+   no red button left to measure. The paper-grain treatment itself is unchanged
+   in dao.css and still covered on the surfaces that use it. */
 
 test.describe("§12 GEORGIA PRODUCTION sits on the shared title scale", () => {
   for (const width of [390, 375, 360, 320] as const) {

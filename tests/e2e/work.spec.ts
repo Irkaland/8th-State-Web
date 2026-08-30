@@ -61,25 +61,14 @@ test.describe("Work archive", () => {
     await expect(page).toHaveURL(/\/work\/(?!aom-summer-collection).+/);
   });
 
-  test("v7: Lab filters are three distinct states; LAB WORK stays a route", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    const row = page.locator(".dlb__filterrow");
-    const research = row.getByRole("button", { name: "RESEARCH" });
-    const experiments = row.getByRole("button", { name: "EXPERIMENTS" });
-    const education = row.getByRole("button", { name: "EDUCATION" });
-    await expect(research).toHaveAttribute("aria-pressed", "true");
-
-    await experiments.click();
-    await expect(experiments).toHaveAttribute("aria-pressed", "true");
-    await expect(research).toHaveAttribute("aria-pressed", "false");
-    await expect(page.getByText(/LAB-03 · EXPERIMENT/i)).toBeVisible();
-
-    await education.click();
-    await expect(education).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByText(/LAB-02 · EDUCATION/i)).toBeVisible();
-
-    await page.getByRole("link", { name: /^LAB WORK/i }).click();
+  // SUPERSEDED: the Lab's filter row and LAB WORK link belonged to the
+  // field-notes page the approved Studio Lab design replaces. What still has
+  // to hold from this case is the ROUTE - the archive's own studio-lab
+  // category - so that is what is checked now.
+  test("v7: the studio-lab category is still a real archive route", async ({ page }) => {
+    await gotoRoute(page, "/work?category=studio-lab");
     await expect(page).toHaveURL(/\/work\?category=studio-lab$/);
+    await expect(page.locator(".dwk__title")).toBeVisible();
   });
 
   test("no serious accessibility violations on archive + essay", async ({ page }) => {

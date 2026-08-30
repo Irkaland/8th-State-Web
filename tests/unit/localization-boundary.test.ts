@@ -93,7 +93,9 @@ describe("§21 client components receive slices, never the whole dictionary", ()
     ["StudioLab", "StudioLabMessages"],
     ["ContactAct", "ContactActMessages"],
     ["DaoBrief", "BriefMessages"],
-    ["LabFieldNotes", "LabMessages"],
+    // StudioLab is server-rendered since the approved Lab redesign; it is
+    // listed above because the slice boundary still has to hold for it -
+    // LabFieldNotes went with the field-notes page it belonged to.
     ["TeamContactSheet", "TeamSheetMessages"],
     ["WorkArchive", "WorkArchiveMessages"],
   ];
@@ -103,9 +105,7 @@ describe("§21 client components receive slices, never the whole dictionary", ()
       const src = read(`src/components/dao/${component}.tsx`);
       expect(src, `${component} should import its slice type`).toContain(slice);
       // the whole point: no `: Messages` annotation anywhere in a client file
-      expect(src, `${component} must not take the full dictionary`).not.toMatch(
-        /:\s*Messages\b/,
-      );
+      expect(src, `${component} must not take the full dictionary`).not.toMatch(/:\s*Messages\b/);
     });
   }
 
@@ -118,8 +118,10 @@ describe("§21 client components receive slices, never the whole dictionary", ()
       if (!src.includes('"use client"')) continue;
       if (/:\s*Messages\b/.test(src)) offenders.push(f);
     }
-    expect(offenders, `client components taking the full dictionary: ${offenders.join(", ")}`)
-      .toEqual([]);
+    expect(
+      offenders,
+      `client components taking the full dictionary: ${offenders.join(", ")}`,
+    ).toEqual([]);
   });
 
   it("the always-present chrome slice stays small", () => {
@@ -128,8 +130,10 @@ describe("§21 client components receive slices, never the whole dictionary", ()
     const chrome = Buffer.byteLength(JSON.stringify(chromeMessages(ka)), "utf8");
     const ident = Buffer.byteLength(JSON.stringify(identMessages(ka)), "utf8");
     const full = Buffer.byteLength(JSON.stringify(ka), "utf8");
-    expect(chrome + ident, "global slices should be a small fraction of the dictionary")
-      .toBeLessThan(full * 0.1);
+    expect(
+      chrome + ident,
+      "global slices should be a small fraction of the dictionary",
+    ).toBeLessThan(full * 0.1);
   });
 });
 

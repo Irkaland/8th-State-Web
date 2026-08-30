@@ -633,8 +633,10 @@ const FORMER_TEARS: { route: string; sel: string; edge: "top" | "bottom"; was: s
   { route: "/services", sel: ".dsv__g4", edge: "top", was: "blue cut" },
   { route: "/studio", sel: ".dst__rooms", edge: "top", was: "paper cut" },
   { route: "/studio", sel: ".dst__handoff", edge: "top", was: "inverted ink cut" },
-  { route: "/studio-lab", sel: ".dlb__notes", edge: "top", was: "green cut" },
-  { route: "/studio-lab", sel: ".dlb__work", edge: "top", was: "paper cut" },
+  // REMOVED: the Lab's green and paper cuts. The approved Studio Lab is one
+  // continuous olive ground with no material change anywhere down the page,
+  // so it has no former tear to check. Its own boundary rules - the pencil
+  // rules that replaced every divider - are guarded in studio-lab.spec.ts.
   { route: "/process", sel: ".dpr__practice", edge: "top", was: "paper cut" },
   { route: "/georgia-production", sel: ".dgp__plates", edge: "top", was: "paper cut" },
   { route: "/georgia-production", sel: ".dgp__support", edge: "top", was: "ink cut" },

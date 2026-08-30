@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { preload } from "react-dom";
 import { notFound } from "next/navigation";
-import { Noto_Sans_Georgian } from "next/font/google";
+import { Caveat, Noto_Sans_Georgian } from "next/font/google";
 import localFont from "next/font/local";
 import "../globals.css";
 import { LOCALES, type Locale, isLocale, LOCALE_HTML_LANG } from "@/i18n/locales";
@@ -25,6 +25,18 @@ import { routeAlternates } from "@/lib/route-metadata";
 const georgian = Noto_Sans_Georgian({
   subsets: ["georgian"],
   variable: "--f-georgian",
+  display: "swap",
+  preload: false,
+});
+
+// The Lab handoff calls for Caveat 500 for its handwritten annotations only -
+// the §02 note on /studio-lab and the line under each course program. It is
+// never preloaded: it renders a few decorative words, well below the fold, and
+// carries no content a reader depends on.
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: "500",
+  variable: "--f-caveat",
   display: "swap",
   preload: false,
 });
@@ -152,7 +164,7 @@ export default async function LocaleLayout({
     <html
       lang={LOCALE_HTML_LANG[locale]}
       data-scroll-behavior="smooth"
-      className={`${georgian.variable} ${adevas.variable} ${optika.variable} ${glacier.variable} ${sanet.variable}`}
+      className={`${georgian.variable} ${adevas.variable} ${optika.variable} ${glacier.variable} ${sanet.variable} ${caveat.variable}`}
     >
       <body>
         <a href="#main" className="skip-link">

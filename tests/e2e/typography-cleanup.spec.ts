@@ -305,60 +305,12 @@ test.describe("03/04 Studio headings resolve to Optika 600", () => {
 
 /* ------------------------------------------------------ 05 Study card ------ */
 
-test.describe("05 Studio Lab study card titles resolve to Optika 600", () => {
-  test("every card, from the one shared component", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    // The grid renders exactly one card per active filter (visible = notes
-    // filtered by ctx.filter), so covering "every card" means walking the three
-    // filters. All three titles come from the same .dlb__notename in
-    // LabFieldNotes, which is the point: one rule, whole set.
-    const seen: string[] = [];
-    for (const filter of ["research", "education", "experiments"]) {
-      await page.locator(`.dlb__filter[data-filter="${filter}"], .dlb__filter`).first().waitFor();
-      await page.evaluate((f) => {
-        const btn = [...document.querySelectorAll<HTMLElement>(".dlb__filter")].find(
-          (b) => (b.dataset.filter ?? b.textContent?.trim().toLowerCase()) === f,
-        );
-        btn?.click();
-      }, filter);
-      await expect(page.locator(".dlb__notesgrid")).toHaveAttribute("data-filter", filter);
-      const styles = await page.locator(".dlb__notename").evaluateAll((els) =>
-        els.map((e) => {
-          const cs = getComputedStyle(e);
-          return { text: e.textContent!.trim(), family: cs.fontFamily, weight: cs.fontWeight };
-        }),
-      );
-      expect(styles.length, filter).toBeGreaterThan(0);
-      for (const s of styles) {
-        expect(first(s.family), `${filter}: ${s.text}`).toBe("optika");
-        expect(s.weight, `${filter}: ${s.text}`).toBe("600");
-        seen.push(s.text);
-      }
-    }
-    // the three study titles were all covered
-    expect(seen.length).toBeGreaterThanOrEqual(3);
-    expect(seen.some((t) => t.includes("Study 01"))).toBe(true);
-  });
-
-  test("the LAB reference line and the annotation are untouched", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    const id = await page
-      .locator(".dlb__noteid")
-      .first()
-      .evaluate((e) => ({ text: e.textContent!.trim(), weight: getComputedStyle(e).fontWeight }));
-    expect(id.text).toContain("LAB-01");
-    expect(id.weight).toBe("500");
-    await expect(page.locator(".dlb__annotation")).toHaveCount(1);
-  });
-
-  test("the cards still filter", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    await page.locator(".dlb__note--card").first().click();
-    await expect(page.locator(".dlb__notesgrid")).toHaveAttribute("data-filter", "research");
-  });
-});
-
-/* ------------------------------------------- 06 Start a Project placeholders */
+/* REMOVED: "05 Studio Lab study card titles resolve to Optika 600".
+   The study cards, the LAB reference line and the filter they sat behind were
+   the field-notes page, which the approved Studio Lab design replaces. The
+   weight contract itself is unchanged and still enforced on every other
+   surface by the cases around this one; the Lab's own type is guarded in
+   studio-lab.spec.ts. */
 
 test.describe("06 Start a Project placeholders resolve to Optika 400", () => {
   for (const [label, route] of [

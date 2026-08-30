@@ -2663,158 +2663,454 @@ html[data-dao-nav-open] .dao-returntab {
    Act 05 - Studio Lab
    ============================================================ */
 
-.dao-lab {
-  position: relative;
+/* ---- the Lab kit: marks shared by the act, the page and the sheets ----
+   Every value here is the approved handoff's. Rules are drawn paths, never
+   borders; icons are the hand-drawn discipline marks; the ground is a two-layer
+   texture stack over --dao-green. */
+
+.dao-lab,
+.dsl,
+.dsc {
+  --lab-gutter: clamp(20px, 3.3vw, 48px);
+  --lab-pad: clamp(48px, 9vh, 100px);
+  --lab-ink: var(--dao-ink);
   background: var(--dao-green);
-  overflow: hidden;
-  padding: 150px var(--dao-gutter) 150px;
-  min-height: 620px;
-}
-/* On the olive field the botanicals print in cream - mint sinks into
-   #9DAB5C (§07). */
-/* §02: the rose is a background layer, not a co-star. Same artwork, same
-   cream, same corner and scale - only the ink density drops, from 0.35 to
-   0.14, so the title reads as clearly dominant over it. It stays plainly
-   visible as a shape; it stops competing. */
-.dao-lab__rose {
-  position: absolute;
-  left: -60px;
-  bottom: -40px;
-  width: clamp(220px, 32vw, 460px);
-  aspect-ratio: 1;
-  background: rgba(242, 237, 227, 0.14);
-  --m: url("/assets/graphics/floral-rose.webp");
-}
-/* §03B: the tall stem becomes an editorial crop rather than a centred icon.
-   It roughly doubles in size and is pushed PAST the right edge with a negative
-   offset, so the artwork runs off screen and is cut by the section's own
-   overflow: hidden - the document never gets wider, which is why the negative
-   offset is on the element and not on any padding or width. Cream treatment
-   kept; density eased 0.75 -> 0.55 so a much larger shape stays atmospheric. */
-.dao-lab__stem {
-  position: absolute;
-  right: clamp(-150px, -10vw, -40px);
-  top: 90px;
-  width: clamp(180px, 30vw, 430px);
-  aspect-ratio: 23 / 30;
-  background: rgba(242, 237, 227, 0.55);
-  --m: url("/assets/graphics/stem.webp");
-  transform: rotate(6deg);
-}
-/* §03A: the small yellow bloom is removed outright - rule and element both,
-   so nothing is left hidden in the DOM waiting to come back. */
-.dao-lab__body {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 760px;
-  position: relative;
-}
-.dao-lab__title {
-  font-family: var(--dao-f-display);
-  font-size: clamp(48px, 7.6vw, 110px);
-  line-height: 0.98;
-  /* ink on the olive field - 7.5:1; yellow no longer reaches contrast on
-     #9DAB5C (§07/§20) */
   color: var(--dao-ink);
+  font-family: var(--f-optika), sans-serif;
 }
-.dao-lab__copy {
-  font-size: clamp(12.5px, 1.1vw, 16px);
-  line-height: 1.65;
-  color: rgba(19, 18, 16, 0.82);
-  max-width: 520px;
-  text-wrap: pretty;
+
+:lang(ka) .dao-lab,
+:lang(ka) .dsl,
+:lang(ka) .dsc {
+  font-family: var(--dao-f-ka);
 }
-.dao-lab__ctarow {
+
+/* texture stack: canvas weave over paper grain, in that order */
+.dsl-weave,
+.dsl-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dsl-weave {
+  background: url("/assets/textures/canvas-weave.webp");
+  background-size: 512px;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+}
+
+.dsl-grain {
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+}
+
+/* the oxide accent - decorative, never a field */
+.dsl-stain {
+  position: absolute;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+  max-width: none;
+}
+
+/* botanicals: static, cropped by their section, always behind, never hit */
+.dsl-bot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* pencil rules - a drawn path stretched to width, stroke held at a true 1px */
+.dsl-rule {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 4px;
+  color: var(--lab-ink);
+  overflow: visible;
+}
+
+.dsl-rule--short {
+  height: 3px;
+}
+
+/* discipline marks */
+.dsl-icon {
+  flex: none;
+  width: 40px;
+  height: 30px;
+  opacity: 0.78;
+  color: var(--lab-ink);
+  transform: rotate(var(--rot, 0deg));
+}
+
+.dsl-icon--lg {
+  width: 54px;
+  height: 40px;
+  align-self: center;
+}
+
+.dsl-icon--md {
+  width: 52px;
+  height: 38px;
+}
+
+/* the drawn arrow and registration cross */
+.dsl-arrow {
+  flex: none;
+  width: 46px;
+  height: 12px;
+  opacity: 0.75;
+  color: var(--lab-ink);
+}
+
+.dsl-cross {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  opacity: 0.5;
+  color: var(--lab-ink);
+}
+
+/* the editorial index that closes every Lab surface */
+.dsl-index {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  padding: 19px clamp(16px, 2.5vw, 36px);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.78);
+  white-space: nowrap;
 }
-.dao-lab__cta {
+
+.dsl-index__cell {
+  display: contents;
+}
+
+.dsl-index__w {
+  flex: 1;
+  text-align: center;
+}
+
+.dsl-index__dot {
+  flex: none;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgb(19 18 16 / 0.45);
+}
+
+/* ---- Act 05 itself ---------------------------------------------------- */
+
+.dao-lab {
   position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: max(780px, 100svh);
+  /* clearance for the fixed site chrome. The deliverable was composed as a
+     standalone screen with no global header above it; every route clears the
+     chrome with .dao-page padding-top, and this act needs the same room. */
+  padding-top: 78px;
+}
+
+/* the content layer sits above the ground; the ornament and the textures are
+   placed absolutely and must keep their own positioning */
+.dao-lab__mast,
+.dao-lab__mastrule,
+.dao-lab__body,
+.dao-lab__spacer,
+.dao-lab__foot {
+  position: relative;
+  z-index: 1;
+}
+
+.dao-lab__mast {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: clamp(16px, 2.4vh, 26px) var(--lab-gutter) 14px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  letter-spacing: 0.28em;
+  color: rgb(19 18 16 / 0.72);
+  white-space: nowrap;
+}
+
+.dao-lab__mastr {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.dao-lab__mastrule {
+  width: calc(100% - 2 * var(--lab-gutter));
+  margin: 0 auto;
+}
+
+.dao-lab__orn {
+  position: absolute;
+  right: -70px;
+  bottom: 34px;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: clamp(300px, 29vw, 430px);
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.dao-lab__ornfig {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: rgb(19 18 16 / 0.45);
+}
+
+.dao-lab__body {
+  display: flex;
+  gap: 6vw;
+  padding: clamp(40px, 9vh, 96px) clamp(24px, 3.3vw, 48px) 0 clamp(20px, 2.8vw, 40px);
+}
+
+.dao-lab__lede {
+  flex: 5;
+  min-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 4.5vh, 46px);
+}
+
+.dao-lab__title {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(68px, 8.4vw, 124px);
+  line-height: 0.92;
+  letter-spacing: -0.005em;
+}
+
+.dao-lab__title span {
+  display: block;
+}
+
+.dao-lab__copy {
+  margin: 0;
+  max-width: 400px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.86);
+  text-wrap: pretty;
+}
+
+.dao-lab__cta,
+.dsl__cta {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 16px;
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.32em;
   color: var(--dao-ink);
-  padding: 12px 0;
+  transition: gap 240ms ease;
 }
-.dao-lab__cta:hover {
+
+.dao-lab__cta:hover,
+.dao-lab__cta:focus-visible,
+.dsl__cta:hover,
+.dsl__cta:focus-visible {
+  gap: 24px;
   color: var(--dao-ink);
 }
-/* §08: re-weighted with the shared base (10 -> 6) */
-.dao-lab__cta .dao-strike {
-  background: var(--dao-yellow);
-  bottom: 3px;
-  transform: scaleX(1);
-  transition: height 200ms ease;
+
+.dao-lab__rows {
+  flex: 6;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
 }
-.dao-lab__cta:hover .dao-strike,
-.dao-lab__cta:focus-visible .dao-strike {
-  height: 6px;
+
+/* the mobile composition opens the list with a rule; the desktop one does not */
+.dao-lab__rowtop {
+  display: none;
 }
-.dao-lab__wreath {
-  width: 34px;
-  height: 34px;
-  background: rgba(242, 237, 227, 0.9);
-  --m: url("/assets/graphics/wreath.webp");
-}
-.dao-lab__ticker {
-  position: absolute;
-  bottom: 56px;
-  left: 0;
-  right: 0;
-  overflow: hidden;
-  border-top: 1px solid rgba(19, 18, 16, 0.3);
-  border-bottom: 1px solid rgba(19, 18, 16, 0.3);
-}
-.dao-lab__tickerrow {
-  display: inline-flex;
-  white-space: nowrap;
-  animation: dao-ticker 36s linear infinite;
-  padding: 12px 0;
-  font-family: var(--dao-f-numeral);
-  font-size: clamp(13px, 1.4vw, 20px);
-  letter-spacing: 0.18em;
-  color: rgba(19, 18, 16, 0.8);
-  /* §09: promote to its own compositor layer so the loop keeps moving on
-     mobile browsers that throttle main-thread repaints */
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-}
-.dao-lab__tickerrow > span {
-  padding-right: 48px;
-  display: inline-flex;
+
+.dao-lab__row {
+  display: flex;
   align-items: center;
+  gap: 26px;
+  padding: clamp(20px, 3.4vh, 34px) 4px;
+  color: var(--dao-ink);
+  transition: padding-left 240ms ease;
 }
-/* §08: the ✳ separator as a brand star asset - U+2733 falls back to an
-   emoji / missing glyph on several mobile font stacks */
-.dao-lab__tickstar {
-  display: inline-block;
-  width: 0.5em;
-  aspect-ratio: 1;
-  margin: 0 22px;
-  flex: none;
-  background: rgba(19, 18, 16, 0.6);
-  --m: url("/assets/graphics/star-4.webp");
+
+.dao-lab__row:hover,
+.dao-lab__row:focus-visible {
+  padding-left: 12px;
+  color: var(--dao-ink);
 }
-@media (max-width: 720px) {
-  .dao-lab {
-    padding: 100px var(--dao-gutter) 120px;
-    min-height: 0;
-  }
-  .dao-lab__label {
-    top: 56px;
-  }
-  .dao-lab__stem {
-    top: 70px;
-  }
-  .dao-lab__ticker {
-    bottom: 30px;
-  }
+
+.dao-lab__rowno {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgb(19 18 16 / 0.55);
 }
-@media (prefers-reduced-motion: reduce) {
-  .dao-lab__tickerrow {
-    animation: none;
+
+.dao-lab__rowtext {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.dao-lab__rowname {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(19px, 1.7vw, 26px);
+  letter-spacing: 0.2em;
+}
+
+:lang(ka) .dao-lab__rowname {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dao-lab__rowsub {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.62);
+}
+
+.dao-lab__spacer {
+  flex: 1;
+}
+
+.dao-lab__foot {
+  overflow: hidden;
+}
+
+/* ---- Act 05 mobile: the approved narrow composition (<900) ------------- */
+
+@media (max-width: 899px) {
+  .dao-lab__mastl {
+    display: none;
+  }
+
+  .dao-lab__body {
+    flex-direction: column;
+    gap: 24px;
+    padding: 4vh 20px 0;
+  }
+
+  .dao-lab__lede {
+    min-width: 0;
+    gap: 24px;
+  }
+
+  .dao-lab__title {
+    font-size: 17.5vw;
+  }
+
+  .dao-lab__copy {
+    max-width: 330px;
+    font-size: 14px;
+  }
+
+  .dao-lab__cta {
+    gap: 14px;
+    letter-spacing: 0.3em;
+    padding: 6px 0;
+  }
+
+  .dao-lab__rows {
+    max-width: none;
+    margin: 1.4vh 0 0;
+  }
+
+  .dao-lab__rowtop {
+    display: block;
+  }
+
+  .dao-lab__row {
+    gap: 18px;
+    padding: 17px 2px;
+  }
+
+  .dao-lab__row:hover,
+  .dao-lab__row:focus-visible {
+    padding-left: 2px;
+  }
+
+  .dao-lab__rowno {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+
+  .dao-lab__rowtext {
+    gap: 5px;
+  }
+
+  .dao-lab__rowname {
+    font-size: 17px;
+    letter-spacing: 0.18em;
+  }
+
+  .dao-lab__rowsub {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .dao-lab__orn {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    align-self: flex-end;
+    width: 215px;
+    margin: 12px -34px 0 0;
+    gap: 8px;
+  }
+
+  .dao-lab__ornfig {
+    font-size: 9px;
+  }
+
+  .dao-lab .dsl-icon {
+    width: 32px;
+    height: 24px;
+  }
+
+  .dao-lab .dsl-arrow {
+    width: 40px;
+  }
+
+  .dao-lab .dsl-index {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 13px 6px;
+    padding: 16px 14px;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .dao-lab .dsl-index__dot {
+    display: none;
   }
 }
 

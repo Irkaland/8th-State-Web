@@ -413,7 +413,7 @@ test.describe("Hidden scrollbar + canvas grounds", () => {
 test.describe("Studio Lab", () => {
   test("the lab room uses the approved olive #9DAB5C", async ({ page }) => {
     await gotoRoute(page, "/studio-lab");
-    expect(await page.locator(".dlb").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+    expect(await page.locator(".dsl").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
       "rgb(157, 171, 92)",
     );
     // homepage lab act carries the same field
@@ -423,27 +423,37 @@ test.describe("Studio Lab", () => {
     ).toBe("rgb(157, 171, 92)");
   });
 
-  test("the ticker uses the brand star separator, not the ✳ character", async ({ page }) => {
-    await gotoRoute(page, "/studio-lab");
-    const row = page.locator(".dao-lab__tickerrow").first();
-    expect(await row.textContent()).not.toContain("✳");
-    expect(await row.locator(".dao-lab__tickstar").count()).toBeGreaterThan(0);
+  // SUPERSEDED: the Lab used to close on a Glacier marquee. The approved
+  // design replaces it with a STATIC editorial index, so the contract is now
+  // that nothing in it moves - on either surface that carries it.
+  test("the closing index is a static editorial row, never a marquee", async ({ page }) => {
+    for (const route of ["/studio-lab", "/"]) {
+      await gotoRoute(page, route);
+      const index = page.locator(".dsl-index").first();
+      await expect(index).toHaveCount(1);
+      const anim = await index.evaluate((el) =>
+        [el, ...el.querySelectorAll("*")].map((n) => getComputedStyle(n).animationName),
+      );
+      expect(new Set(anim), route).toEqual(new Set(["none"]));
+    }
   });
 });
 
 test.describe("Mobile (390)", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("the lab ticker animates at 390", async ({ page }) => {
+  // SUPERSEDED with the marquee: at 390 the index becomes the approved
+  // three-column grid, and it still does not move.
+  test("the lab index is a static 3-column grid at 390", async ({ page }) => {
     await gotoRoute(page, "/");
-    const ticker = page.locator(".dao-lab__ticker").first();
-    await ticker.scrollIntoViewIfNeeded();
-    const row = page.locator(".dao-lab__tickerrow").first();
-    expect(await row.evaluate((el) => getComputedStyle(el).animationName)).toBe("dao-ticker");
-    const t1 = await row.evaluate((el) => getComputedStyle(el).transform);
-    await page.waitForTimeout(500);
-    const t2 = await row.evaluate((el) => getComputedStyle(el).transform);
-    expect(t2).not.toBe(t1);
+    const index = page.locator(".dsl-index").first();
+    await index.scrollIntoViewIfNeeded();
+    const m = await index.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").length };
+    });
+    expect(m.display).toBe("grid");
+    expect(m.cols).toBe(3);
   });
 
   test("no contextual return control on mobile", async ({ page }) => {
@@ -468,18 +478,21 @@ test.describe("Mobile (390)", () => {
 test.describe("Mobile (320)", () => {
   test.use({ viewport: { width: 320, height: 568 } });
 
-  test("the lab ticker physically moves at 320 (home + lab room)", async ({ page }) => {
+  // SUPERSEDED with the marquee: at 320 the index still reads as six words in
+  // three columns, on both surfaces, and still does not move.
+  test("the lab index stays a readable 3-column grid at 320", async ({ page }) => {
     for (const route of ["/", "/studio-lab"]) {
       await gotoRoute(page, route);
-      // scroll the STATIC wrapper into view - the row itself never becomes
-      // "stable" for Playwright precisely because it is always moving
-      const wrap = page.locator(".dao-lab__ticker, .dlb__ticker").first();
-      await wrap.scrollIntoViewIfNeeded();
-      const row = page.locator(".dao-lab__tickerrow").first();
-      const t1 = await row.evaluate((el) => getComputedStyle(el).transform);
-      await page.waitForTimeout(500);
-      const t2 = await row.evaluate((el) => getComputedStyle(el).transform);
-      expect(t2, `${route} ticker is frozen at 320`).not.toBe(t1);
+      const index = page.locator(".dsl-index").first();
+      await index.scrollIntoViewIfNeeded();
+      const m = await index.evaluate((el) => ({
+        cols: getComputedStyle(el).gridTemplateColumns.split(" ").length,
+        words: el.querySelectorAll(".dsl-index__w").length,
+        anim: getComputedStyle(el).animationName,
+      }));
+      expect(m.cols, route).toBe(3);
+      expect(m.words, route).toBe(6);
+      expect(m.anim, route).toBe("none");
     }
   });
 
