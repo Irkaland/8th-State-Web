@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { BriefMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
@@ -27,6 +27,7 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const errorRef = useRef<HTMLDivElement>(null);
+  const doneRef = useRef<HTMLHeadingElement>(null);
 
   const chips = [
     { id: "film-video", label: m.chipFilm },
@@ -40,11 +41,23 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
   const toggle = (id: string) =>
     setDisciplines((d) => (d.includes(id) ? d.filter((x) => x !== id) : [...d, id]));
 
+  /**
+   * FINAL UX §09 - the MINIMUM useful announcement, and no more.
+   *
+   * The two required answers are evaluated once here, so the progress strip,
+   * the error summary and the per-field markers can never disagree about
+   * whether a field is satisfied.
+   */
+  const nameOk = name.trim().length > 0;
+  const emailOk = /.+@.+\..+/.test(email);
+  const nameInvalid = error !== null && !nameOk;
+  const emailInvalid = error !== null && !emailOk;
+
   const done = [
     disciplines.length > 0,
     about.trim().length > 0,
     when.trim().length > 0 || where.trim().length > 0,
-    name.trim().length > 0 && /.+@.+\..+/.test(email),
+    nameOk && emailOk,
   ];
 
   const submit = (e: React.FormEvent) => {
@@ -58,14 +71,31 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
     setSent(true);
   };
 
+  /**
+   * On success, focus moves to the confirmation heading. Focus announces the
+   * heading on its own, so the page needs no live region - and the reader is
+   * never left holding focus on a submit button that has been unmounted.
+   */
+  useEffect(() => {
+    if (!sent) return;
+    doneRef.current?.focus();
+  }, [sent]);
+
   if (sent) {
     const s = messages.success;
     return (
-      <div className="dbr__sheets" role="status">
+      <div className="dbr__sheets">
         <div className="dao-sheet dbr__sheet dbr__sheet--cream is-in dbr__deal">
           <div className="dbr__sheethead">
-            <span className="dbr__num">✳</span>
-            <span className="dbr__q">{s.title}</span>
+            <span className="dbr__num" aria-hidden="true">
+              ✳
+            </span>
+            {/* a real heading, focused on arrival (§09) - the confirmation was
+                previously a role="status" div whose title was a plain span, so
+                it announced itself once and then offered nothing to navigate */}
+            <h2 className="dbr__q" ref={doneRef} tabIndex={-1}>
+              {s.title}
+            </h2>
           </div>
           <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(19,18,16,.75)", maxWidth: 560 }}>
             {s.desc}
@@ -210,10 +240,27 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
               ref={errorRef}
               tabIndex={-1}
               role="alert"
+              id="brief-errors"
               className="dbr__error"
               style={{ marginBottom: 20 }}
             >
               {error}
+              {/* the summary names the fields as real in-page links, and each
+                  field points back here through aria-describedby - so the
+                  reason is available whether the reader arrives at the summary
+                  or tabs straight into the input. No per-field live region. */}
+              <ul className="dbr__errorlist">
+                {nameInvalid && (
+                  <li>
+                    <a href="#brief-name">{up(m.name)}</a>
+                  </li>
+                )}
+                {emailInvalid && (
+                  <li>
+                    <a href="#brief-email">{up(m.email)}</a>
+                  </li>
+                )}
+              </ul>
             </div>
           )}
           <div className="dbr__grid2">
@@ -226,7 +273,8 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
                 className="dbr__input"
                 autoComplete="name"
                 required
-                aria-invalid={error ? name.trim().length === 0 : undefined}
+                aria-invalid={nameInvalid || undefined}
+                aria-describedby={nameInvalid ? "brief-errors" : undefined}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -241,7 +289,8 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
                 type="email"
                 autoComplete="email"
                 required
-                aria-invalid={error ? !/.+@.+\..+/.test(email) : undefined}
+                aria-invalid={emailInvalid || undefined}
+                aria-describedby={emailInvalid ? "brief-errors" : undefined}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

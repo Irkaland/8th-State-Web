@@ -2,13 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import type { WorkArchiveMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { format } from "@/i18n/format";
 import { InView } from "./InView";
 import { up } from "@/lib/cn";
+import { safeSession } from "@/lib/session-lifecycle";
+import { WK_CTX_KEY, parseWorkContext } from "@/lib/work-context";
 
 export type ArchiveItem = {
   slug: string;
@@ -34,13 +36,104 @@ export function WorkArchive({
   messages,
   items,
   total,
+  canonicalSearch,
 }: {
   locale: Locale;
   messages: WorkArchiveMessages;
   items: ArchiveItem[];
   total: number;
+  /**
+   * The query string the SERVER actually applied - "" or "?category=film-video".
+   * The client compares it with the address bar and quietly corrects the URL when
+   * they disagree (FINAL UX §11), so a dead filter parameter never stands in a URL
+   * claiming a filter the page is not applying.
+   */
+  canonicalSearch: string;
 }) {
   const m = messages;
+
+  /**
+   * FINAL UX §01, WRITE side: opening an archive project stamps the return
+   * context. Two fields of state - the active query and the clicked slug -
+   * plus a marker for which control the reader eventually returns by.
+   *
+   * No scrollY. A pixel offset stops being true the moment the viewport, the
+   * fonts, the filter or the archive itself changes; the card anchor answers
+   * the same question in terms that survive all four.
+   */
+  const stamp = useCallback((slug: string) => {
+    const store = safeSession();
+    if (!store) return;
+    try {
+      store.setItem(
+        WK_CTX_KEY,
+        JSON.stringify({ search: window.location.search, slug, anchor: false }),
+      );
+    } catch {
+      /* private mode - "<- WORK" falls back to the canonical archive */
+    }
+  }, []);
+
+  /**
+   * FINAL UX §01, READ side: bring the originating card back into view, then
+   * consume the context.
+   *
+   * The positioning runs ONLY when the reader used the project's own "<- WORK"
+   * control, which is what sets `anchor`. Browser Back leaves it false, so
+   * native history restoration is never fought over - which §01 requires, and
+   * which is strictly better than anything reconstructed here.
+   *
+   * The card is POSITIONED, not pixel-restored: block:"center" holds across
+   * viewport width, font metrics, image loading and a growing archive, where a
+   * stored offset does not. It is instant, so there is no travel to watch and
+   * no race with a smooth scroll already in flight.
+   */
+  useEffect(() => {
+    const store = safeSession();
+    if (!store) return;
+    let raw: string | null = null;
+    try {
+      raw = store.getItem(WK_CTX_KEY);
+    } catch {
+      return;
+    }
+    const ctx = parseWorkContext(raw);
+    if (!ctx) return;
+    // consumed on read, whatever happens next - one return journey, one use
+    try {
+      store.removeItem(WK_CTX_KEY);
+    } catch {
+      /* nothing to clean up */
+    }
+    let anchor = false;
+    try {
+      anchor = (JSON.parse(raw ?? "{}") as { anchor?: unknown }).anchor === true;
+    } catch {
+      anchor = false;
+    }
+    if (!anchor) return;
+    // one frame, so the grid has laid out at its real width before we measure
+    const id = requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>(`[data-dao-card="${CSS.escape(ctx.slug)}"]`);
+      el?.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  /**
+   * FINAL UX §11: parseWorkFilter already ignores an unknown filter value and
+   * renders the full archive - but the URL is then making a claim the page is
+   * not honouring. The dead parameter is stripped with replaceState: no
+   * redirect, no extra history entry, and the address bar agrees with the page.
+   */
+  useEffect(() => {
+    if (window.location.search === canonicalSearch) return;
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${window.location.pathname}${canonicalSearch}${window.location.hash}`,
+    );
+  }, [canonicalSearch]);
 
   // Compose rows: 6-frame cycle → feature · pair · center · pair.
   const rows = useMemo(() => {
@@ -111,6 +204,7 @@ export function WorkArchive({
                 badge={m.caseStudy}
                 n={`PRJ-${pad(n)}`}
                 priority={r === 0}
+                onOpen={stamp}
               >
                 <span className="dwk__counter">
                   {pad(n)} / {pad(total - 1)}
@@ -124,7 +218,7 @@ export function WorkArchive({
           frameIndex += 1;
           return (
             <InView key={p.slug} className="dwk__row--center">
-              <Frame p={p} locale={locale} n={`PRJ-${pad(frameIndex)}`} />
+              <Frame p={p} locale={locale} n={`PRJ-${pad(frameIndex)}`} onOpen={stamp} />
             </InView>
           );
         }
@@ -146,11 +240,13 @@ export function WorkArchive({
                     <div className="dwk__greenpaper" aria-hidden="true">
                       <div className="dao-grain--strong" style={{ opacity: 0.45 }} />
                     </div>
-                    <Frame p={p} locale={locale} n={`PRJ-${pad(n)}`} lab />
+                    <Frame p={p} locale={locale} n={`PRJ-${pad(n)}`} lab onOpen={stamp} />
                   </div>
                 );
               }
-              return <Frame key={p.slug} p={p} locale={locale} n={`PRJ-${pad(n)}`} />;
+              return (
+                <Frame key={p.slug} p={p} locale={locale} n={`PRJ-${pad(n)}`} onOpen={stamp} />
+              );
             })}
           </InView>
         );
@@ -182,6 +278,7 @@ function Frame({
   lab,
   badge,
   priority,
+  onOpen,
   children,
 }: {
   p: ArchiveItem;
@@ -191,10 +288,18 @@ function Frame({
   lab?: boolean;
   badge?: string;
   priority?: boolean;
+  /** §01: stamp the return context on the way out of the archive */
+  onOpen?: (slug: string) => void;
   children?: React.ReactNode;
 }) {
   return (
-    <Link href={localeHref(locale, `/work/${p.slug}`)} className="dwk__frame">
+    <Link
+      href={localeHref(locale, `/work/${p.slug}`)}
+      className="dwk__frame"
+      /* the anchor a "<- WORK" return journey scrolls back to (§01) */
+      data-dao-card={p.slug}
+      onClick={() => onOpen?.(p.slug)}
+    >
       <Image
         src={p.cover}
         alt={p.alt}
@@ -218,10 +323,7 @@ function Frame({
             so it becomes one. `.dwk__name` already computes display:block with
             zero margin inside a flex caption, and preflight makes a heading
             inherit size and weight, so the swap is semantics only. */}
-        <h2
-          className="dwk__name"
-          style={big ? undefined : { fontSize: "clamp(22px,2.4vw,34px)" }}
-        >
+        <h2 className="dwk__name" style={big ? undefined : { fontSize: "clamp(22px,2.4vw,34px)" }}>
           {p.title}
           <span className="dao-strike" aria-hidden="true" />
         </h2>

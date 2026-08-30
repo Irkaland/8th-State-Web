@@ -40,12 +40,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
   const R = m.daoRoutes.studio;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="red"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/", ground: "light" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="red">
       {/* v7 #11 white-strip fix: the route shell ground is the closing
           section's ink - the paper world ends inside the ink close, so no
           off-white background can surface on overscroll or short viewports. */}

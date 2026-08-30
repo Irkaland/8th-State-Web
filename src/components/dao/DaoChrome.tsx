@@ -89,6 +89,41 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
+  /**
+   * FINAL UX §04: the fullscreen sheet closes on ANY route change, popstate
+   * included.
+   *
+   * Opening the menu deliberately pushes NO history entry - an entry per menu
+   * pollutes history and makes leaving a page take two Backs. The cost of that
+   * choice is that the device Back button navigates the page underneath while
+   * the sheet is still up, so the sheet has to retire itself when the route
+   * changes. `pathname` moves for a link click and for a popstate alike, which
+   * is exactly the coverage §04 asks for.
+   *
+   * Guarded on `open` so an ordinary navigation with the sheet already closed
+   * does not run the close choreography, steal focus back to the burger, or
+   * fight the locale-switch handoff that intentionally reopens it.
+   */
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+  useEffect(() => {
+    // read through the ref so this effect depends on the ROUTE alone - it must
+    // not re-run when the sheet is merely opened or closed in place
+    if (!openRef.current) return;
+    openRef.current = false;
+    setOpen(false);
+    setWorkOpen(false);
+    setPreview(null);
+    // the curtain still runs; focus is deliberately NOT moved to the burger
+    // here, because on a popstate the browser owns focus (§10) and on a link
+    // click close() has already handled it
+    setClosing(true);
+    const t = window.setTimeout(() => setClosing(false), 660);
+    return () => window.clearTimeout(t);
+  }, [pathname]);
+
   // Pause signal for auto-advancing scenes while the menu is open.
   useEffect(() => {
     document.documentElement.toggleAttribute("data-dao-nav-open", open);
@@ -237,7 +272,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
     const keyboardFocusInChrome = () => {
       const ae = document.activeElement;
       if (!ae || !ae.closest) return false;
-      if (!ae.closest(".dao-chrome") && !ae.closest(".dao-returntab")) return false;
+      if (!ae.closest(".dao-chrome")) return false;
       try {
         return ae.matches(":focus-visible");
       } catch {
@@ -299,6 +334,19 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
   }, [open]);
 
   const href = (path: string) => localeHref(locale, path);
+  /**
+   * FINAL UX §18-2: aria-current="page" on the destination the reader is
+   * already on. Native semantics, silent until focused, and it is the only
+   * orientation cue the sheet needs - no extra ARIA, no live region.
+   *
+   * Compared on the LOCALE-FREE path so /ka/work marks WORK exactly as /work
+   * does, and so the proxy's internal /en rewrite (which can leak into
+   * usePathname during SSR) never defeats the match. A project page is inside
+   * the Work section but is not the Work page, so only an exact match counts -
+   * "page" means this page.
+   */
+  const here = stripLocale(pathname);
+  const current = (path: string) => (here === path ? ("page" as const) : undefined);
   // --d opens with forward stagger; --dx closes with reverse stagger (v7 #3)
   const stagger = (i: number) => ({
     ["--d" as string]: `${120 + i * 60}ms`,
@@ -451,6 +499,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
               <Link
                 href={href("/work")}
                 className="dao-nav__link"
+                aria-current={current("/work")}
                 onMouseEnter={hoverPreview("work", 0)}
                 onFocus={focusPreview("work", 0)}
                 onMouseLeave={leavePreview("work")}
@@ -521,6 +570,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.services}
             ka={m.servicesKa}
             href={href("/services")}
+            current={current("/services")}
             style={stagger(1)}
             dim={workOpen}
             onHover={hoverPreview("services", 1)}
@@ -533,6 +583,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.studio}
             ka={m.studioKa}
             href={href("/studio")}
+            current={current("/studio")}
             style={stagger(2)}
             dim={workOpen}
             onHover={hoverPreview("studio", 2)}
@@ -545,6 +596,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.lab}
             ka={m.labKa}
             href={href("/studio-lab")}
+            current={current("/studio-lab")}
             style={stagger(3)}
             dim={workOpen}
             lab
@@ -558,6 +610,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.process}
             ka={m.processKa}
             href={href("/process")}
+            current={current("/process")}
             style={stagger(4)}
             dim={workOpen}
             onHover={hoverPreview("process", 4)}
@@ -570,6 +623,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.georgia}
             ka={m.georgiaKa}
             href={href("/georgia-production")}
+            current={current("/georgia-production")}
             style={stagger(5)}
             dim={workOpen}
             small
@@ -583,6 +637,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.contact}
             ka={m.contactKa}
             href={href("/contact")}
+            current={current("/contact")}
             style={stagger(6)}
             dim={workOpen}
             onHover={hoverPreview("contact", 6)}
@@ -595,6 +650,7 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
             label={m.start}
             ka={m.startKa}
             href={href("/start-a-project")}
+            current={current("/start-a-project")}
             style={stagger(7)}
             dim={workOpen}
             onHover={hoverPreview("start", 7)}
@@ -653,6 +709,7 @@ function NavRow({
   label,
   ka,
   href,
+  current,
   style,
   dim,
   lab,
@@ -669,6 +726,8 @@ function NavRow({
   label: string;
   ka: string;
   href: string;
+  /** §18-2: "page" when this row IS the current route */
+  current?: "page";
   style?: React.CSSProperties;
   dim?: boolean;
   lab?: boolean;
@@ -692,6 +751,7 @@ function NavRow({
             navigation (§01) */}
         <Link
           href={href}
+          aria-current={current}
           className={cn("dao-nav__link", lab && "dao-nav__link--lab", small && "dao-nav__link--sm")}
           onMouseEnter={onHover}
           onFocus={onFocusPreview}

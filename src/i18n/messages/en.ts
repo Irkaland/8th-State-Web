@@ -338,10 +338,6 @@ const en = {
   // v6 route system - turns 3-4 of the approved handoff.
   daoRoutes: {
     contentRequired: "Content required",
-    returnTab: {
-      home: "Home",
-      back: "Back",
-    },
     work: {
       archive: "Production archive",
       projectsShown: "{count} projects",
@@ -369,6 +365,11 @@ const en = {
       credits: "CREDITS",
       production: "Production",
       next: "Next",
+      previous: "Previous",
+      // §05: the archive is finite - the last entry says so and offers the way out
+      endOfArchive: "End of archive",
+      viewAllWork: "View all work",
+      positionLabel: "Project {n} of {total}",
       contactSheet: "Contact sheet - process / BTS",
       usage: "Usage",
     },
@@ -405,6 +406,11 @@ const en = {
     },
     team: {
       kicker: "Studio → The people",
+      mastLabel: "Personnel sheet",
+      // §09: the ONE polite announcement on this route - nothing else is spoken
+      personnelSwap: "{name} - {n} of {total}",
+      closing: "This is the crew a production gets.",
+      startProject: "Start a project",
       title: "The People Behind The Work",
       titleLine1: "The people",
       titleLine2: "behind the work",

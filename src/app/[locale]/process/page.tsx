@@ -41,12 +41,7 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
   const R = m.daoRoutes.process;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="paper"
-      returnTab={{ label: up(m.nav.studio), parent: "/studio", ground: "light" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="paper" footer>
       {/* §15: the orange environment is scoped to this route's own class, not
           to the shared cream .dao-page--paper. The strong stock plus the weave
           is what keeps it reading as printed orange paper rather than a flat

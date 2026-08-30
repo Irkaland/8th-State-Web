@@ -740,8 +740,7 @@ html[data-dao-nav-open] .dao-chrome::before {
    the focus away. Keyboard users still keep every control visible while they
    are on it. */
 html[data-dao-idle] .dao-chrome__brand,
-html[data-dao-idle] .dao-chrome .dao-lang,
-html[data-dao-idle] .dao-returntab {
+html[data-dao-idle] .dao-chrome .dao-lang {
   opacity: 0;
   pointer-events: none;
   transition: opacity 600ms ease;
@@ -769,90 +768,25 @@ html[data-dao-idle] .dao-burger {
 }
 .dao-chrome__brand,
 .dao-chrome .dao-lang,
-.dao-returntab,
 .dao-burger {
   transition: opacity 250ms ease;
 }
 html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-chrome__brand,
 html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-lang,
-html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger,
-html[data-dao-idle] .dao-returntab:has(:focus-visible) {
+html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* v7 #1: contextual return control - printed paper tab, top-left after the
-   mark, slightly rotated; hover straightens to 0° and lifts 1px. Ground-
-   aware inversion via modifiers. Never a breadcrumb, never a pill. */
-.dao-returntab {
-  position: fixed;
-  top: 30px;
-  left: calc(var(--dao-gutter) + 228px);
-  z-index: 61;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--dao-f-ui);
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--dao-ink);
-  background: var(--dao-paper);
-  border: 0;
-  /* it is an <a> now, so the link underline has to be turned off explicitly */
-  text-decoration: none;
-  padding: 9px 15px;
-  min-height: 34px;
-  transform: rotate(-1deg);
-  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-  transition:
-    transform 200ms var(--dao-ease-micro),
-    box-shadow 200ms var(--dao-ease-micro);
-}
-.dao-returntab::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("/assets/textures/paper-grain.webp");
-  background-size: 180px;
-  opacity: 0.45;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-.dao-returntab:hover,
-.dao-returntab:focus-visible {
-  color: var(--dao-ink);
-  transform: rotate(0deg) translateY(-1px);
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
-}
-.dao-returntab--ink {
-  color: var(--dao-paper);
-  background: var(--dao-ink);
-}
-.dao-returntab--ink:hover,
-.dao-returntab--ink:focus-visible {
-  color: var(--dao-paper);
-}
-.dao-returntab > span {
-  position: relative;
-}
-/* §11: no contextual return control on mobile - the brand mark, the burger
-   and the browser's own back gesture carry navigation. The tab is fixed-
-   position, so removing it leaves no gap. Desktop / tablet keep it. */
-@media (max-width: 720px) {
-  .dao-returntab {
-    display: none;
-  }
-}
-/* While the fullscreen burger sheet is open the sheet carries the only
-   navigation - the contextual return tab (z-index above the sheet) must
-   never float over it as a second HOME control. */
-html[data-dao-nav-open] .dao-returntab {
-  opacity: 0;
-  pointer-events: none;
-}
+/* §03 FINAL UX - the ReturnTab is retired site-wide.
+
+   It duplicated the brand mark on top-level routes, was display:none below
+   720px, and gave the site a SECOND navigation vocabulary alongside the
+   in-page masthead back that /studio-lab/[course] already used. One
+   vocabulary now: global chrome + contextual masthead back (.dao-mback,
+   dao-routes.css) + a slim footer on the routes that lack a designed
+   ending. */
+
 .dao-chrome__brand {
   display: flex;
   align-items: center;

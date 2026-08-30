@@ -9,6 +9,7 @@ import { PROJECTS } from "@/content/projects";
 import { capabilityById, isCapabilityId } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
+import { MastheadBack } from "@/components/dao/MastheadBack";
 import {
   TeamContactSheet,
   type TeamCard,
@@ -139,14 +140,18 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
   const anyPeople = sections.length > 0;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="paper"
-      returnTab={{ label: up(m.nav.studio), parent: "/studio", ground: "light" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="paper">
       <div className="dao-page dao-page--paper dtm" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />
+
+        {/* §03/§04: the contextual masthead back. /team's canonical parent is
+            /studio, and it is a real link there - never history.back(), which a
+            direct entry or a locale switch would answer wrongly. */}
+        <div className="dtm__mast">
+          <MastheadBack href={localeHref(locale, "/studio")} label={up(m.nav.studio)} />
+          <span className="dtm__mastmid">{up(R.mastLabel)}</span>
+          <span className="dtm__mastright">{up(m.dao.ident.city)}</span>
+        </div>
 
         <InView className="dtm__cover" threshold={0.05}>
           <span className="dao-kicker dao-fade" style={{ color: "var(--dao-red)" }}>

@@ -36,12 +36,7 @@ export default async function StartAProjectPage({
   const R = m.daoRoutes.brief;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="ink"
-      returnTab={{ label: up(m.daoRoutes.returnTab.back), parent: "/" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="ink">
       <div className="dao-page dbr" data-dao-scene="dark">
         <div className="dao-weave" aria-hidden="true" />
         <header className="dbr__intro">

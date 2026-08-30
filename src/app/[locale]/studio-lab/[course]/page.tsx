@@ -66,12 +66,7 @@ export default async function CoursePage({
   const R = m.daoRoutes.lab;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="green"
-      returnTab={{ label: up(m.dao.nav.lab), parent: "/studio-lab" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="green" footer footerGround="dark">
       <div className="dao-page dsc" data-dao-scene="dark" id="top">
         <LabTexture />
         <LabStain style={{ right: "-200px", top: "200px", width: "800px", opacity: 0.045 }} />

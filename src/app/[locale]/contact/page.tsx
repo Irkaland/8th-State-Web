@@ -40,12 +40,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const L = m.daoRoutes.legal;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="ink"
-      returnTab={{ label: up(m.daoRoutes.returnTab.back), parent: "/" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="ink">
       <div className="dao-page dao-page--ink dct" data-dao-scene="dark">
         <div className="dao-weave" aria-hidden="true" />
         {/* §07: the same dark paper the Home Contact act carries */}

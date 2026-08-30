@@ -35,12 +35,7 @@ export function LegalPage({
   ];
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={messages}
-      veil="fade"
-      returnTab={{ label: up(messages.daoRoutes.returnTab.back), parent: "/", ground: "light" }}
-    >
+    <DaoShell locale={locale} messages={messages} veil="fade" footer>
       <div className="dao-page dlg" data-dao-scene="light">
         <div className="dao-grain" style={{ opacity: 0.32 }} aria-hidden="true" />
 

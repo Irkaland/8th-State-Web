@@ -52,12 +52,7 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
   const [plate1, ...plates] = GEORGIA_STILLS;
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="blue"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/", ground: "light" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="blue" footer>
       <div className="dao-page dao-page--paper" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />
 

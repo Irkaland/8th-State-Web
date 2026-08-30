@@ -15,6 +15,17 @@ import { up } from "@/lib/cn";
  * path after mount and, only on a /ka route, rewrites the four strings and the
  * three destinations in place.
  *
+ * FINAL UX §11/§16: it also moves focus to the H1 on arrival. A 404 is the one
+ * route where the reader did not choose to be, so the page has to announce
+ * itself rather than wait to be explored - and the recovery links sit
+ * immediately after the heading, so landing there puts them one Tab away. It is
+ * done here rather than with autofocus so the heading can be focused
+ * WITHOUT scrolling and without adding a permanent tabindex to the document.
+ *
+ * There is deliberately no skip link on this route. The 404 replaces the locale
+ * layout entirely, exactly one link precedes <main> (the brand mark), and focus
+ * already starts inside main - a skip link here would skip nothing.
+ *
  * It renders nothing of its own. Everything it edits is already in the server
  * HTML, so there is no second copy of the copy, no duplicated headings for a
  * screen reader to find, and an English visitor's DOM is never touched. It
@@ -24,6 +35,16 @@ import { up } from "@/lib/cn";
  */
 export function NotFoundLocale() {
   useEffect(() => {
+    const heading = document.querySelector<HTMLElement>("main.d404 .d404__line");
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      heading.focus({ preventScroll: true });
+      // the attribute has done its job the moment focus lands; leaving it on
+      // would put a non-interactive heading in nobody's tab order but is state
+      // the document does not need to carry
+      heading.addEventListener("blur", () => heading.removeAttribute("tabindex"), { once: true });
+    }
+
     const locale = localeFromPathname(window.location.pathname);
     if (locale === "en") return;
 

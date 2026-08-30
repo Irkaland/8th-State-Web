@@ -71,12 +71,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
   const courseName = (slug: string) => t(labCourseBySlug(slug)!.name, locale);
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="green"
-      returnTab={{ label: up(m.nav.studio), parent: "/studio" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="green" footer footerGround="dark">
       <div className="dao-page dsl" data-dao-scene="dark" id="top">
         <LabTexture />
 

@@ -338,10 +338,6 @@ const ka: Messages = {
   // v6 მარშრუტების სისტემა - დამტკიცებული ჰენდოფის მე-3-4 სვლები.
   daoRoutes: {
     contentRequired: "კონტენტი მოსამზადებელია",
-    returnTab: {
-      home: "მთავარი",
-      back: "უკან",
-    },
     work: {
       archive: "პროდაქშენ არქივი",
       projectsShown: "{count} პროექტი",
@@ -367,6 +363,10 @@ const ka: Messages = {
       credits: "კრედიტები",
       production: "პროდაქშენი",
       next: "შემდეგი",
+      previous: "წინა",
+      endOfArchive: "არქივის დასასრული",
+      viewAllWork: "იხილე ყველა ნამუშევარი",
+      positionLabel: "პროექტი {n} / {total}",
       contactSheet: "საკონტაქტო ფურცელი - პროცესი / კადრს მიღმა",
       usage: "გამოყენება",
     },
@@ -401,6 +401,10 @@ const ka: Messages = {
     },
     team: {
       kicker: "სტუდია → ადამიანები",
+      mastLabel: "პერსონალის ფურცელი",
+      personnelSwap: "{name} - {n} / {total}",
+      closing: "ეს არის ჯგუფი, რომელსაც პროდაქშენი იღებს.",
+      startProject: "დაიწყე პროექტი",
       title: "ადამიანები ნამუშევრების უკან",
       titleLine1: "ადამიანები",
       titleLine2: "ნამუშევრების უკან",

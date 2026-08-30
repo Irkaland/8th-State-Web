@@ -50,12 +50,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
   const archive = projectsSorted();
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="paper"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/", ground: "light" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="paper" footer>
       <div className="dao-page dsv" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />
 
@@ -103,11 +98,19 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
             <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
               {/* E1: left-positioned typography enters from the left, masked,
                   650ms EDITORIAL with 80ms line stagger */}
+              {/* §29: every capability carries its canonical id as an anchor,
+                  so the homepage dossier and a project's discipline link can
+                  route to the exact row rather than to the top of the page.
+                  scroll-margin-top is set once in dao-routes.css. */}
               <div className="dsv__g1names">
-                <h2 className="dsv__name dao-rise dao-rise--x">
+                <h2 id={svc("01").id} className="dsv__name dao-rise dao-rise--x">
                   <span>{t(svc("01").name, locale)}</span>
                 </h2>
-                <h2 className="dsv__name dao-rise dao-rise--x" style={{ position: "relative" }}>
+                <h2
+                  id={svc("02").id}
+                  className="dsv__name dao-rise dao-rise--x"
+                  style={{ position: "relative" }}
+                >
                   <span style={{ ["--d" as string]: "80ms", position: "relative" }}>
                     {t(svc("02").name, locale)}
                     <span
@@ -192,6 +195,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                   className="dao-fade"
                 >
                   <h2
+                    id={s.id}
                     className="dsv__name"
                     style={{ position: "relative", alignSelf: "flex-start" }}
                   >
@@ -246,7 +250,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                 the same question as "which projects show Photography". */}
             <div className="dsv__caplinks">
               {[svc("07"), svc("08")].map((cap) => (
-                <span key={cap.id} className="dsv__caplink">
+                <span key={cap.id} id={cap.id} className="dsv__caplink">
                   <span className="dsv__caplinkname" style={{ color: "var(--dao-paper)" }}>
                     {t(cap.name, locale)}
                   </span>
@@ -272,7 +276,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
           </div>
           <div className="dsv__g4body">
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <h2 className="dsv__name dao-rise">
+              <h2 id={svc("09").id} className="dsv__name dao-rise">
                 <span>{t(svc("09").name, locale)}</span>
               </h2>
               <p

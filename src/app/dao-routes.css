@@ -5685,3 +5685,273 @@ html:has(.dsc) {
     transition: opacity 120ms linear;
   }
 }
+
+/* ============================================================
+   FINAL UX - shared navigation furniture
+   ============================================================
+   Three pieces, added once and reused: the contextual masthead back that
+   replaces the retired ReturnTab (§03/§04), the finite project sequence
+   (§05), and the slim credits footer the eight informational routes carry
+   (§02). Nothing here is a new visual language - every value is taken from
+   the course sheet's masthead and the existing credits block, which is what
+   keeps the site reading as one system. */
+
+/* ---------- contextual masthead back (§03/§04) ---------- */
+
+/* Printed INTO the page, not floated over the chrome: present at every width,
+   phone included, and it scrolls away with the rest of the masthead instead
+   of hovering over the artwork. */
+.dao-mback {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  /* §13: a real ≥44px target on touch without changing the printed weight of
+     the line. The negative inline margin keeps the LABEL optically flush with
+     the gutter while the padding grows the hit area. */
+  min-height: 44px;
+  padding: 12px 10px;
+  margin-inline-start: -10px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(19 18 16 / 0.72);
+  transition:
+    color 200ms var(--dao-ease-micro),
+    gap 200ms var(--dao-ease-micro);
+}
+.dao-mback:hover,
+.dao-mback:focus-visible {
+  color: var(--dao-red);
+  gap: 16px;
+}
+.dao-mback--paper {
+  color: rgb(242 237 227 / 0.75);
+}
+.dao-mback--paper:hover,
+.dao-mback--paper:focus-visible {
+  color: var(--dao-paper);
+}
+.dao-mback__arrow {
+  /* the brand faces carry no arrow glyph - the system stack does */
+  font-family: sans-serif;
+  font-size: 1.1em;
+  line-height: 1;
+}
+:lang(ka) .dao-mback {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+/* the Team masthead the back sits in */
+.dtm__mast {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 0 var(--dao-gutter) 10px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.55);
+}
+@media (max-width: 560px) {
+  /* the city stamp is the first thing to go when the line stops fitting -
+     it is the least load-bearing of the three, and the back must never wrap */
+  .dtm__mastright {
+    display: none;
+  }
+}
+
+/* ---------- project sequence (§05) ---------- */
+
+.dpj__seq {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(40px, 7vh, 76px) var(--dao-gutter) clamp(48px, 9vh, 96px);
+  background: var(--dao-paper);
+  color: var(--dao-ink);
+  border-top: 1px solid rgb(19 18 16 / 0.16);
+}
+.dpj__seqpos {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: rgb(19 18 16 / 0.55);
+}
+.dpj__seqends {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: clamp(20px, 4vw, 60px);
+  flex-wrap: wrap;
+}
+.dpj__seqlink {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 0;
+  max-width: min(100%, 420px);
+  color: var(--dao-ink);
+  transition: transform 220ms var(--dao-ease-micro);
+}
+.dpj__seqlink--next,
+.dpj__seqlink--end {
+  text-align: right;
+  margin-inline-start: auto;
+  align-items: flex-end;
+}
+/* the first project has no PREV: the slot is held so NEXT stays on its own
+   side of the spread rather than jumping to the left edge */
+.dpj__seqlink--none {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
+.dpj__seqk {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgb(19 18 16 / 0.55);
+}
+.dpj__seqtitle {
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: clamp(17px, 2vw, 26px);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.dpj__seqlink:hover .dpj__seqtitle,
+.dpj__seqlink:focus-visible .dpj__seqtitle {
+  color: var(--dao-red);
+}
+.dpj__seqlink--end .dpj__seqk {
+  color: var(--dao-brown);
+}
+:lang(ka) .dpj__seqk,
+:lang(ka) .dpj__seqpos {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+/* §07: the ONE cross-link out of the project meta block */
+.dpj__disciplinelink {
+  color: inherit;
+  border-bottom: 1px solid rgb(19 18 16 / 0.3);
+  transition: color 200ms ease;
+}
+.dpj__disciplinelink:hover,
+.dpj__disciplinelink:focus-visible {
+  color: var(--dao-red);
+  border-bottom-color: currentcolor;
+}
+
+/* ---------- slim credits footer (§02) ---------- */
+
+.dao-slimfoot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(28px, 5vh, 52px) var(--dao-gutter) clamp(34px, 6vh, 60px);
+  background: var(--dao-paper);
+  color: var(--dao-ink);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.dao-slimfoot--paper {
+  background: var(--dao-ink);
+  color: var(--dao-paper);
+}
+.dao-slimfoot__rule {
+  display: block;
+  height: 1px;
+  background: rgb(19 18 16 / 0.2);
+}
+.dao-slimfoot--paper .dao-slimfoot__rule {
+  background: rgb(242 237 227 / 0.24);
+}
+.dao-slimfoot__row,
+.dao-slimfoot__legal {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 30px);
+  flex-wrap: wrap;
+}
+.dao-slimfoot__row {
+  justify-content: space-between;
+}
+.dao-slimfoot__wordmark {
+  font-weight: 500;
+  letter-spacing: 0.3em;
+}
+.dao-slimfoot__nav,
+.dao-slimfoot__legal {
+  display: flex;
+  gap: clamp(14px, 2.4vw, 30px);
+  flex-wrap: wrap;
+}
+.dao-slimfoot__nav a,
+.dao-slimfoot__legal a {
+  /* §13: every footer destination is a ≥44px target on touch */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  opacity: 0.66;
+  transition: opacity 200ms ease;
+}
+.dao-slimfoot__nav a:hover,
+.dao-slimfoot__nav a:focus-visible,
+.dao-slimfoot__legal a:hover,
+.dao-slimfoot__legal a:focus-visible {
+  opacity: 1;
+}
+.dao-slimfoot__legal {
+  font-size: 9.5px;
+  opacity: 0.9;
+}
+.dao-slimfoot__city {
+  opacity: 0.5;
+}
+:lang(ka) .dao-slimfoot {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
+
+/* §29: an anchored capability must not land under the fixed chrome. The
+   offset is the chrome's own height plus a printed line of air. */
+.dsv [id] {
+  scroll-margin-top: 120px;
+}
+
+/* §09: the error summary's field list - the two required answers, as links */
+.dbr__errorlist {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.dbr__errorlist a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  border-bottom: 1px solid currentcolor;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+}

@@ -62,6 +62,12 @@ export default async function WorkPage({
   const activeCategory = filter.kind === "category" ? filter.id : null;
   const contextLabel =
     filter.kind === "capability" || filter.kind === "status" ? workFilterLabel(filter) : null;
+  /**
+   * FINAL UX §11: the query string this render actually honours. The client
+   * compares it with the address bar and strips a dead filter parameter with
+   * replaceState, so a URL can never claim a filter the page is not applying.
+   */
+  const canonicalSearch = workFilterHref(filter).replace("/work", "");
 
   const items: ArchiveItem[] = filtered.map((p) => {
     const d = disciplineOf(p);
@@ -81,12 +87,7 @@ export default async function WorkPage({
   });
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="blue"
-      returnTab={{ label: up(m.daoRoutes.returnTab.home), parent: "/" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="blue" footer footerGround="dark">
       <div className="dao-page dwk" data-dao-scene="dark">
         {/* blue material plane carried in from Selected Work */}
         <header className="dwk__plane">
@@ -164,7 +165,13 @@ export default async function WorkPage({
           </div>
         </header>
 
-        <WorkArchive locale={locale} messages={workArchiveMessages(m)} items={items} total={all.length} />
+        <WorkArchive
+          locale={locale}
+          messages={workArchiveMessages(m)}
+          items={items}
+          total={all.length}
+          canonicalSearch={canonicalSearch}
+        />
       </div>
     </DaoShell>
   );

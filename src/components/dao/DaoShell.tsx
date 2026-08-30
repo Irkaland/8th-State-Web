@@ -2,28 +2,42 @@ import type { Messages } from "@/i18n";
 import { chromeMessages, identMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { DaoChrome } from "./DaoChrome";
+import { DaoFooter } from "./DaoFooter";
 import { PageVeil, type VeilFamily } from "./PageVeil";
-import { ReturnTab } from "./ReturnTab";
+import { RouteFocus } from "./RouteFocus";
 import { SessionResume } from "./SessionResume";
 import { StudioIdent } from "./StudioIdent";
 
 /**
- * Shared shell for every route: the Studio Ident (plays on every hard load
- * on any route per v7 contract #6, never on internal navigation), the
- * persistent chrome, the route's material entrance veil and the contextual
- * return tab (v7 contract #1).
+ * Shared shell for every route: the Studio Ident (plays on every hard load on
+ * any route per v7 contract #6, never on internal navigation), the persistent
+ * chrome, the route's material entrance veil, and - on the routes that need one
+ * - the slim credits footer.
+ *
+ * FINAL UX §03: the contextual RETURN TAB is gone. It duplicated the brand mark
+ * on top-level routes, was hidden below 720px, and gave the site a second
+ * navigation vocabulary. Routes that have a contextual parent now print a
+ * masthead back INSIDE their own composition (see MastheadBack), which is
+ * visible at every width and dressed in the page's own material.
+ *
+ * FINAL UX §02: `footer` is opt-in per route rather than a template. Home,
+ * Studio, Team, Start a Project, Contact and the 404 each end on something
+ * designed and deliberately receive none.
  */
 export function DaoShell({
   locale,
   messages,
   veil,
-  returnTab,
+  footer = false,
+  footerGround = "light",
   children,
 }: {
   locale: Locale;
   messages: Messages;
   veil: VeilFamily;
-  returnTab?: { label: string; parent: string; ground?: "dark" | "light" };
+  /** §02: the eight informational/archival route families opt in */
+  footer?: boolean;
+  footerGround?: "light" | "dark";
   children: React.ReactNode;
 }) {
   return (
@@ -38,15 +52,15 @@ export function DaoShell({
       <StudioIdent ident={identMessages(messages)} />
       <PageVeil family={veil} />
       <DaoChrome locale={locale} messages={chromeMessages(messages)} />
-      {returnTab && (
-        <ReturnTab
-          locale={locale}
-          label={returnTab.label}
-          parent={returnTab.parent}
-          ground={returnTab.ground}
-        />
-      )}
-      <main id="main">{children}</main>
+      {/* §10: differentiated route-change focus, in one place */}
+      <RouteFocus />
+      {/* §12: the skip link (rendered in the root layout) targets this element,
+          so it has to be able to hold focus. tabindex="-1" makes it
+          programmatically focusable without adding it to the tab order. */}
+      <main id="main" tabIndex={-1}>
+        {children}
+      </main>
+      {footer && <DaoFooter locale={locale} messages={messages} ground={footerGround} />}
     </div>
   );
 }

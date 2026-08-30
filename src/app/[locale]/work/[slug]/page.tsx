@@ -3,13 +3,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale, LOCALES } from "@/i18n/locales";
-import { getMessages } from "@/i18n";
+import { getMessages, format } from "@/i18n";
 import { routeAlternates, routeOpenGraph } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { getProject, projectSlugs, projectsSorted } from "@/content/projects";
 import { disciplineOf, disciplineLabel } from "@/content/dao-work";
+import { capabilitiesOfProject } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
+import { ProjectSequence } from "@/components/dao/ProjectSequence";
+import { WorkBackLink } from "@/components/dao/WorkBackLink";
 import { up } from "@/lib/cn";
 
 export function generateStaticParams() {
@@ -70,8 +73,33 @@ export default async function ProjectPage({
 
   const sorted = projectsSorted();
   const idx = sorted.findIndex((p) => p.slug === slug);
-  const next = sorted[(idx + 1) % sorted.length];
   const pad = (n: number) => String(n + 1).padStart(2, "0");
+
+  /**
+   * FINAL UX §05: a FINITE sequence. The archive has a first entry and a last
+   * one, so the first offers only NEXT and the last offers PREV plus an
+   * explicit end-of-archive route - never a silent wrap back to the beginning.
+   */
+  const neighbour = (i: number) =>
+    sorted[i]
+      ? {
+          slug: sorted[i].slug,
+          title: sorted[i].title + (sorted[i].titleProvisional ? "*" : ""),
+          href: localeHref(locale, `/work/${sorted[i].slug}`),
+        }
+      : null;
+  const prevProject = neighbour(idx - 1);
+  const nextProject = neighbour(idx + 1);
+
+  /**
+   * FINAL UX §07: ONE cross-link back into Services, not a link per credited
+   * role. The project's primary canonical capability is the single honest
+   * answer to "which service does this demonstrate"; client, year, location and
+   * the role list stay informational. A project whose credited roles map to no
+   * canonical capability simply shows the discipline as text.
+   */
+  const primaryCapability = capabilitiesOfProject(project)[0] ?? null;
+  const disciplineText = t(disciplineLabel(disciplineOf(project)), locale).toUpperCase();
 
   const hero = project.hero ?? project.cover;
   const gallery = project.gallery.filter((g) => g.kind !== "bts");
@@ -85,12 +113,7 @@ export default async function ProjectPage({
   const provisional = project.titleProvisional ? "*" : "";
 
   return (
-    <DaoShell
-      locale={locale}
-      messages={m}
-      veil="blue"
-      returnTab={{ label: up(m.nav.work), parent: "/work" }}
-    >
+    <DaoShell locale={locale} messages={m} veil="blue" footer footerGround="light">
       <article className="dao-page dpj" data-dao-scene="light" style={{ paddingTop: 0 }}>
         {/* opening title on the blue sheet the archive frame expanded into */}
         <header className="dpj__opening" data-dao-scene="dark">
@@ -101,6 +124,14 @@ export default async function ProjectPage({
               style={{ display: "flex", flexDirection: "column", gap: 26, position: "relative" }}
             >
               <div className="dpj__idrow dao-fade">
+                {/* §03/§04: the contextual masthead back. Carries the archive
+                    filter the reader came from and, when this is the project
+                    they opened, brings that card back into view (§01). */}
+                <WorkBackLink
+                  work={localeHref(locale, "/work")}
+                  label={up(m.nav.work)}
+                  slug={project.slug}
+                />
                 <span className="dpj__prj">PRJ-{pad(idx)}</span>
                 <span className="dpj__casestudy">{up(L.caseStudy)}</span>
               </div>
@@ -134,7 +165,19 @@ export default async function ProjectPage({
               </div>
               <div className="dpj__metarow">
                 <dt className="dpj__metalabel">{L.discipline}</dt>
-                <dd>{t(disciplineLabel(disciplineOf(project)), locale).toUpperCase()}</dd>
+                <dd>
+                  {primaryCapability ? (
+                    <Link
+                      href={localeHref(locale, `/services#${primaryCapability}`)}
+                      className="dpj__disciplinelink"
+                    >
+                      {disciplineText}
+                      <span aria-hidden="true"> →</span>
+                    </Link>
+                  ) : (
+                    disciplineText
+                  )}
+                </dd>
               </div>
               <div className="dpj__metarow dpj__metarow--role">
                 <dt className="dpj__metalabel">{L.role}</dt>
@@ -316,35 +359,23 @@ export default async function ProjectPage({
           </section>
         )}
 
-        {/* next project tear */}
-        <Link href={localeHref(locale, `/work/${next.slug}`)} className="dpj__next">
-          <div className="dao-grain--strong" aria-hidden="true" />
-          <span
-            className="dao-label"
-            style={{
-              display: "block",
-              color: "rgba(242,237,227,.8)",
-              letterSpacing: ".26em",
-              position: "relative",
-            }}
-          >
-            {up(L.next)} - PRJ-{pad((idx + 1) % sorted.length)}
-          </span>
-          <span className="dpj__nexttitle" style={{ marginTop: 10 }}>
-            {next.title}
-            {next.titleProvisional ? "*" : ""}
-            <span className="dao-strike" aria-hidden="true" />
-          </span>
-          <span className="dpj__nextpeek" aria-hidden="true">
-            <Image
-              src={(next.hero ?? next.cover).src}
-              alt=""
-              fill
-              sizes="300px"
-              className="object-cover"
-            />
-          </span>
-        </Link>
+        {/* §05: finite archive traversal - position, PREV, NEXT, and an
+            end-of-archive route on the last entry. This replaces the wrapping
+            "next project" tear, which turned an editorial archive into a
+            carousel with no beginning and no end. */}
+        <ProjectSequence
+          prev={prevProject}
+          next={nextProject}
+          position={`PRJ-${pad(idx)} / ${String(sorted.length).padStart(2, "0")}`}
+          positionLabel={format(L.positionLabel, { n: idx + 1, total: sorted.length })}
+          labels={{
+            previous: L.previous,
+            next: L.next,
+            endOfArchive: L.endOfArchive,
+            viewAllWork: L.viewAllWork,
+          }}
+          workHref={localeHref(locale, "/work")}
+        />
       </article>
     </DaoShell>
   );

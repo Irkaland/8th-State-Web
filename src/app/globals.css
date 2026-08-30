@@ -98,9 +98,31 @@ summary {
   cursor: pointer;
 }
 
-/* Accessible visible focus everywhere */
+/* Accessible visible focus everywhere.
+
+   FINAL UX §15: the ring is now GROUND-AWARE, defined once here rather than
+   per component. The site prints on four grounds - paper, ink, brand blue and
+   the lab green - and a single terracotta ring cannot clear 3:1 against all
+   four: on the blue it is 1.2:1 (the same failure the services palette test
+   already documents for the studio red on that ground) and on ink it is dim.
+   The ring colour is therefore a token that each dark ground re-points at
+   paper, which is unmistakable on every one of them. Shape, width and offset
+   are unchanged, so nothing about the art direction moves. */
+:root {
+  --dao-focus-ring: var(--focus);
+}
+/* every dark printed ground the site has */
+[data-dao-scene="dark"],
+.dao-page--ink,
+.dao-page--green,
+.dao-nav,
+.dao-svc,
+.dwk,
+.dao-slimfoot--paper {
+  --dao-focus-ring: var(--paper);
+}
 :where(a, button, input, textarea, select, [tabindex]):focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--dao-focus-ring, var(--focus));
   outline-offset: 3px;
   border-radius: 1px;
 }
