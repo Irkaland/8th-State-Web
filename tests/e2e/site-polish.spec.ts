@@ -507,7 +507,14 @@ test.describe("§17-§20 the site BACK control goes to the page's parent", () =>
       const beforeHref = await page.locator(".dao-returntab").getAttribute("href");
 
       // switch language on the page itself - this is the step that used to add a
-      // history entry and send BACK into the previous language
+      // history entry and send BACK into the previous language.
+      //
+      // The chrome has to be awake first. `html[data-dao-idle]` fades the
+      // language switcher (dao.css), so an idle or mid-transition chrome leaves
+      // the link resolvable but never "stable", and the click then waits out the
+      // whole test timeout. Every other click in this file wakes the chrome;
+      // this one did not, which is why it was the last test failing under load.
+      await wakeChrome(page);
       await page
         .locator(".dao-lang a")
         .filter({ hasText: to === "/ka" ? "KA" : "EN" })
