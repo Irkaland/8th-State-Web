@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { gotoRoute } from "./helpers";
+import { gotoRoute, settledBox } from "./helpers";
 
 /**
  * /team - the contact sheet, as built.
@@ -37,7 +37,7 @@ type Sample = { left: number; top: number; w: number; h: number; phase: string }
  * assertions can be about the JOURNEY (where it starts, that it interpolates,
  * where it ends) rather than about any single frame.
  */
-async function sampleTravel(page: Page, act: () => Promise<void>, settleMs: number) {
+async function sampleTravel(page: Page, act: () => Promise<void>) {
   await page.evaluate(() => {
     (window as unknown as { __dtm: unknown[] }).__dtm = [];
     const log = (window as unknown as { __dtm: unknown[] }).__dtm;
@@ -58,7 +58,24 @@ async function sampleTravel(page: Page, act: () => Promise<void>, settleMs: numb
     requestAnimationFrame(tick);
   });
   await act();
-  await page.waitForTimeout(settleMs);
+  // The travel is over when the stage says so, not when a timer expires. A
+  // fixed wait encodes how fast the machine is: on a loaded box it fires
+  // while the transition is still interpolating, and the last sampled frame
+  // is then mid-flight - which is exactly how the recorded morph flakes
+  // failed (a sheet 3px and 20px off its final centre).
+  //
+  // Terminal state differs by direction: opening ends with the stage at
+  // phase "open", closing ends with the stage unmounted. Wait for either.
+  await page.waitForFunction(
+    () => {
+      const stage = document.querySelector(".dtm__stage");
+      return !stage || stage.getAttribute("data-dtm-phase") === "open";
+    },
+    null,
+    { timeout: 10_000 },
+  );
+  // and, when it is still standing, until its box has stopped moving
+  if (await page.locator(".dtm__morph").count()) await settledBox(page, ".dtm__morph");
   return (await page.evaluate(() => (window as unknown as { __dtm: unknown[] }).__dtm)) as Sample[];
 }
 
@@ -432,7 +449,7 @@ test.describe("§08/§11 the expanded profile", () => {
         h: Math.round(r.height),
       };
     });
-    const seen = await sampleTravel(page, () => card.click(), 1000);
+    const seen = await sampleTravel(page, () => card.click());
     expect(seen.length, "the travel produced frames").toBeGreaterThan(8);
     const vp = await page.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }));
 
@@ -514,7 +531,7 @@ test.describe("§08/§11 the expanded profile", () => {
     await page.waitForTimeout(900);
     const vp = await page.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }));
 
-    const seen = await sampleTravel(page, () => page.keyboard.press("Escape"), 1100);
+    const seen = await sampleTravel(page, () => page.keyboard.press("Escape"));
     expect(seen.length, "the close produced frames").toBeGreaterThan(8);
 
     // it leaves from the sheet's rest position...
@@ -776,7 +793,9 @@ test.describe("§12 mobile", () => {
         const at = await page.evaluate(() => Math.round(window.scrollY));
         await card.click();
         await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-        await page.waitForTimeout(950);
+        // measure the settled sheet, not whatever frame a timer lands on
+        await page.locator('.dtm__stage[data-dtm-phase="open"]').waitFor({ timeout: 10_000 });
+        await settledBox(page, ".dtm__morph");
         const m = await page.evaluate(() => {
           const el = document.querySelector(".dtm__morph") as HTMLElement;
           const r = el.getBoundingClientRect();
@@ -828,7 +847,7 @@ test.describe("§11 reduced motion", () => {
     const at = await page.evaluate(() => Math.round(window.scrollY));
 
     // the sheet never stands on the card: it is simply present, centred
-    const seen = await sampleTravel(page, () => card.click(), 500);
+    const seen = await sampleTravel(page, () => card.click());
     expect(seen.length).toBeGreaterThan(4);
     const vp = await page.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }));
     for (const [n, f] of seen.entries()) {

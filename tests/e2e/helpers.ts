@@ -55,3 +55,53 @@ export function collectConsoleErrors(page: Page) {
   page.on("pageerror", (err) => errors.push(String(err)));
   return () => errors;
 }
+
+/**
+ * Wait until an element's box has stopped moving.
+ *
+ * The Team morph, and any other CSS transition the suite measures, finishes
+ * when the geometry stops changing - not when an arbitrary number of
+ * milliseconds has elapsed. A fixed wait encodes an assumption about how fast
+ * the machine is: on a loaded box the transition is still interpolating when
+ * the timer fires, and the test then measures a mid-flight frame and fails on
+ * a contract the product actually honours. Both recorded morph flakes were
+ * exactly that - a sheet 3px and 20px off its final centre, and one 4px past
+ * the viewport bottom.
+ *
+ * Polling on "raf" evaluates once per animation frame, so this asks the real
+ * question: has the box been identical for three consecutive frames? Under
+ * contention it simply waits longer, which is the correct behaviour.
+ *
+ * This does NOT relax any assertion - it only makes the measurement happen at
+ * the moment the product has actually settled.
+ */
+export async function settledBox(page: Page, selector: string, timeout = 15_000) {
+  // a fresh run each time: the marker is per-page and would otherwise carry a
+  // previous element's geometry into this wait
+  await page.evaluate(() => {
+    delete (window as unknown as { __settle?: unknown }).__settle;
+  });
+  await page.waitForFunction(
+    (sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return false;
+      // 1. no transition is still running on the element. Checking geometry
+      //    alone is not enough: an ease with a slow start repeats the same
+      //    ROUNDED box for several frames, which reads as 'settled' while the
+      //    box is in fact at the very beginning of its travel.
+      const running = el.getAnimations().filter((a) => a.playState === "running");
+      if (running.length) return false;
+      // 2. and the box has genuinely stopped moving. Six frames is ~100ms at
+      //    60fps - long enough that a plateau inside a real transition cannot
+      //    be mistaken for the end of one.
+      const r = el.getBoundingClientRect();
+      const key = [r.left, r.top, r.width, r.height].map((v) => Math.round(v)).join(",");
+      const w = window as unknown as { __settle?: { key: string; n: number } };
+      w.__settle =
+        w.__settle && w.__settle.key === key ? { key, n: w.__settle.n + 1 } : { key, n: 0 };
+      return w.__settle.n >= 6;
+    },
+    selector,
+    { timeout, polling: "raf" },
+  );
+}
