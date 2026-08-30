@@ -116,14 +116,18 @@ describe("§02 capability preview routes truthfully", () => {
     }
   });
 
-  it("drops the hand-picked fragment map that paired capabilities with unrelated work", () => {
-    const src = read("src/components/dao/ServicesAct.tsx");
+  it("still routes every capability to its own filtered archive, from /services", () => {
+    // The homepage act that carried the worked-example stills was replaced by
+    // the approved What We Make dossier, so the capability -> archive route is
+    // now owned by the catalogue page. The rule this was written to protect -
+    // a capability never borrows another capability's photograph, and its link
+    // is built from the canonical id - is unchanged and still checked.
+    const src = read("src/app/[locale]/services/page.tsx");
     expect(src).not.toContain("const FRAGMENTS");
-    // the still is a link to the canonical capability filter
-    expect(src).toContain("capabilityWorkHref");
-    expect(src).toContain("data-dao-capability");
-    // and a collapsed row must not leave its link focusable
-    expect(src).toContain("inert={!isOpen}");
+    expect(src).toContain("CapabilityWorkLink");
+    const link = read("src/components/dao/CapabilityWorkLink.tsx");
+    expect(link).toContain("capabilityWorkHref");
+    expect(link).toContain("data-dao-capability");
   });
 });
 
@@ -436,19 +440,23 @@ describe("§01 the four layer descriptors are preserved", () => {
     expect(DAO_SERVICE_GROUPS[3].layer.en).toBe("The completion layer");
   });
 
-  it("keeps the group heading clearly ahead of its capabilities at every width", () => {
+  it("keeps the dossier title clearly ahead of its service rows at every width", () => {
+    // The homepage no longer prints group headings above capabilities - the
+    // approved dossier prints five top-level services under one title. The
+    // requirement is the same one this test was written for: the heading has
+    // to lead its rows at BOTH ends of the clamp, not only at one width.
     const css = read("src/app/dao.css");
-    const head = css.match(/\.dao-svc__groupname \{[\s\S]*?\n\}/)![0];
-    const cap = css.match(/\.dao-svc__name \{[\s\S]*?\n\}/)![0];
+    const head = css.match(/\.dao-wwm__title \{[\s\S]*?\n\}/)![0];
+    const row = css.match(/\.dao-wwm__name \{[\s\S]*?\n\}/)![0];
     const floor = (r: string) => Number(r.match(/font-size: clamp\((\d+(?:\.\d+)?)px/)![1]);
     const ceil = (r: string) =>
       Number(r.match(/font-size: clamp\([^,]+,[^,]+,\s*(\d+(?:\.\d+)?)px\)/)![1]);
-    // the old 19px vs 18px was effectively flat
-    expect(floor(head) - floor(cap)).toBeGreaterThanOrEqual(4);
-    expect(ceil(head)).toBeGreaterThan(ceil(cap));
-    // and the capabilities were not shrunk to achieve it
-    expect(floor(cap)).toBe(18);
-    expect(ceil(cap)).toBe(30);
+    expect(floor(head) - floor(row)).toBeGreaterThanOrEqual(4);
+    expect(ceil(head)).toBeGreaterThan(ceil(row));
+    // and the rows were not shrunk to achieve it - they stay the primary
+    // navigation into each service, not a caption
+    expect(floor(row)).toBe(24);
+    expect(ceil(row)).toBe(46);
   });
 });
 

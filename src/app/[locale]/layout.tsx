@@ -163,6 +163,15 @@ export default async function LocaleLayout({
   return (
     <html
       lang={LOCALE_HTML_LANG[locale]}
+      /* The pre-paint motion switch below stamps data-dao-motion on this
+         element before React hydrates, so the client tree legitimately carries
+         one attribute the server response does not. That is the whole point -
+         the decision depends on the reader's own motion preference, which the
+         server cannot know - and it is the standard shape for a pre-paint
+         preference script. Scoped to <html> only: it suppresses the warning for
+         THIS element's attributes and nothing below it, so a real mismatch
+         anywhere in the tree still surfaces. */
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${georgian.variable} ${adevas.variable} ${optika.variable} ${glacier.variable} ${sanet.variable} ${caveat.variable}`}
     >

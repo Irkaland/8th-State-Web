@@ -9,7 +9,6 @@ import {
   reelMessages,
   introMessages,
   selectedWorkMessages,
-  servicesActMessages,
   studioLabMessages,
   contactActMessages,
   workArchiveMessages,
@@ -90,7 +89,6 @@ describe("§21 client components receive slices, never the whole dictionary", ()
     ["Showreel", "ReelMessages"],
     ["StudioIntro", "IntroMessages"],
     ["SelectedWork", "SelectedWorkMessages"],
-    ["ServicesAct", "ServicesActMessages"],
     ["StudioLab", "StudioLabMessages"],
     ["ContactAct", "ContactActMessages"],
     ["DaoBrief", "BriefMessages"],
@@ -100,6 +98,19 @@ describe("§21 client components receive slices, never the whole dictionary", ()
     ["TeamContactSheet", "TeamSheetMessages"],
     ["WorkArchive", "WorkArchiveMessages"],
   ];
+
+  /**
+   * The What We Make dossier replaced the ServicesAct client component. It is a
+   * SERVER component - five links, no state, every responsive decision a media
+   * query - so it takes the whole dictionary freely (which never crosses the
+   * wire) and needs no slice. This asserts that, rather than letting the entry
+   * simply disappear from the list above.
+   */
+  it("WhatWeMake is a server component, so it needs no slice", () => {
+    const src = read("src/components/dao/WhatWeMake.tsx");
+    expect(src, "WhatWeMake must not be a client component").not.toContain('"use client"');
+    expect(src, "a server component may take the full dictionary").toMatch(/messages: Messages/);
+  });
 
   for (const [component, slice] of CLIENT_WITH_SLICE) {
     it(`${component} takes ${slice}`, () => {
@@ -179,7 +190,6 @@ describe("§05 each slice carries what its component renders, and no more", () =
   });
 
   it("carries the cross-namespace strings its components genuinely need", () => {
-    expect(servicesActMessages(en).projectsShown).toBe(en.daoRoutes.work.projectsShown);
     expect(contactActMessages(en).city).toBe(en.dao.ident.city);
     expect(contactActMessages(en).contactNav).toBe(en.dao.nav.contact);
     expect(labMessages(en).contentRequired).toBe(en.daoRoutes.contentRequired);
@@ -190,7 +200,6 @@ describe("§05 each slice carries what its component renders, and no more", () =
     const pairs: [string, unknown, unknown][] = [
       ["chrome", chromeMessages(en), chromeMessages(ka)],
       ["ident", identMessages(en), identMessages(ka)],
-      ["servicesAct", servicesActMessages(en), servicesActMessages(ka)],
       ["contactAct", contactActMessages(en), contactActMessages(ka)],
       ["lab", labMessages(en), labMessages(ka)],
       ["brief", briefMessages(en), briefMessages(ka)],

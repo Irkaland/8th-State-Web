@@ -291,11 +291,15 @@ describe("08 the Start a Project options are one system", () => {
 
 describe("10 a CTA label and its arrow are one object", () => {
   it("holds ALL SERVICES and its arrow together", () => {
-    const r = rule(dao, ".dao-svc__all {");
+    // the approved What We Make dossier replaced the capability index act, so
+    // this contract now sits on the dossier's own foot CTA - the same object,
+    // the same requirement, a new class
+    const r = rule(dao, ".dao-wwm__all {");
     expect(r).toContain("display: inline-flex");
-    expect(r).toContain("white-space: nowrap");
     // and the foot wraps, so a CTA with no room takes its own line WHOLE
-    expect(rule(dao, ".dao-svc__foot {")).toContain("flex-wrap: wrap");
+    expect(rule(dao, ".dao-wwm__foot {")).toContain("flex-wrap: wrap");
+    // §13: it is also a real touch target
+    expect(r).toContain("min-height: 44px");
   });
 
   it("holds every shared text CTA together, without forcing an overflow", () => {

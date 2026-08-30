@@ -267,9 +267,12 @@ const en = {
       intro:
         "Nine capabilities, four kinds of work. Groups describe kinds of work, not a required order - scope is determined per project.",
       all: "All Services",
-      note: "Each row reveals a plain-language explanation and related work on open.",
-      previewCta: "See related work",
-      previewEmpty: "No projects credited to this capability yet",
+      // the production dossier (approved What We Make design)
+      dossier: "Production dossier",
+      departments: "Five departments · One production line",
+      lede: "Five departments under one roof - a production can enter at any of them and move through the rest without leaving the studio.",
+      plate: "PL.",
+      chain: ["Production", "Design", "Image", "Direction", "Graphics"],
     },
     lab: {
       act: "Another room in the same house",

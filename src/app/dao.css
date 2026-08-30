@@ -2154,378 +2154,463 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
 }
 
 /* ============================================================
-   Act 04 - Services (editorial index)
-   ============================================================ */
+   Act 04 - WHAT WE MAKE (approved production dossier)
+   ============================================================
 
-/* §05: the section is a printed blue field, not paper. The blue is the
-   approved brand hex and the paper material stays on top of it - the grain is
-   multiplied INTO the colour, so the fibre reads as tooth in the ink rather
-   than as a grey film laid over it, and the weave adds the canvas bite. Every
-   descendant below is recoloured for the new ground; nothing relies on the
-   ink-on-paper defaults any more. */
-.dao-svc {
+   A printed dossier on the approved brand blue. The blue is the base and the
+   paper material sits ON TOP of it - the grain is multiplied INTO the colour,
+   so the fibre reads as tooth in the ink rather than as a grey film laid over
+   it, and the weave adds the canvas bite.
+
+   The composition is editorial, not a card grid: five rows separated by
+   hand-drawn rules, each row a number, a title with its own coloured stroke, a
+   keyword run, and a production plate. Nothing is rounded, nothing is a card,
+   nothing is glass.
+
+   RESPONSIVE BEHAVIOUR IS ENTIRELY HERE. The prototype read window.innerWidth
+   to decide whether to draw the plates, the wide marks and the long keyword
+   run; all three are media queries now, so the section ships no JavaScript of
+   its own (§40). */
+
+.dao-wwm {
   position: relative;
+  overflow: hidden;
   background: var(--dao-blue);
   color: var(--dao-paper);
-  overflow: hidden;
-  padding: 96px var(--dao-gutter) 110px;
+  padding: clamp(56px, 9vh, 100px) 0 0;
 }
-/* the paper material over the blue, pushed well past the paper-ground
-   default (0.4) so the texture is unmistakably present at arm's length */
-.dao-svc > .dao-grain--strong {
+.dao-wwm > .dao-grain--strong {
+  /* pushed well past the paper-ground default so the stock is unmistakably
+     present at arm's length on this mid-tone blue */
   opacity: 0.62;
 }
-.dao-svc > .dao-weave {
+.dao-wwm > .dao-weave {
   opacity: 0.22;
 }
-/* WHAT WE MAKE - major section title, DISPLAY role */
-.dao-svc__title {
-  font-family: var(--dao-f-display);
-  font-size: clamp(30px, 4.4vw, 64px);
-  line-height: 1;
-  color: var(--dao-paper);
+
+/* ---------- production traces (decorative, lowest layer) ---------- */
+
+.dao-wwm__marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
 }
-/* §02: .dao-svc__intro is gone with the paragraph it styled. The /services
-   cover keeps its own intro under .dsv__intro - a different surface and a
-   different string, both untouched. */
-/* §03: a single column. The 300px left rail that carried the four group
-   descriptions is gone - each group now heads its own capabilities inline, at
-   every width, which is what mobile already did. */
-.dao-svc__grid {
-  display: block;
-  margin-top: 48px;
+.dao-wwm__mark {
+  position: absolute;
+  stroke: var(--dao-paper);
 }
-.dao-svc__ornament {
-  /* was the rail's bottom ornament; now sits with the section heading */
-  display: block;
-  margin: 18px 0 0 auto;
-  width: 96px;
-  height: 96px;
-  background: rgba(242, 237, 227, 0.18);
-  --m: url("/assets/graphics/symbols-50.webp");
+.dao-wwm__marktext {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  fill: var(--dao-paper);
+  stroke: none;
 }
-@media (max-width: 720px) {
-  .dao-svc__ornament {
-    width: 68px;
-    height: 68px;
+.dao-wwm__marktext--wide {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+}
+/* the heavy drafting traces belong to the wide composition only - on a phone
+   the artwork IS the page and a set plan behind five rows is clutter (§31) */
+.dao-wwm__mark--plan,
+.dao-wwm__mark--frame,
+.dao-wwm__mark--sheet,
+.dao-wwm__mark--pencil,
+.dao-wwm__mark--safe {
+  display: none;
+}
+@media (min-width: 761px) {
+  .dao-wwm__mark--plan,
+  .dao-wwm__mark--frame,
+  .dao-wwm__mark--sheet,
+  .dao-wwm__mark--pencil,
+  .dao-wwm__mark--safe {
+    display: block;
   }
 }
-.dao-svc__list {
+.dao-wwm__mark--plan {
+  right: -170px;
+  top: 15%;
+  width: 640px;
+  height: 520px;
+  opacity: 0.075;
+  transform: rotate(-2deg);
+}
+.dao-wwm__mark--frame {
+  left: var(--dao-gutter);
+  top: 34%;
+  width: 230px;
+  height: 110px;
+  opacity: 0.1;
+}
+.dao-wwm__mark--sheet {
+  right: clamp(16px, 2.5vw, 40px);
+  top: 56%;
+  width: 150px;
+  height: 40px;
+  opacity: 0.09;
+  transform: rotate(1.5deg);
+}
+.dao-wwm__mark--pencil {
+  left: -40px;
+  bottom: 9%;
+  width: 300px;
+  height: 150px;
+  opacity: 0.06;
+}
+.dao-wwm__mark--safe {
+  right: 22%;
+  bottom: -30px;
+  width: 260px;
+  height: 120px;
+  opacity: 0.07;
+}
+.dao-wwm__mark--reg {
+  right: clamp(18px, 3vw, 44px);
+  bottom: 7%;
+  width: 34px;
+  height: 34px;
+  opacity: 0.12;
+}
+.dao-wwm__mark--crop {
+  left: 7px;
+  top: 7px;
+  width: 26px;
+  height: 26px;
+  opacity: 0.14;
+}
+
+/* ---------- masthead ---------- */
+
+.dao-wwm__mast {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 0 var(--dao-gutter) 14px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  --ls: 0.28em;
+  letter-spacing: var(--ls);
+  color: rgb(242 237 227 / 0.66);
+  white-space: nowrap;
+}
+/* the middle line is the first to go when the masthead stops fitting - it is
+   the least load-bearing of the three */
+.dao-wwm__mastmid {
+  display: none;
+}
+@media (min-width: 761px) {
+  .dao-wwm__mastmid {
+    display: inline;
+  }
+}
+.dao-wwm__mastright {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.dao-wwm__mastright svg {
+  width: 11px;
+  height: 11px;
+  opacity: 0.5;
+  stroke: var(--dao-paper);
+  flex: none;
+}
+:lang(ka) .dao-wwm__mast {
+  font-family: var(--dao-f-ka);
+  --ls: 0.1em;
+  white-space: normal;
+}
+
+/* ---------- hand-drawn rules ---------- */
+
+.dao-wwm__rule {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 4px;
+  stroke: var(--dao-paper);
+  opacity: 0.26;
+}
+.dao-wwm__mastrule {
+  width: calc(100% - 2 * var(--dao-gutter));
+  margin: 0 auto;
+  opacity: 0.32;
+}
+
+/* ---------- title band ---------- */
+
+.dao-wwm__band {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+  flex-wrap: wrap;
+  padding: clamp(30px, 5.5vh, 58px) var(--dao-gutter) clamp(28px, 5vh, 52px);
+}
+.dao-wwm__title {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(44px, 5.8vw, 86px);
+  line-height: 0.95;
+  color: var(--dao-paper);
+}
+.dao-wwm__lede {
+  margin: 0;
+  max-width: 360px;
+  font-size: clamp(13px, 1vw, 15px);
+  line-height: 1.7;
+  color: rgb(242 237 227 / 0.82);
+  text-wrap: pretty;
+}
+
+/* ---------- the five rows ---------- */
+
+.dao-wwm__rows {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
 }
-.dao-svc__row {
-  border-bottom: 1px solid rgba(242, 237, 227, 0.2);
-}
-.dao-svc__row:last-child {
-  border-bottom: 0;
-}
-.dao-svc__rowbtn {
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-  width: 100%;
-  padding: 13px 0;
-  background: none;
-  border: 0;
-  color: var(--dao-paper);
-  text-align: left;
-  transition:
-    padding-left 250ms var(--dao-ease-out),
-    background-color 250ms ease;
-}
-.dao-svc__num {
-  font-family: var(--dao-f-numeral);
-  font-size: 14px;
-  transition: color 200ms ease;
-}
-/* §06: capability names are the STRONG editorial role (Optika 600), not the
-   display face. They are an index of what the studio does - a list to be read
-   and scanned - so they take the same weight the site gives strong editorial
-   text everywhere else. Adevas stays on the section title above them, which
-   keeps the display face doing display work only. */
-.dao-svc__name {
+.dao-wwm__row {
   position: relative;
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-editorial);
-  /* §04: eased down from clamp(21px, 2.8vw, 40px) so the group label above it
-     leads. Deliberately still large - these are the primary navigation into
-     each capability, not a caption. */
-  font-size: clamp(18px, 2.15vw, 30px);
-  line-height: 1;
-}
-/* §07: barely thicker than a pencil line. The stroke keeps its hand-drawn
-   paint-stroke mask (inherited from .dao-strike) - it is thinner, not
-   straighter, so the ragged ends and uneven body survive at 3px. */
-.dao-svc__name .dao-strike {
-  height: 3px;
-  /* the base rule parks an 8px stroke at bottom:-8px; a 3px one has to ride
-     back up or it detaches from the word it underlines */
-  bottom: -5px;
-  background: var(--g, var(--dao-orange));
-}
-.dao-svc__rowbtn:hover,
-.dao-svc__rowbtn:focus-visible,
-.dao-svc__row.is-open .dao-svc__rowbtn {
-  padding-left: 18px;
-  background: var(--tint, rgba(242, 237, 227, 0.08));
-}
-.dao-svc__rowbtn:hover .dao-strike,
-.dao-svc__rowbtn:focus-visible .dao-strike,
-.dao-svc__row.is-open .dao-strike {
-  transform: scaleX(1);
-}
-/* the numeral follows the GROUP colour, not the per-capability underline
-   accent (§08): several of those accents are deliberately dark strokes that
-   would be unreadable as 14px text on the blue ground. */
-.dao-svc__rowbtn:hover .dao-svc__num,
-.dao-svc__row.is-open .dao-svc__num {
-  color: var(--n, var(--dao-yellow));
-}
-.dao-svc__body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 350ms var(--dao-ease-out);
-}
-.dao-svc__row.is-open .dao-svc__body {
-  grid-template-rows: 1fr;
-}
-.dao-svc__bodyin {
-  overflow: hidden;
-}
-.dao-svc__detail {
   display: flex;
   align-items: center;
-  gap: 28px;
-  padding: 6px 0 20px 34px;
-}
-.dao-svc__desc {
-  font-size: 13px;
-  line-height: 1.65;
-  color: rgba(242, 237, 227, 0.82);
-  max-width: 480px;
-}
-/* §02: the worked-example still is now a link into that capability's own
-   filtered archive, so it has to look and behave like a destination. The frame,
-   the tilt and the shadow are unchanged; what is added is a visible label, a
-   pointer, a hover/focus lift and a real focus ring. */
-.dao-svc__frag {
-  margin-left: auto;
-  display: block;
-  width: 200px;
-  height: 120px;
-  transform: rotate(2.5deg);
-  box-shadow: 0 12px 28px rgba(19, 18, 16, 0.28);
-  position: relative;
-  overflow: hidden;
-  flex: none;
+  gap: clamp(18px, 2.6vw, 40px);
+  padding: clamp(18px, 3.4vh, 34px) var(--dao-gutter);
   color: var(--dao-paper);
   transition:
-    transform 260ms var(--dao-ease-micro),
-    box-shadow 260ms var(--dao-ease-micro);
+    background-color 240ms ease,
+    padding-left 240ms ease;
 }
+/* the indent is a pointer affordance; keyboard focus gets it too, and touch
+   gets neither - there is no hover on a phone and nothing here depends on it */
 @media (hover: hover) {
-  .dao-svc__frag:hover {
-    transform: rotate(0deg) translateY(-3px);
-    box-shadow: 0 18px 38px rgba(19, 18, 16, 0.36);
+  .dao-wwm__row:hover {
+    background: rgb(242 237 227 / 0.06);
+    padding-left: clamp(30px, 4vw, 62px);
   }
 }
-.dao-svc__frag:focus-visible {
-  outline: 2px solid var(--dao-yellow);
-  outline-offset: 3px;
-  transform: rotate(0deg) translateY(-3px);
+.dao-wwm__row:focus-visible {
+  background: rgb(242 237 227 / 0.06);
 }
-/* the image itself carries the decode fade, so the link (and its label) stay
-   visible while the photograph is still resolving */
-.dao-svc__fragimg {
-  opacity: 0;
-  transition: opacity 320ms var(--dao-ease-micro);
+.dao-wwm__n {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(11px, 0.9vw, 13px);
+  letter-spacing: var(--ls, 0.2em);
+  color: var(--g, var(--dao-paper));
+  min-width: 34px;
+  flex: none;
 }
-.dao-svc__fragimg.is-ready {
-  opacity: 1;
+.dao-wwm__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
-@media (prefers-reduced-motion: reduce) {
-  .dao-svc__frag,
-  .dao-svc__fragimg {
-    transition: none;
-  }
-  .dao-svc__frag:hover,
-  .dao-svc__frag:focus-visible {
-    transform: rotate(2.5deg);
-  }
+.dao-wwm__namewrap {
+  position: relative;
+  align-self: flex-start;
+  max-width: 100%;
 }
-/* the label sits on its own scrim so it survives any still behind it */
-.dao-svc__fragcta {
+.dao-wwm__name {
+  font-family: var(--dao-f-display);
+  font-size: clamp(24px, 2.9vw, 46px);
+  line-height: 1;
+  color: var(--dao-paper);
+  text-wrap: balance;
+}
+.dao-wwm__namerule {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  padding: 14px 10px 7px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-copy);
-  font-size: 8.5px;
+  bottom: -8px;
+  width: 100%;
+  height: 4px;
+  opacity: 0.9;
+}
+.dao-wwm__kw {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(10px, 0.82vw, 12px);
+  letter-spacing: 0.24em;
+  line-height: 2;
+  color: rgb(242 237 227 / 0.62);
+}
+/* one keyword run in the markup, two presentations: the short run is the
+   phone composition and the long one is everything above it */
+.dao-wwm__kw--short {
+  font-size: 9.5px;
   letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--dao-paper);
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0) 100%);
+  line-height: 1.9;
 }
-/* §02: a capability with no credited project borrows no photograph. It keeps the
-   route - the archive answers honestly - and says why the frame is empty. */
-.dao-svc__fragnone {
-  margin-left: auto;
-  width: 200px;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px;
-  border: 1px dashed rgba(242, 237, 227, 0.3);
-  transform: rotate(2.5deg);
-}
-.dao-svc__fragnonetext {
-  font-size: 10px;
-  line-height: 1.5;
-  color: rgba(242, 237, 227, 0.6);
-}
-.dao-svc__fragnonecta {
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-copy);
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--dao-yellow);
-}
-@media (max-width: 720px) {
-  .dao-svc__frag,
-  .dao-svc__fragnone {
-    margin-left: 0;
+@media (min-width: 761px) {
+  .dao-wwm__kw--short {
+    display: none;
   }
 }
-/* §13: the empty-capability note is a fixed 200px card inside a row that also
-   carries 34px of left padding and a 28px gap. Below about 560 there is no
-   longer room for all three, and the note was being clipped by
-   .dao-svc__bodyin's overflow. The row wraps and gives up its indent instead;
-   the note keeps its width and its paper tilt. */
-@media (max-width: 560px) {
-  .dao-svc__detail {
-    flex-wrap: wrap;
-    padding-left: 0;
-    gap: 16px;
-  }
-  .dao-svc__fragnone {
-    max-width: 100%;
+@media (max-width: 760px) {
+  .dao-wwm__kw:not(.dao-wwm__kw--short) {
+    display: none;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .dao-svc__frag {
-    transition: none;
+:lang(ka) .dao-wwm__kw {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.06em;
+}
+
+/* the production plate - wide composition only */
+.dao-wwm__plate {
+  display: none;
+}
+@media (min-width: 761px) {
+  .dao-wwm__plate {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: none;
   }
 }
-.dao-svc__frag img {
+.dao-wwm__plateimg {
+  position: relative;
+  display: block;
+  width: clamp(150px, 15vw, 230px);
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: rgb(242 237 227 / 0.08);
+}
+.dao-wwm__plateimg img {
+  filter: saturate(0.88);
+}
+.dao-wwm__plategrain {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background: url("/assets/textures/paper-grain.webp");
+  background-size: 300px;
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
-/* §04: the group heading now leads. It was a 10px caps rule above the rows -
-   quieter than the capabilities under it, which inverted the hierarchy the
-   taxonomy is supposed to express. It rises to roughly the size the capability
-   titles used to be, and the capability titles step down a little, so the read
-   is GROUP -> capability rather than two labels competing.
-   The layer line stays small supporting text underneath. */
-.dao-svc__grouphead {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  /* the space above separates a group from the previous group's last
-     capability; the rule below ties it to its own capabilities */
-  padding: 46px 0 14px;
-  border-bottom: 1px solid rgba(242, 237, 227, 0.24);
-}
-.dao-svc__row:first-child + .dao-svc__grouphead,
-.dao-svc__grouphead:first-child {
-  padding-top: 4px;
-}
-/* §01: the four layer descriptors are kept - they are approved, already
-   translated brand copy, and "the completion layer" is lifted verbatim from the
-   approved Post-Production description, so the wording is not ours to rewrite.
-   What did need work was the hierarchy: heading and capability share family and
-   weight, and at the bottom of their clamps they were 19px against 18px, so the
-   heading barely led its own rows. The floor rises and the tracking opens, which
-   separates them at every width without shrinking the capabilities (those are
-   the primary navigation) and without touching a word of copy. */
-.dao-svc__groupname {
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-editorial);
-  font-size: clamp(22px, 2.5vw, 34px);
-  line-height: 1.05;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.dao-svc__grouplayer {
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-copy);
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
-  color: rgba(242, 237, 227, 0.66);
-}
-@media (max-width: 560px) {
-  .dao-svc__grouphead {
-    padding: 32px 0 12px;
-  }
-  .dao-svc__grouplayer {
-    font-size: 11.5px;
-  }
-}
-.dao-svc__foot {
+.dao-wwm__platecap {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin-top: 48px;
+  gap: 10px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: rgb(242 237 227 / 0.5);
+}
+
+/* ---------- foot ---------- */
+
+.dao-wwm__foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 20px;
-  /* §Refinement 10: the foot never wrapped, so on a phone the note squeezed
-     the CTA until the arrow was pushed onto a line of its own - a stray glyph
-     under the words, which reads as broken rather than as composition. The row
-     wraps now, so when there is not enough width for both the CTA takes its
-     own line WHOLE instead of being compressed. */
   flex-wrap: wrap;
-  row-gap: 18px;
+  padding: clamp(24px, 4.5vh, 44px) var(--dao-gutter) clamp(40px, 7vh, 72px);
 }
-.dao-svc__all {
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  color: var(--dao-paper);
-  /* the label and its arrow are ONE object: an inline-flex line with its own
-     gap, and no wrap inside it, so the arrow can never be orphaned however
-     narrow the viewport gets */
+.dao-wwm__chain {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.25em;
-  white-space: nowrap;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(9px, 0.8vw, 11px);
+  letter-spacing: 0.26em;
+  color: rgb(242 237 227 / 0.55);
 }
-/* yellow, not the usual red: red on this blue is the one palette pair that
-   vibrates instead of reading */
-.dao-svc__all:hover {
-  color: var(--dao-yellow);
+.dao-wwm__chain > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
 }
-@media (max-width: 960px) {
-  .dao-svc__grid {
-    margin-top: 30px;
+:lang(ka) .dao-wwm__chain {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+.dao-wwm__arrow {
+  width: 22px;
+  height: 8px;
+  opacity: 0.5;
+  flex: none;
+  stroke: currentcolor;
+}
+.dao-wwm__arrow--wide {
+  width: 46px;
+  height: 12px;
+  opacity: 0.8;
+  stroke-width: 1.2;
+}
+.dao-wwm__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  /* §13: a comfortably ≥44px target without changing the printed line */
+  min-height: 44px;
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: 12px;
+  --ls: 0.32em;
+  letter-spacing: var(--ls);
+  color: var(--dao-paper);
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgb(242 237 227 / 0.55);
+}
+:lang(ka) .dao-wwm__all {
+  font-family: var(--dao-f-ka);
+  --ls: 0.12em;
+}
+
+/* ---------- the narrow composition ---------- */
+
+@media (max-width: 760px) {
+  .dao-wwm__band {
+    /* the lede sits under the title rather than beside it */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
   }
-  .dao-svc__frag {
-    width: 120px;
-    height: 74px;
+  .dao-wwm__lede {
+    max-width: none;
   }
-  .dao-svc__detail {
-    padding-left: 23px;
-    gap: 14px;
+  .dao-wwm__row {
+    /* the number keeps its own column so the titles stay on one left edge */
+    align-items: flex-start;
+    gap: 16px;
+    padding-block: 20px;
+  }
+  .dao-wwm__n {
+    min-width: 26px;
+    padding-top: 4px;
+  }
+  .dao-wwm__foot {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 26px;
+  }
+}
+@media (max-width: 420px) {
+  .dao-wwm__chain {
+    /* five words and four arrows do not fit a 320px line, and a wrapped
+       production chain reads as a list rather than a chain - the arrows go
+       and the words stay, separated by their own spacing */
+    gap: 10px;
+  }
+  .dao-wwm__chain .dao-wwm__arrow {
+    display: none;
   }
 }
 

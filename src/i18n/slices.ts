@@ -67,15 +67,9 @@ export const introMessages = (m: Messages): IntroMessages => m.dao.intro;
 export type SelectedWorkMessages = Messages["dao"]["work"];
 export const selectedWorkMessages = (m: Messages): SelectedWorkMessages => m.dao.work;
 
-/** The act's own copy plus the one archive string its preview label formats. */
-export type ServicesActMessages = {
-  services: Messages["dao"]["services"];
-  projectsShown: string;
-};
-export const servicesActMessages = (m: Messages): ServicesActMessages => ({
-  services: m.dao.services,
-  projectsShown: m.daoRoutes.work.projectsShown,
-});
+/* The What We Make dossier is a SERVER component - five links, no state, every
+   responsive decision a media query - so it needs no slice at all. The
+   ServicesActMessages slice retired with the client act it fed. */
 
 export type StudioLabMessages = Messages["dao"]["lab"];
 export const studioLabMessages = (m: Messages): StudioLabMessages => m.dao.lab;
