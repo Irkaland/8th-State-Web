@@ -30,10 +30,7 @@ const firstFamily = async (page: Page, selector: string) =>
   page.evaluate((s) => {
     const el = document.querySelector(s);
     if (!el) return null;
-    return getComputedStyle(el)
-      .fontFamily.split(",")[0]
-      .replace(/["']/g, "")
-      .trim();
+    return getComputedStyle(el).fontFamily.split(",")[0].replace(/["']/g, "").trim();
   }, selector);
 
 test.describe("§P4 Georgian renders in the brand's own faces", () => {
@@ -55,12 +52,15 @@ test.describe("§P4 Georgian renders in the brand's own faces", () => {
             .map((n) => n.textContent)
             .join("")
             .trim();
-          if (own.length > 1 && el.getClientRects().length) el.setAttribute("data-fontcheck", String(i++));
+          if (own.length > 1 && el.getClientRects().length)
+            el.setAttribute("data-fontcheck", String(i++));
         }
         return i;
       });
 
-      const { root } = (await cdp.send("DOM.getDocument", { depth: 1 })) as { root: { nodeId: number } };
+      const { root } = (await cdp.send("DOM.getDocument", { depth: 1 })) as {
+        root: { nodeId: number };
+      };
       const offenders: string[] = [];
       for (let i = 0; i < Math.min(count, 160); i++) {
         const { nodeId } = (await cdp.send("DOM.querySelector", {
@@ -74,7 +74,9 @@ test.describe("§P4 Georgian renders in the brand's own faces", () => {
         const strange = fonts.filter((f) => !BRAND.test(f.familyName));
         if (!strange.length) continue;
         const text = await page.evaluate(
-          (idx) => document.querySelector(`[data-fontcheck="${idx}"]`)?.textContent?.trim().slice(0, 40) ?? "",
+          (idx) =>
+            document.querySelector(`[data-fontcheck="${idx}"]`)?.textContent?.trim().slice(0, 40) ??
+            "",
           i,
         );
         // the monospace skip link is deliberately a system face for its Latin,
@@ -85,7 +87,9 @@ test.describe("§P4 Georgian renders in the brand's own faces", () => {
         );
         if (isSkipLink) continue;
         if (SYMBOL_ONLY.some((s) => text.includes(s))) continue;
-        offenders.push(`${strange.map((f) => `${f.familyName}x${f.glyphCount}`).join(",")} in "${text}"`);
+        offenders.push(
+          `${strange.map((f) => `${f.familyName}x${f.glyphCount}`).join(",")} in "${text}"`,
+        );
       }
       expect(offenders, offenders.join(" | ")).toEqual([]);
     });
@@ -96,12 +100,16 @@ test.describe("§P4 no faked Georgian weight", () => {
   test("Georgian text suppresses weight synthesis, English does not", async ({ page }) => {
     await gotoRoute(page, "/ka");
     expect(
-      await page.evaluate(() => getComputedStyle(document.body).getPropertyValue("font-synthesis-weight")),
+      await page.evaluate(() =>
+        getComputedStyle(document.body).getPropertyValue("font-synthesis-weight"),
+      ),
     ).toBe("none");
 
     await gotoRoute(page, "/");
     expect(
-      await page.evaluate(() => getComputedStyle(document.body).getPropertyValue("font-synthesis-weight")),
+      await page.evaluate(() =>
+        getComputedStyle(document.body).getPropertyValue("font-synthesis-weight"),
+      ),
     ).toBe("auto");
   });
 
@@ -122,7 +130,9 @@ test.describe("§P4 no faked Georgian weight", () => {
     }
   });
 
-  test("a Georgian heading is the same shape at 400 and at its requested weight", async ({ page }) => {
+  test("a Georgian heading is the same shape at 400 and at its requested weight", async ({
+    page,
+  }) => {
     // ALK Sanet has a single 400 style. With synthesis suppressed the requested
     // 600 must resolve to exactly the same outlines - that is the whole point.
     await gotoRoute(page, "/ka/services");

@@ -10,6 +10,9 @@ test-results/
 _design-reference/
 *.dc.html
 
+# Local tool state - not repository source, and never rewritten
+.claude/
+
 # Media + lockfiles
 public/media/
 package-lock.json

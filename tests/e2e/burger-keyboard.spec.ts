@@ -195,9 +195,7 @@ for (const [label, home] of [
       // Tab to SERVICES and press Enter - the whole point of the trap working
       let guard = 0;
       while (guard < 20) {
-        const href = await page.evaluate(
-          () => document.activeElement?.getAttribute("href") ?? "",
-        );
+        const href = await page.evaluate(() => document.activeElement?.getAttribute("href") ?? "");
         if (href.endsWith("/services")) break;
         await page.keyboard.press("Tab");
         guard += 1;

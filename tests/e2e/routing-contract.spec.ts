@@ -256,10 +256,7 @@ test.describe("§P0 canonical metadata describes the page, not the homepage", ()
   for (const [route, expectedPath] of cases) {
     test(`${route} canonicalises to itself`, async ({ page }) => {
       await page.goto(route);
-      const canonical = await page
-        .locator('link[rel="canonical"]')
-        .first()
-        .getAttribute("href");
+      const canonical = await page.locator('link[rel="canonical"]').first().getAttribute("href");
       expect(canonical, `${route} canonical`).toBeTruthy();
       const url = new URL(canonical!);
       expect(url.pathname.replace(/\/$/, ""), `${route} canonical path`).toBe(expectedPath);

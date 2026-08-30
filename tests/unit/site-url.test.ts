@@ -134,6 +134,8 @@ describe("§P7 canonical alternates are per route", () => {
     const ka = routeAlternates("ka", "/work/aom-summer-collection") as Record<string, unknown>;
     expect(en.canonical).toBe("/work/aom-summer-collection");
     expect(ka.canonical).toBe("/ka/work/aom-summer-collection");
-    expect((ka.languages as Record<string, string>)["x-default"]).toBe("/work/aom-summer-collection");
+    expect((ka.languages as Record<string, string>)["x-default"]).toBe(
+      "/work/aom-summer-collection",
+    );
   });
 });

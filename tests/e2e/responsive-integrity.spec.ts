@@ -27,7 +27,9 @@ const MOBILE = [430, 414, 390, 380, 375, 360, 320] as const;
 /** resize in place and let layout settle - no navigation */
 async function atWidth(page: Page, width: number) {
   await page.setViewportSize({ width, height: 844 });
-  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await page.evaluate(
+    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+  );
 }
 
 async function open(page: Page, route: string) {
@@ -68,8 +70,12 @@ test.describe("§P5 Team - the portrait never grows on a narrower screen", () =>
     const above = (await frameBox(page))!;
     await atWidth(page, 380);
     const below = (await frameBox(page))!;
-    expect(Math.abs(below.w - above.w), `381px ${above.w} vs 380px ${below.w}`).toBeLessThanOrEqual(1);
-    expect(Math.abs(below.h - above.h), `381px ${above.h} vs 380px ${below.h}`).toBeLessThanOrEqual(1);
+    expect(Math.abs(below.w - above.w), `381px ${above.w} vs 380px ${below.w}`).toBeLessThanOrEqual(
+      1,
+    );
+    expect(Math.abs(below.h - above.h), `381px ${above.h} vs 380px ${below.h}`).toBeLessThanOrEqual(
+      1,
+    );
   });
 
   test("the portrait keeps its crop", async ({ page }) => {
@@ -85,7 +91,9 @@ test.describe("§P5 Team - the portrait never grows on a narrower screen", () =>
 
 test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
   for (const locale of ["en", "ka"] as const) {
-    test(`${locale.toUpperCase()}: every A-D description is rendered and visible at mobile widths`, async ({ page }) => {
+    test(`${locale.toUpperCase()}: every A-D description is rendered and visible at mobile widths`, async ({
+      page,
+    }) => {
       await open(page, locale === "en" ? "/georgia-production" : "/ka/georgia-production");
       for (const w of [430, 390, 320]) {
         await atWidth(page, w);
@@ -95,7 +103,8 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
             const r = el.getBoundingClientRect();
             return {
               text: (el.textContent || "").trim().length,
-              visible: cs.display !== "none" && cs.visibility !== "hidden" && r.width > 0 && r.height > 0,
+              visible:
+                cs.display !== "none" && cs.visibility !== "hidden" && r.width > 0 && r.height > 0,
             };
           }),
         );
@@ -104,7 +113,10 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
           state.filter((s) => s.visible).length,
           `${state.filter((s) => !s.visible).length} description(s) hidden at ${w}px`,
         ).toBe(state.length);
-        expect(state.every((s) => s.text > 0), "an index description rendered empty").toBe(true);
+        expect(
+          state.every((s) => s.text > 0),
+          "an index description rendered empty",
+        ).toBe(true);
       }
     });
   }
@@ -116,7 +128,12 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
       [...document.querySelectorAll(".dgp__indexrow")].slice(0, 4).map((row) => {
         const name = row.querySelector(".dgp__indexname")!.getBoundingClientRect();
         const desc = row.querySelector(".dgp__indexdesc")!.getBoundingClientRect();
-        return { nameBottom: name.bottom, descTop: desc.top, descLeft: desc.left, nameLeft: name.left };
+        return {
+          nameBottom: name.bottom,
+          descTop: desc.top,
+          descLeft: desc.left,
+          nameLeft: name.left,
+        };
       }),
     );
     expect(rows.length).toBe(4);
@@ -139,14 +156,19 @@ test.describe("§P5 Services - the off-frame carousel control stays operable", (
         return [...document.querySelectorAll(".dsv__filmframe, .dsv__name")].map((el) => {
           el.scrollIntoView({ block: "center", behavior: "instant" });
           const r = el.getBoundingClientRect();
-          const visL = Math.max(r.left, 0), visR = Math.min(r.right, vw);
+          const visL = Math.max(r.left, 0),
+            visR = Math.min(r.right, vw);
           const visible = Math.max(0, visR - visL);
           let reachable = false;
           if (visible > 0) {
             const at = document.elementFromPoint(visL + visible / 2, r.top + r.height / 2);
             reachable = !!at && (at === el || el.contains(at) || at.contains(el));
           }
-          return { label: el.getAttribute("aria-label") || (el.textContent || "").trim().slice(0, 16), visible: Math.round(visible), reachable };
+          return {
+            label: el.getAttribute("aria-label") || (el.textContent || "").trim().slice(0, 16),
+            visible: Math.round(visible),
+            reachable,
+          };
         });
       });
       expect(controls.length, `no carousel controls at ${w}px`).toBeGreaterThan(0);

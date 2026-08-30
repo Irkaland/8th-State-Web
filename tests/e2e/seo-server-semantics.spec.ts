@@ -42,7 +42,9 @@ test.describe("§P7 case study Open Graph keeps the shared identity", () => {
     test(`${locale} case study declares og:locale and the shared fields`, async ({ request }) => {
       const { status, body } = await html(request, path);
       expect(status).toBe(200);
-      expect(metaProp(body, "og:locale"), "og:locale was dropped by object replacement").toBe(expected);
+      expect(metaProp(body, "og:locale"), "og:locale was dropped by object replacement").toBe(
+        expected,
+      );
       expect(metaProp(body, "og:site_name")).toBe("8th State Production");
       expect(metaProp(body, "og:type")).toBeTruthy();
       expect(metaProp(body, "og:title"), "og:title was dropped").toBeTruthy();
@@ -63,7 +65,12 @@ test.describe("§P7 case study Open Graph keeps the shared identity", () => {
 });
 
 test.describe("§P7 the 404 is a 404, and says so", () => {
-  const INVALID = ["/no-such-route", "/ka/no-such-route", "/work/no-such-project", "/ka/work/no-such-project"];
+  const INVALID = [
+    "/no-such-route",
+    "/ka/no-such-route",
+    "/work/no-such-project",
+    "/ka/work/no-such-project",
+  ];
 
   for (const path of INVALID) {
     test(`${path} answers 404 without redirecting`, async ({ request }) => {
@@ -98,8 +105,18 @@ test.describe("§P7 the 404 is a 404, and says so", () => {
 });
 
 test.describe("§P7 the published origin", () => {
-  const ROUTES = ["/", "/ka", "/work", "/ka/work", "/services", "/team",
-    "/work/aom-summer-collection", "/ka/work/aom-summer-collection", "/sitemap.xml", "/robots.txt"];
+  const ROUTES = [
+    "/",
+    "/ka",
+    "/work",
+    "/ka/work",
+    "/services",
+    "/team",
+    "/work/aom-summer-collection",
+    "/ka/work/aom-summer-collection",
+    "/sitemap.xml",
+    "/robots.txt",
+  ];
 
   test("no route publishes a localhost URL", async ({ request }) => {
     for (const path of ROUTES) {
@@ -139,7 +156,16 @@ test.describe("§P7 the published origin", () => {
 
 test.describe("§P7 routing contracts still hold", () => {
   test("valid routes answer 200 and canonicalise to themselves", async ({ request }) => {
-    for (const path of ["/", "/ka", "/work", "/ka/work", "/services", "/ka/services", "/team", "/ka/team"]) {
+    for (const path of [
+      "/",
+      "/ka",
+      "/work",
+      "/ka/work",
+      "/services",
+      "/ka/services",
+      "/team",
+      "/ka/team",
+    ]) {
       const { status, body } = await html(request, path);
       expect(status, `${path}`).toBe(200);
       const c = canonical(body);
