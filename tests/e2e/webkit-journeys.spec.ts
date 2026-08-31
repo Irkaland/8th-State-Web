@@ -274,6 +274,59 @@ test.describe("WebKit: the Team journeys", () => {
     expect(new URL(page.url()).search).toBe("");
   });
 
+  test("the file header stays solid while the profile scrolls under it", async ({ page }) => {
+    // The mobile sheet is a WebKit-first problem: sticky inside a scrollport,
+    // over a fixed site chrome, on the engine where iOS actually renders it.
+    await enter(page, "/team");
+    await page.locator("[data-dtm-card]").nth(1).tap();
+    await page.locator(".dtm__dossier").waitFor({ timeout: 10000 });
+    await page
+      .waitForFunction(
+        () =>
+          (document.querySelector(".dtm__morph") as HTMLElement)?.getBoundingClientRect().height >
+          400,
+        null,
+        { timeout: 15000 },
+      )
+      .catch(() => {});
+    await page.waitForTimeout(600);
+
+    const read = () =>
+      page.evaluate(() => {
+        const d = document.querySelector(".dtm__dossier") as HTMLElement;
+        const slug = d.querySelector(".dtm__slug") as HTMLElement;
+        const sr = slug.getBoundingClientRect();
+        const strays: string[] = [];
+        for (const fx of [0.01, 0.5, 0.99])
+          for (const fy of [0.08, 0.5, 0.92]) {
+            const el = document.elementFromPoint(sr.left + sr.width * fx, sr.top + sr.height * fy);
+            if (!el || !(slug === el || slug.contains(el)))
+              strays.push(String(el?.className || el?.tagName || "nothing"));
+          }
+        return {
+          offsetInScrollport: Math.round(sr.top - d.getBoundingClientRect().top),
+          bg: getComputedStyle(slug).backgroundColor,
+          scrollTop: Math.round(d.scrollTop),
+          maxScroll: d.scrollHeight - d.clientHeight,
+          strays: [...new Set(strays)],
+        };
+      });
+
+    const top = await read();
+    expect(top.offsetInScrollport).toBe(0);
+    expect(top.bg, "a translucent header lets the portrait through").not.toMatch(/rgba/);
+    expect(top.strays).toEqual([]);
+
+    await page.evaluate(() => {
+      (document.querySelector(".dtm__dossier") as HTMLElement).scrollTop = 10_000;
+    });
+    await page.waitForTimeout(500);
+    const bottom = await read();
+    if (top.maxScroll > 0) expect(bottom.scrollTop).toBeGreaterThan(0);
+    expect(bottom.offsetInScrollport).toBe(0);
+    expect(bottom.strays, bottom.strays.join(", ")).toEqual([]);
+  });
+
   test("an invalid person renders the roster and cleans the URL", async ({ page }) => {
     await enter(page, "/team?person=not-a-person");
     await expect(page.locator(".dtm__grid")).toHaveCount(1);
