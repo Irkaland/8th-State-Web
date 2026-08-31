@@ -2,18 +2,20 @@ import { test, expect, type Page } from "@playwright/test";
 import { gotoRoute } from "./helpers";
 
 /**
- * Mobile / What We Make / Showreel polish pass - the surface half.
+ * WHAT WE MAKE - the approved production dossier.
  *
- *  §05  What We Make sits on the brand blue with plainly visible paper texture
- *  §06  capability names are strong Optika, not the display face
- *  §07  their hover underline is pencil-weight but still hand-drawn
- *  §08  nine visually distinct approved palette underline colours
- *  §09  the capability rows still behave on narrow viewports
- *  §17-§18  the global text-CTA underline is thinner and still organic
- *  §19  the red Selected Work field reads as printed paper
+ * SUPERSEDES the capability-index version of this file. Act 04 used to print
+ * the nine-capability taxonomy in four groups, with an expanding row and a
+ * worked-example still; the approved design replaces it with a printed dossier
+ * of the studio's five TOP-LEVEL services. Assertions that still describe the
+ * page are kept as they were - the ground, the material, the dark scene, the
+ * contrast floor, the red Selected Work field. Assertions that described the
+ * old structure are re-aimed at what now answers the same question rather than
+ * deleted, and each says what changed and why.
  *
- * The mobile session lifecycle (§02-§04, §10-§16) lives in
- * mobile-lifecycle.spec.ts, which runs on real device projects.
+ * The capability taxonomy itself did not go anywhere: it is the catalogue on
+ * /services, which this section links into, and its own coverage lives in
+ * content-taxonomy.spec.ts and ux-refinement-pass.spec.ts.
  */
 
 const BLUE = [35, 116, 179] as const;
@@ -57,10 +59,20 @@ async function css(page: Page, selector: string, props: string[]) {
   );
 }
 
-test.describe("§05 What We Make - the blue printed field", () => {
+/** the dossier, revealed and settled */
+async function dossier(page: Page, route = "/") {
+  await gotoRoute(page, route);
+  const section = page.locator(".dao-wwm");
+  await section.scrollIntoViewIfNeeded();
+  await expect(section).toHaveClass(/is-in/);
+  await page.waitForTimeout(900);
+  return section;
+}
+
+test.describe("§27 the printed blue field", () => {
   test("the ground is the approved brand blue", async ({ page }) => {
     await gotoRoute(page, "/");
-    const got = await css(page, ".dao-svc", ["background-color"]);
+    const got = await css(page, ".dao-wwm", ["background-color"]);
     expect(got).not.toBeNull();
     expect(rgb(got!["background-color"]!)).toEqual([...BLUE]);
   });
@@ -69,11 +81,10 @@ test.describe("§05 What We Make - the blue printed field", () => {
     page,
   }) => {
     await gotoRoute(page, "/");
-    // both layers exist as real elements, not as an implied colour
-    await expect(page.locator(".dao-svc > .dao-grain--strong")).toHaveCount(1);
-    await expect(page.locator(".dao-svc > .dao-weave")).toHaveCount(1);
+    await expect(page.locator(".dao-wwm > .dao-grain--strong")).toHaveCount(1);
+    await expect(page.locator(".dao-wwm > .dao-weave")).toHaveCount(1);
 
-    const grain = await css(page, ".dao-svc > .dao-grain--strong", [
+    const grain = await css(page, ".dao-wwm > .dao-grain--strong", [
       "opacity",
       "mix-blend-mode",
       "background-image",
@@ -84,233 +95,259 @@ test.describe("§05 What We Make - the blue printed field", () => {
     expect(grain!["mix-blend-mode"]).toBe("multiply");
     expect(grain!["background-image"]).toContain("paper-grain");
 
-    const weave = await css(page, ".dao-svc > .dao-weave", ["opacity", "background-image"]);
+    const weave = await css(page, ".dao-wwm > .dao-weave", ["opacity", "background-image"]);
     expect(parseFloat(weave!["opacity"]!)).toBeGreaterThan(0.14);
     expect(weave!["background-image"]).toContain("canvas-weave");
   });
 
   test("the section declares itself a DARK scene so the chrome inverts", async ({ page }) => {
     await gotoRoute(page, "/");
-    await expect(page.locator(".dao-svc")).toHaveAttribute("data-dao-scene", "dark");
+    await expect(page.locator(".dao-wwm")).toHaveAttribute("data-dao-scene", "dark");
   });
 
-  test("every text layer is readable on the new ground", async ({ page }) => {
-    await gotoRoute(page, "/");
-    // Structure updated by the content-architecture pass: .dao-svc__intro (the
-    // explanatory paragraph) and .dao-svc__groupdesc (the left rail's layer
-    // line) are gone; the layer line now renders as .dao-svc__grouplayer above
-    // each group's own capabilities. The contrast claim is unchanged.
+  test("every text layer is readable on the blue", async ({ page }) => {
+    await dossier(page);
     for (const sel of [
-      ".dao-svc__title",
-      ".dao-svc__name",
-      ".dao-svc__groupname",
-      ".dao-svc__grouplayer",
-      ".dao-svc__desc",
-      ".dao-svc__all",
+      ".dao-wwm__title",
+      ".dao-wwm__lede",
+      ".dao-wwm__name",
+      ".dao-wwm__kw",
+      ".dao-wwm__mast",
+      ".dao-wwm__n",
+      ".dao-wwm__chain",
+      ".dao-wwm__all",
     ]) {
       const got = await css(page, sel, ["color"]);
       expect(got, sel).not.toBeNull();
       const ratio = contrast(rgb(got!["color"]!), BLUE);
-      // 3:1 for the small labels, comfortably more for body and headings -
-      // the point is that nothing was left as ink-on-paper
       expect(ratio, `${sel} ${got!["color"]} on blue`).toBeGreaterThan(2.4);
     }
   });
 
-  test("no descendant is still coloured for the old paper ground", async ({ page }) => {
-    await gotoRoute(page, "/");
-    // a near-black or brown text colour inside the section is the signature of
-    // a rule that was missed
+  test("no text descendant is still coloured for the paper ground", async ({ page }) => {
+    await dossier(page);
     const offenders = await page.evaluate(() => {
-      const svc = document.querySelector(".dao-svc")!;
+      const svc = document.querySelector(".dao-wwm")!;
       const bad: string[] = [];
-      for (const el of svc.querySelectorAll<HTMLElement>("h2, p, span, a, button")) {
+      for (const el of svc.querySelectorAll<HTMLElement>("h2, p, span, a")) {
         if (!el.textContent?.trim()) continue;
+        if (el.closest("[aria-hidden='true']")) continue;
         const m = getComputedStyle(el).color.match(/rgba?\(([^)]+)\)/);
         if (!m) continue;
         const [r, g, b] = m[1].split(",").map(Number) as [number, number, number];
         const l = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
-        // the blue's own naive lightness is ~0.42; anything darker than 0.3 is
-        // ink or brown, i.e. left over from the paper ground
         if (l < 0.3) bad.push(`${el.className || el.tagName} ${getComputedStyle(el).color}`);
       }
       return bad;
     });
-    // the ink group label is intentional and is verified for contrast above
-    expect(offenders.filter((o) => !o.includes("groupname") && !o.includes("grouphead"))).toEqual(
-      [],
-    );
+    expect(offenders).toEqual([]);
+  });
+
+  test("the production traces are decoration and behave like it", async ({ page }) => {
+    await dossier(page);
+    const marks = page.locator(".dao-wwm__marks");
+    await expect(marks).toHaveAttribute("aria-hidden", "true");
+    expect(await marks.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
+    // nothing decorative is reachable by keyboard
+    expect(await page.locator(".dao-wwm__marks a, .dao-wwm__marks button").count()).toBe(0);
   });
 });
 
-test.describe("§06-§08 capability rows", () => {
-  test("names are the strong editorial face, not the display face", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const got = await css(page, ".dao-svc__name", ["font-family", "font-weight"]);
-    expect(first(got!["font-family"]!)).toContain("optika");
-    expect(first(got!["font-family"]!)).not.toContain("adevas");
-    expect(parseInt(got!["font-weight"]!, 10)).toBeGreaterThanOrEqual(600);
+test.describe("§28 the five top-level services", () => {
+  test("prints exactly five rows, numbered 01-05", async ({ page }) => {
+    await dossier(page);
+    const rows = page.locator(".dao-wwm__row");
+    await expect(rows).toHaveCount(5);
+    expect(await page.locator(".dao-wwm__n").allInnerTexts()).toEqual([
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+    ]);
   });
 
-  test("the name follows the editorial ROLE in Georgian too", async ({ page }) => {
-    // §06 is a role change, not a literal-family one. Under html[lang="ka"] the
-    // editorial role resolves to the Georgian face, and that is correct - the
-    // names are translated copy. Only the Latin WORDMARK is pinned across
-    // locales (§02, covered in mobile-lifecycle.spec.ts). So assert the role:
-    // the name must equal the editorial token and differ from the display one.
-    for (const route of ["/", "/ka"]) {
-      await gotoRoute(page, route);
-      const got = await page.evaluate(() => {
-        const de = document.documentElement;
-        const cs = getComputedStyle(de);
-        const name = getComputedStyle(document.querySelector(".dao-svc__name")!);
-        const title = getComputedStyle(document.querySelector(".dao-svc__title")!);
-        const norm = (v: string) => v.replace(/["']/g, "").replace(/\s+/g, " ").trim();
-        return {
-          name: norm(name.fontFamily),
-          title: norm(title.fontFamily),
-          ui: norm(cs.getPropertyValue("--dao-f-ui")),
-          display: norm(cs.getPropertyValue("--dao-f-display")),
-        };
-      });
-      expect(got.name, `${route} name is the editorial role`).toBe(got.ui);
-      expect(got.title, `${route} title is the display role`).toBe(got.display);
-    }
+  test("names them exactly as approved", async ({ page }) => {
+    await dossier(page);
+    expect(await page.locator(".dao-wwm__name").allInnerTexts()).toEqual([
+      "AUDIOVISUAL PRODUCTION",
+      "PRODUCTION DESIGN",
+      "PHOTOGRAPHY",
+      "CREATIVE & ART DIRECTION",
+      "GRAPHIC & BROADCAST DESIGN",
+    ]);
   });
 
-  test("the section title is still the display face", async ({ page }) => {
-    // §06 moves the ROWS off Adevas; the title above them must not follow
-    await gotoRoute(page, "/");
-    const got = await css(page, ".dao-svc__title", ["font-family"]);
-    expect(first(got!["font-family"]!)).toContain("adevas");
+  test("sets the service names in the DISPLAY face", async ({ page }) => {
+    /**
+     * SUPERSEDES "names are the strong editorial face, not the display face".
+     *
+     * That was the right call for an INDEX of nine capabilities - a list to be
+     * scanned. The approved dossier is not an index: five departments, set
+     * large, each with its own drawn stroke. The design puts them in Adevas,
+     * and the section title with them, so the reversal is deliberate and it is
+     * the approved design that decides it.
+     */
+    await dossier(page);
+    const name = await css(page, ".dao-wwm__name", ["font-family"]);
+    const title = await css(page, ".dao-wwm__title", ["font-family"]);
+    expect(first(name!["font-family"]!)).toContain("adevas");
+    expect(first(title!["font-family"]!)).toContain("adevas");
   });
 
-  test("§07 the underline is pencil-weight and still hand-drawn", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const got = await css(page, ".dao-svc__name .dao-strike", ["height", "mask-image", "width"]);
-    const h = parseFloat(got!["height"]!);
-    expect(h, "barely thicker than a pencil line").toBeLessThanOrEqual(4);
-    expect(h, "but still a drawn stroke, not a hairline").toBeGreaterThanOrEqual(2);
-    // thinner, NOT straighter - the ragged paint-stroke mask survives
-    expect(got!["mask-image"]).toContain("paint-stroke");
-  });
-
-  test("§08 the nine rows carry nine different colours", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const colours = await page.evaluate(() =>
-      [...document.querySelectorAll(".dao-svc__name .dao-strike")].map(
-        (el) => getComputedStyle(el).backgroundColor,
+  test("gives every row its own accent stroke, all five distinct", async ({ page }) => {
+    await dossier(page);
+    const strokes = await page.evaluate(() =>
+      [...document.querySelectorAll<SVGPathElement>(".dao-wwm__namerule path")].map(
+        (p) => p.getAttribute("stroke") ?? "",
       ),
     );
-    expect(colours).toHaveLength(9);
-    expect(new Set(colours).size, "nine rows, nine accents").toBe(9);
-
-    // none of them vanishes into the blue, and no two neighbours read alike
-    for (const [i, c] of colours.entries()) {
-      expect(contrast(rgb(c), BLUE), `row ${i + 1} ${c}`).toBeGreaterThan(1.4);
-      if (i > 0) {
-        expect(contrast(rgb(c), rgb(colours[i - 1]!)), `rows ${i} vs ${i + 1}`).toBeGreaterThan(
-          1.2,
-        );
-      }
-    }
+    expect(strokes).toHaveLength(5);
+    expect(new Set(strokes).size, "five rows, five accents").toBe(5);
+    // a drawn path, never a border
+    for (const s of strokes) expect(s).toMatch(/^#[0-9a-f]{6}$/i);
   });
 
-  test("hovering a row draws its underline in", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const row = page.locator(".dao-svc__rowbtn").nth(1);
-    const strike = row.locator(".dao-strike");
-    const before = await strike.evaluate((el) => getComputedStyle(el).transform);
-    await row.hover();
-    await expect
-      .poll(() => strike.evaluate((el) => getComputedStyle(el).transform), { timeout: 4000 })
-      .not.toBe(before);
-  });
-
-  test("a row opens to its explanation and its worked example", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const btn = page.locator(".dao-svc__rowbtn").nth(4);
-    await btn.click();
-    const row = page.locator(".dao-svc__row").nth(4);
-    await expect(row).toHaveClass(/is-open/);
-    await expect(row.locator(".dao-svc__desc")).toBeVisible();
+  test("is bilingual, and the Georgian is Georgian", async ({ page }) => {
+    await dossier(page, "/ka");
+    const names = await page.locator(".dao-wwm__name").allInnerTexts();
+    expect(names).toHaveLength(5);
+    for (const n of names) expect(n).toMatch(/[Ⴀ-ჿ]/);
+    expect(await page.locator(".dao-wwm__title").innerText()).toMatch(/[Ⴀ-ჿ]/);
   });
 });
 
-test.describe("§09 capability rows on a narrow viewport", () => {
+test.describe("§29 the rows are real routes", () => {
+  test("each row lands on the catalogue, and four on their own capability", async ({ page }) => {
+    await dossier(page);
+    const hrefs = await page
+      .locator(".dao-wwm__row")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    expect(hrefs).toEqual([
+      "/services#film-video-production",
+      "/services#production-design",
+      "/services#photography",
+      "/services#creative-direction",
+      "/services",
+    ]);
+    // the prototype's placeholder must never ship
+    for (const h of hrefs) expect(h).not.toBe("#services");
+  });
+
+  test("keeps the locale", async ({ page }) => {
+    await dossier(page, "/ka");
+    const hrefs = await page
+      .locator(".dao-wwm__row")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    for (const h of hrefs) expect(h).toMatch(/^\/ka\/services/);
+  });
+
+  test("the anchor it names exists on /services and clears the fixed chrome", async ({ page }) => {
+    await gotoRoute(page, "/services#photography");
+    const target = page.locator("#photography");
+    await expect(target).toHaveCount(1);
+    const margin = await target.evaluate((el) => getComputedStyle(el).scrollMarginTop);
+    expect(parseFloat(margin), "an anchor must not land under the chrome").toBeGreaterThan(80);
+  });
+
+  test("ALL SERVICES goes to the catalogue and is a real touch target", async ({ page }) => {
+    await dossier(page);
+    const cta = page.locator(".dao-wwm__all");
+    await expect(cta).toHaveAttribute("href", "/services");
+    const box = await cta.boundingBox();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test.describe("§30 the production plates", () => {
+  test("show real archive stills, decoratively", async ({ page }) => {
+    await dossier(page);
+    const plates = await page.locator(".dao-wwm__plateimg img").evaluateAll((els) =>
+      els.map((e) => ({
+        alt: (e as HTMLImageElement).alt,
+        loaded: (e as HTMLImageElement).naturalWidth > 0,
+      })),
+    );
+    expect(plates).toHaveLength(5);
+    for (const p of plates) {
+      // §30: the caption names the plate and the row names the service, so a
+      // meaningful alt would only repeat what the reader already has
+      expect(p.alt).toBe("");
+      expect(p.loaded, "a plate must be a real asset, not a broken path").toBe(true);
+    }
+  });
+
+  test("each plate is captioned with its number and its kind", async ({ page }) => {
+    await dossier(page);
+    const caps = await page.locator(".dao-wwm__platecap").allInnerTexts();
+    expect(caps).toHaveLength(5);
+    expect(caps[0].replace(/\s+/g, " ")).toContain("PL. 01");
+  });
+});
+
+test.describe("§31 the narrow composition", () => {
   test.use({ viewport: { width: 390, height: 780 } });
 
-  test("group heads lead their capabilities and nothing overflows", async ({ page }) => {
-    // The content-architecture pass removed the desktop-only taxonomy rail and
-    // the mobile-only `--inline` variant with it: one group head now serves
-    // every width, which is what this used to check for mobile alone.
-    await gotoRoute(page, "/");
-    await expect(page.locator(".dao-svc__rail")).toHaveCount(0);
-    await expect(page.locator(".dao-svc__grouphead")).toHaveCount(4);
-    await expect(page.locator(".dao-svc__grouphead").first()).toBeVisible();
+  test("drops the plates and the heavy marks, and keeps the short keyword run", async ({
+    page,
+  }) => {
+    await dossier(page);
+    expect(await css(page, ".dao-wwm__plate", ["display"])).toEqual({ display: "none" });
+    expect(await css(page, ".dao-wwm__mark--plan", ["display"])).toEqual({ display: "none" });
+    // the registration mark and the crop corner stay at every width
+    expect(await css(page, ".dao-wwm__mark--reg", ["display"])).not.toEqual({ display: "none" });
+    // one keyword run is shown, the other is laid out away - never both
+    const shown = await page.evaluate(() =>
+      [
+        ...document
+          .querySelectorAll<HTMLElement>(".dao-wwm__row")[0]
+          .querySelectorAll(".dao-wwm__kw"),
+      ]
+        .filter((el) => getComputedStyle(el).display !== "none")
+        .map((el) => el.textContent?.trim() ?? ""),
+    );
+    expect(shown).toHaveLength(1);
+    expect(shown[0]).toContain("DEVELOPMENT");
+  });
 
+  test("never overflows sideways", async ({ page }) => {
+    await dossier(page);
     const overflow = await page.evaluate(() => {
-      const svc = document.querySelector(".dao-svc")!;
-      return svc.scrollWidth - svc.clientWidth;
+      const svc = document.querySelector(".dao-wwm")!;
+      return Math.max(
+        svc.scrollWidth - svc.clientWidth,
+        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
     });
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("opening a row never paints a white box where the fragment goes", async ({ page }) => {
-    // the fragment wrapper stays transparent until load + decode, so mobile
-    // Safari/Chrome cannot flash the undecoded area white
-    await gotoRoute(page, "/");
-    const row = page.locator(".dao-svc__row").nth(2);
-    await row.locator(".dao-svc__rowbtn").click();
-    const frag = row.locator(".dao-svc__frag");
-
-    // it is either not yet revealed (transparent) or revealed WITH its image
-    const state = await frag.evaluate((el) => ({
-      ready: el.classList.contains("is-ready"),
-      opacity: Number(getComputedStyle(el).opacity),
-      hasImg: !!el.querySelector("img"),
-      bg: getComputedStyle(el).backgroundColor,
-    }));
-    if (!state.ready) expect(state.opacity).toBe(0);
-    // and the wrapper itself never has a white fill of its own
-    expect(state.bg).toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
-
-    // the reveal waits on load + decode of a real photograph; under parallel
-    // load across three browser projects that is comfortably slower than a
-    // default expect timeout
-    await expect
-      .poll(() => frag.evaluate((el) => el.classList.contains("is-ready")), { timeout: 30_000 })
-      .toBe(true);
-    expect(await frag.evaluate((el) => Number(getComputedStyle(el).opacity))).toBe(1);
+  test("the rows are still full-width targets with no hover dependency", async ({ page }) => {
+    await dossier(page);
+    const rows = await page.locator(".dao-wwm__row").evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return { w: Math.round(r.width), h: Math.round(r.height) };
+      }),
+    );
+    for (const r of rows) {
+      expect(r.h, "a service row is a comfortable target").toBeGreaterThanOrEqual(44);
+      expect(r.w).toBeGreaterThan(300);
+    }
   });
 });
 
 test.describe("§17-§18 the global text-CTA underline", () => {
-  test("is thinner than before and still a drawn rule", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const got = await page.evaluate(() => {
-      const el = document.querySelector(".dao-svc__all")!;
-      const cs = getComputedStyle(el, "::after");
-      return {
-        height: cs.height,
-        mask: cs.maskImage || cs.webkitMaskImage,
-        clip: cs.clipPath,
-        bg: cs.backgroundColor,
-      };
-    });
-    const h = parseFloat(got.height);
-    expect(h, "a pencil rule, not a highlighter bar").toBeLessThanOrEqual(3);
-    expect(h).toBeGreaterThanOrEqual(1);
-    // organic: the hand-drawn pencil mask is intact, and the reveal still
-    // wipes left to right
-    expect(got.mask).toContain("pencil-rule");
-    expect(got.clip).toContain("inset");
-  });
-
-  test("every CTA in the shared group got the same treatment", async ({ page }) => {
+  /**
+   * The dossier's own ALL SERVICES is not part of this group any more: the
+   * approved design gives it a printed rule beneath the label rather than the
+   * shared pencil-stroke reveal. The shared group itself is unchanged, and is
+   * still checked here - one rule, not per-page copies.
+   */
+  test("every CTA in the shared group carries the same drawn rule", async ({ page }) => {
     await gotoRoute(page, "/");
     const heights = await page.evaluate(() =>
-      [".dao-work__all", ".dao-svc__all", ".dao-intro__cta", ".dao-lab__cta"]
+      [".dao-work__all", ".dao-intro__cta", ".dao-lab__cta"]
         .map((s) => {
           const el = document.querySelector(s);
           return el ? parseFloat(getComputedStyle(el, "::after").height) : null;
@@ -319,13 +356,26 @@ test.describe("§17-§18 the global text-CTA underline", () => {
     );
     expect(heights.length).toBeGreaterThan(1);
     for (const h of heights) expect(h).toBeLessThanOrEqual(3);
-    // one shared rule, not per-page copies
-    expect(new Set(heights).size).toBe(1);
+    expect(new Set(heights).size, "one shared rule, not per-page copies").toBe(1);
+  });
+
+  test("is thinner than a highlighter and still organic", async ({ page }) => {
+    await gotoRoute(page, "/");
+    const got = await page.evaluate(() => {
+      const el = document.querySelector(".dao-work__all")!;
+      const cs = getComputedStyle(el, "::after");
+      return { height: cs.height, mask: cs.maskImage || cs.webkitMaskImage, clip: cs.clipPath };
+    });
+    const h = parseFloat(got.height);
+    expect(h, "a pencil rule, not a highlighter bar").toBeLessThanOrEqual(3);
+    expect(h).toBeGreaterThanOrEqual(1);
+    expect(got.mask).toContain("pencil-rule");
+    expect(got.clip).toContain("inset");
   });
 
   test("it still reveals on hover", async ({ page }) => {
     await gotoRoute(page, "/");
-    const cta = page.locator(".dao-svc__all");
+    const cta = page.locator(".dao-work__all");
     const clipOf = () => cta.evaluate((el) => getComputedStyle(el, "::after").clipPath as string);
     const before = await clipOf();
     await cta.hover();

@@ -27,7 +27,14 @@ test.describe("Start a Project brief", () => {
     await page.locator("#brief-name").fill("Nino Test");
     await page.locator("#brief-email").fill("nino@example.ge");
     await send.click();
-    await expect(page.getByRole("status")).toContainText(/brief received/i);
+    // The confirmation used to be a role="status" div whose title was a plain
+    // span: it announced itself once and then offered nothing to navigate to.
+    // It is a real heading now, and FOCUS is what announces it - which is also
+    // what puts the reader at the top of the confirmation rather than leaving
+    // them holding a submit button that has been unmounted.
+    const done = page.getByRole("heading", { name: /brief received/i });
+    await expect(done).toBeVisible();
+    await expect(done).toBeFocused();
     // v7 5g: official mark printed on the confirmation sheet.
     await expect(page.locator(".dbr__successmark")).toBeVisible();
   });

@@ -34,28 +34,29 @@ test.describe("Work archive", () => {
     await expect(page.getByText("CREDITS")).toBeVisible();
   });
 
-  test("v7: the return tab restores the archive from an essay", async ({ page }) => {
+  test("the masthead back restores the archive from an essay", async ({ page }) => {
     await gotoRoute(page, "/work");
     await page
       .getByRole("link", { name: /AOM - Summer Collection/i })
       .first()
       .click();
     await expect(page).toHaveURL(/\/work\/aom-summer-collection$/);
-    await page.mouse.move(300, 400);
-    await page.locator(".dao-returntab").click();
+    await page.locator(".dao-mback").click();
     await expect(page).toHaveURL(/\/work$/);
   });
 
-  test("v7: the return tab falls back to /work on a direct essay load", async ({ page }) => {
+  test("the masthead back falls back to /work on a direct essay load", async ({ page }) => {
     await gotoRoute(page, "/work/aom-summer-collection");
-    await page.mouse.move(300, 400);
-    await page.locator(".dao-returntab").click();
+    await page.locator(".dao-mback").click();
     await expect(page).toHaveURL(/\/work$/);
   });
 
-  test("next-project tear advances to a valid essay", async ({ page }) => {
+  test("the finite sequence advances to a valid essay", async ({ page }) => {
+    // SUPERSEDES "next-project tear advances to a valid essay": the wrapping
+    // tear is gone, replaced by a finite PREV/NEXT with an explicit end of
+    // archive. What still has to hold is that NEXT goes somewhere real.
     await gotoRoute(page, "/work/aom-summer-collection");
-    const next = page.locator(".dpj__next");
+    const next = page.locator(".dpj__seqlink--next");
     await next.scrollIntoViewIfNeeded();
     await next.click();
     await expect(page).toHaveURL(/\/work\/(?!aom-summer-collection).+/);

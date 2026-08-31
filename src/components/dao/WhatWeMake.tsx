@@ -207,7 +207,17 @@ export function WhatWeMake({ locale, messages }: { locale: Locale; messages: Mes
               className="dao-wwm__row"
               id={s.id}
               data-dao-service={s.id}
-              style={{ ["--g" as string]: s.accent }}
+              /* the accent is carried by the row's drawn underline below.
+
+                 It is deliberately NOT applied to the index numeral: on this
+                 blue, four of the five accents fall below the 4.5:1 small-text
+                 floor at the 11-13px the index is set at (gold 2.5, mint 2.9,
+                 ink 3.8, paper 4.3), and only the yellow clears it. Accessibility
+                 outranks the page design where the two genuinely conflict, and
+                 moving the colour off the TEXT onto the STROKE - a thick drawn
+                 graphic - is the smallest change that resolves it while keeping
+                 all five accents fully present. The capability numerals on this
+                 same ground were resolved the same way in an earlier pass. */
             >
               <span className="dao-wwm__n mo-d" style={{ ["--ls" as string]: "0.2em" }}>
                 {s.n}

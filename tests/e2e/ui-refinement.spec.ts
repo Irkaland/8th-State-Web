@@ -451,14 +451,23 @@ test.describe("10 a CTA label and its arrow are one object", () => {
       for (const w of ALL) {
         await page.setViewportSize({ width: w, height: 900 });
         await gotoRoute(page, `${prefix}/`);
-        const m = await page.locator(".dao-svc__all").evaluate((el) => {
+        const m = await page.locator(".dao-wwm__all").evaluate((el) => {
           el.scrollIntoView();
           const r = el.getBoundingClientRect();
-          const arrow = el.querySelector("span")!.getBoundingClientRect();
+          // The dossier's CTA draws its arrow as the brand's own path rather
+          // than as a text glyph, and the control carries a 44px minimum touch
+          // height. So the two measurements that used to encode "one line" -
+          // box height against glyph height, and top edge against top edge -
+          // now describe the padding rather than the layout. The question is
+          // unchanged and is asked directly: is the arrow on the label's line,
+          // to its right, and is the control still a single line of text?
+          const arrow = el.querySelector("svg, span")!.getBoundingClientRect();
+          const line = parseFloat(getComputedStyle(el).fontSize) * 1.6;
+          const centred = Math.abs(arrow.top + arrow.height / 2 - (r.top + r.height / 2));
           return {
-            onOneLine: r.height < arrow.height * 1.8,
+            onOneLine: r.height <= Math.max(44, line) + 24,
             arrowRightOfLabel: arrow.left > r.left,
-            sameLine: Math.abs(arrow.top - r.top) < 4,
+            sameLine: centred < 8,
             over: document.documentElement.scrollWidth - window.innerWidth,
           };
         });

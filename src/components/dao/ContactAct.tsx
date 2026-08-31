@@ -98,7 +98,7 @@ export function ContactAct({ locale, messages }: { locale: Locale; messages: Con
             type="submit"
             // §19: the fill and the interaction states come from the shared
             // .dao-btnfill system, which SEND itself established
-            className="dao-contact__send dao-btnfill mo-h"
+            className="dao-contact__send dao-btnfill"
             aria-disabled="true"
             title={m.sendPending}
           >

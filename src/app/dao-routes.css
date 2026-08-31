@@ -5764,6 +5764,10 @@ html:has(.dsc) {
   text-transform: uppercase;
   color: rgb(19 18 16 / 0.55);
 }
+:lang(ka) .dtm__mast {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.1em;
+}
 @media (max-width: 560px) {
   /* the city stamp is the first thing to go when the line stops fitting -
      it is the least load-bearing of the three, and the back must never wrap */
@@ -5927,8 +5931,15 @@ html:has(.dsc) {
   font-size: 9.5px;
   opacity: 0.9;
 }
+/* The city stamp is quiet, not faint. At 0.5 opacity the ink resolved to
+   about 3.4:1 on the paper at 9.5px, which is below the small-text floor - the
+   brand brown is the studio's own metadata colour and clears it comfortably
+   without changing the register. */
 .dao-slimfoot__city {
-  opacity: 0.5;
+  color: var(--dao-brown);
+}
+.dao-slimfoot--paper .dao-slimfoot__city {
+  color: rgb(242 237 227 / 0.72);
 }
 :lang(ka) .dao-slimfoot {
   font-family: var(--dao-f-ka);
@@ -5959,6 +5970,10 @@ html:has(.dsc) {
   font-family: var(--f-glacier), sans-serif;
   font-size: 10px;
   letter-spacing: 0.24em;
+}
+:lang(ka) .dbr__errorlist a {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
 }
 
 /* ============================================================

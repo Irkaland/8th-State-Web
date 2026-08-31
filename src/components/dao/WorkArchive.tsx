@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { WorkArchiveMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
@@ -61,6 +61,15 @@ export function WorkArchive({
    * fonts, the filter or the archive itself changes; the card anchor answers
    * the same question in terms that survive all four.
    */
+  /**
+   * The return context for THIS mount: undefined until it has been read,
+   * then either the context or null. See the effect below for why it cannot
+   * simply be read from storage each time.
+   */
+  const consumed = useRef<{ search: string; slug: string; anchor: boolean } | null | undefined>(
+    undefined,
+  );
+
   const stamp = useCallback((slug: string) => {
     const store = safeSession();
     if (!store) return;
@@ -89,35 +98,119 @@ export function WorkArchive({
    * no race with a smooth scroll already in flight.
    */
   useEffect(() => {
-    const store = safeSession();
-    if (!store) return;
-    let raw: string | null = null;
-    try {
-      raw = store.getItem(WK_CTX_KEY);
-    } catch {
-      return;
+    /**
+     * The context is read ONCE per mount and remembered, rather than read from
+     * storage each time this effect runs.
+     *
+     * The key is single-use, and Strict Mode runs an effect twice on purpose -
+     * mount, clean up, mount again. Consuming storage inside the effect body
+     * therefore hands the value to the DISCARDED pass, whose cleanup then
+     * cancels the work it started, and the surviving pass finds an empty key
+     * and does nothing. That is exactly how the card stopped being brought back
+     * in development. A ref survives the double invocation, so the value is
+     * captured once and every pass sees it.
+     */
+    if (consumed.current === undefined) {
+      consumed.current = null;
+      const store = safeSession();
+      if (store) {
+        let raw: string | null = null;
+        try {
+          raw = store.getItem(WK_CTX_KEY);
+        } catch {
+          raw = null;
+        }
+        const parsed = parseWorkContext(raw);
+        if (parsed) {
+          // consumed on read, whatever happens next - one return journey, one use
+          try {
+            store.removeItem(WK_CTX_KEY);
+          } catch {
+            /* nothing to clean up */
+          }
+          let armed = false;
+          try {
+            armed = (JSON.parse(raw ?? "{}") as { anchor?: unknown }).anchor === true;
+          } catch {
+            armed = false;
+          }
+          consumed.current = { ...parsed, anchor: armed };
+        }
+      }
     }
-    const ctx = parseWorkContext(raw);
-    if (!ctx) return;
-    // consumed on read, whatever happens next - one return journey, one use
-    try {
-      store.removeItem(WK_CTX_KEY);
-    } catch {
-      /* nothing to clean up */
-    }
-    let anchor = false;
-    try {
-      anchor = (JSON.parse(raw ?? "{}") as { anchor?: unknown }).anchor === true;
-    } catch {
-      anchor = false;
-    }
-    if (!anchor) return;
-    // one frame, so the grid has laid out at its real width before we measure
-    const id = requestAnimationFrame(() => {
-      const el = document.querySelector<HTMLElement>(`[data-dao-card="${CSS.escape(ctx.slug)}"]`);
-      el?.scrollIntoView({ block: "center", behavior: "instant" });
-    });
-    return () => cancelAnimationFrame(id);
+
+    const ctx = consumed.current;
+    if (!ctx?.anchor) return;
+
+    /**
+     * Bring the originating card back, and hold it there until the page stops
+     * moving underneath it.
+     *
+     * Three things move the archive in the moments after this mounts, all of
+     * them later than the first frame: the router applies its own scroll for
+     * the navigation, images resolve their intrinsic sizes, and web fonts swap.
+     * A single scrollIntoView is routinely undone by any of them - which is how
+     * the card ended up back at the top of the archive whenever the machine was
+     * busy.
+     *
+     * So the placement is REASSERTED on a short interval until the card has
+     * held its position a few times running. That is a property of the page
+     * rather than a guess at how long it takes, so it behaves the same on a
+     * fast machine and a loaded one.
+     *
+     * A TIMER, not requestAnimationFrame. rAF does not run at all while the
+     * document is hidden - a tab restored in the background, or opened behind
+     * another - and the reader would then find the archive at the top when they
+     * came to it. A timer keeps its promise whether or not anyone is watching.
+     *
+     * It stops the moment the READER takes over: a wheel, a touch or a key is
+     * an unambiguous statement that the page is theirs now, and cancels the
+     * placement immediately, so this can never fight someone who has started
+     * scrolling. A hard ceiling stops it in any case.
+     */
+    const CEILING_MS = 3000;
+    const TICK_MS = 60;
+    const CENTRED_PX = 40;
+    const STABLE_TICKS = 3;
+
+    const startedAt = Date.now();
+    let cancelled = false;
+    let stable = 0;
+    let timer = 0;
+
+    const stop = () => {
+      cancelled = true;
+    };
+    const gestures = ["wheel", "touchstart", "keydown"] as const;
+    for (const g of gestures) window.addEventListener(g, stop, { passive: true });
+
+    const find = () =>
+      document.querySelector<HTMLElement>(`[data-dao-card="${CSS.escape(ctx.slug)}"]`);
+
+    const step = () => {
+      if (cancelled || Date.now() - startedAt > CEILING_MS) return;
+      const el = find();
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const off = r.top + r.height / 2 - window.innerHeight / 2;
+        if (Math.abs(off) <= CENTRED_PX) {
+          // held its place - a few ticks running and we are done
+          if (++stable >= STABLE_TICKS) return;
+        } else {
+          stable = 0;
+          el.scrollIntoView({ block: "center", behavior: "instant" });
+        }
+      }
+      timer = window.setTimeout(step, TICK_MS);
+    };
+
+    step();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      for (const g of gestures) window.removeEventListener(g, stop);
+    };
   }, []);
 
   /**

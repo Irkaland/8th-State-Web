@@ -23,6 +23,8 @@ import { gotoRoute } from "./helpers";
  */
 
 const AOM_COVER = "aom-cover";
+/** the first production plate in the What We Make dossier */
+const PLATE = "aom-film-still";
 const BRAND_LOGO = "8th-state-logo.png";
 
 /** Every request touching either asset, plus any server error on them. */
@@ -30,7 +32,8 @@ function collectImageRequests(page: Page) {
   const requests: string[] = [];
   const failed: string[] = [];
   const match = (url: string) =>
-    (url.includes(AOM_COVER) || url.includes(BRAND_LOGO)) && !url.includes("logo-mark");
+    (url.includes(AOM_COVER) || url.includes(PLATE) || url.includes(BRAND_LOGO)) &&
+    !url.includes("logo-mark");
 
   page.on("request", (req) => {
     const url = req.url();
@@ -70,9 +73,16 @@ test("the brand logo and AOM cover render through the optimizer, not as raw mast
   const seen = collectImageRequests(page);
   await gotoRoute(page, "/");
 
-  // the AOM cover is the worked-example still on a What We Make row
-  await page.locator(".dao-svc").scrollIntoViewIfNeeded();
-  await expectLoaded(page, `img[src*="${AOM_COVER}"]`);
+  // The AOM COVER used to be the worked-example still on a What We Make row.
+  // The approved dossier prints its own production plates instead, and outside
+  // this section the archive shows each project's HERO rather than its cover -
+  // so on the homepage the cover now renders only inside the nav preview, which
+  // the second test in this file already follows. The claim being made here -
+  // a large master reaches the page through the optimizer, at a width that
+  // matches its render, never as a raw file - is asked of the plate that took
+  // its place in that composition.
+  await page.locator(".dao-wwm").scrollIntoViewIfNeeded();
+  await expectLoaded(page, `img[src*="${PLATE}"]`);
 
   // the logo is the chip on the closing production card
   await page.locator(".dao-contact").scrollIntoViewIfNeeded();
@@ -80,8 +90,8 @@ test("the brand logo and AOM cover render through the optimizer, not as raw mast
 
   // 1. both now go through the optimizer
   expect(
-    seen.requests.some((u) => u.includes("/_next/image") && u.includes("aom-cover")),
-    "the AOM cover should be optimized",
+    seen.requests.some((u) => u.includes("/_next/image") && u.includes(PLATE)),
+    "the production plate should be optimized",
   ).toBe(true);
   expect(
     seen.requests.some((u) => u.includes("/_next/image") && u.includes("8th-state-logo")),
@@ -102,11 +112,11 @@ test("the brand logo and AOM cover render through the optimizer, not as raw mast
     `the logo chip is at most 128px wide; requested w=${logoWidths.join(",")}`,
   ).toBeLessThanOrEqual(384);
 
-  const coverWidths = widthsOf(seen.requests, "/media/aom-cover.jpg");
-  expect(coverWidths.length).toBeGreaterThan(0);
+  const plateWidths = widthsOf(seen.requests, "/media/aom-film-still.jpg");
+  expect(plateWidths.length).toBeGreaterThan(0);
   expect(
-    Math.max(...coverWidths),
-    `the capability still is 200px wide; requested w=${coverWidths.join(",")}`,
+    Math.max(...plateWidths),
+    `the production plate renders at most 230px wide; requested w=${plateWidths.join(",")}`,
   ).toBeLessThanOrEqual(640);
 
   expect(seen.failed, "neither asset may error").toEqual([]);

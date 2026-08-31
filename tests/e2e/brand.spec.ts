@@ -616,7 +616,7 @@ test.describe("Section boundaries - no torn edges, no colour seams", () => {
  */
 const FORMER_TEARS: { route: string; sel: string; edge: "top" | "bottom"; was: string }[] = [
   { route: "/", sel: ".dao-work", edge: "top", was: "paper tear from the Studio act" },
-  { route: "/", sel: ".dao-svc", edge: "top", was: "ink tear from Selected Work" },
+  { route: "/", sel: ".dao-wwm", edge: "top", was: "ink tear from Selected Work" },
   { route: "/", sel: ".dao-lab", edge: "top", was: "paper tear from Services" },
   { route: "/", sel: ".dao-contact", edge: "top", was: "green tear from the Lab" },
   { route: "/work", sel: ".dwk__plane", edge: "bottom", was: "blue plane torn overhang" },
@@ -627,7 +627,7 @@ const FORMER_TEARS: { route: string; sel: string; edge: "top" | "bottom"; was: s
     was: "blue opening torn overhang",
   },
   { route: "/work/aom-summer-collection", sel: ".dpj__credits", edge: "top", was: "paper cut" },
-  { route: "/work/aom-summer-collection", sel: ".dpj__next", edge: "top", was: "ink cut" },
+  { route: "/work/aom-summer-collection", sel: ".dpj__seq", edge: "top", was: "ink cut" },
   { route: "/services", sel: ".dsv__g2", edge: "top", was: "paper cut" },
   { route: "/services", sel: ".dsv__g3", edge: "top", was: "ink cut" },
   { route: "/services", sel: ".dsv__g4", edge: "top", was: "blue cut" },

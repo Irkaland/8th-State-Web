@@ -196,7 +196,9 @@ test.describe("the representative profiles read correctly", () => {
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
     expect(new URL(page.url()).pathname).toBe("/ka/team");
     expect(await page.locator(".dtm__statement").innerText()).toMatch(/[Ⴀ-ჿ]/);
-    expect(await page.locator(".dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    // scoped to the file bar: the approved design also prints the department
+    // on every roster card, so the bare class is no longer unique to the profile
+    expect(await page.locator(".dtm__slug .dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
   });
 });
 
@@ -395,14 +397,28 @@ test.describe("the keyboard lifecycle survives the real roster", () => {
     }
   });
 
-  test("the dialog announces the person and their group", async ({ page }) => {
+  test("the dialog is labelled by the person's visible name", async ({ page }) => {
+    /**
+     * SUPERSEDES an aria-label built from the name and the department.
+     *
+     * A dialog should be labelled BY the heading a sighted reader sees, so the
+     * two cannot drift apart when the copy changes - which is what
+     * aria-labelledby gives and a manufactured string does not. The department
+     * is still stated, in the file bar, where it is read in document order
+     * rather than folded into the dialog's name.
+     */
     await gotoRoute(page, "/team?person=keto-kiladze");
     // the chrome menu is a dialog too, so this is scoped to the team sheet
     const dialog = page.locator('.dtm__sheet [role="dialog"]');
     await expect(dialog).toHaveCount(1);
     await expect(dialog).toHaveAttribute("aria-modal", "true");
-    const label = await dialog.getAttribute("aria-label");
-    expect(label).toContain("Keto Kiladze");
-    expect(label).toContain("Studio Support");
+
+    const labelledby = await dialog.getAttribute("aria-labelledby");
+    expect(labelledby, "labelled by an element, not by a string").toBeTruthy();
+    const heading = page.locator(`#${labelledby}`);
+    await expect(heading).toHaveCount(1);
+    expect(await heading.innerText()).toContain("Keto Kiladze");
+    // and the department is still on the sheet, in its own line
+    expect(await page.locator(".dtm__slug .dtm__dept").innerText()).toMatch(/STUDIO SUPPORT/i);
   });
 });

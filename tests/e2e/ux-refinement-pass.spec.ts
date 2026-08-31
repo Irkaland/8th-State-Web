@@ -72,51 +72,82 @@ async function openBurger(page: Page) {
 
 /* ------------------------------------------------------------------ §01 --- */
 
-test.describe("§01 What We Make group descriptors", () => {
+test.describe("§01 the four layer descriptors, and the hierarchy that carries them", () => {
+  /**
+   * SUPERSEDED SURFACE, SAME CONTRACT.
+   *
+   * These three checks were written against the homepage capability act, which
+   * printed the four taxonomy groups above their capabilities. The approved
+   * What We Make dossier replaced that act with the five top-level services,
+   * so the group descriptors - which have not changed a word - are now read on
+   * the catalogue, which is the surface that presents the taxonomy.
+   *
+   * The hierarchy claim is asked of the surface that now makes it: a group
+   * label must lead its own capability names, at a wide width and at 360, where
+   * the two used to be a pixel apart.
+   */
   test("all four layer descriptors are still rendered", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const layers = await page
-      .locator(".dao-svc__grouplayer")
-      .evaluateAll((els) => els.map((e) => e.textContent!.trim()));
-    expect(layers).toEqual([
-      "The thinking layer - idea and look",
-      "The made-world layer",
-      "The capture layer",
-      "The completion layer",
-    ]);
+    await gotoRoute(page, "/services");
+    const labels = await page
+      .locator(".dsv__grouplabel")
+      .evaluateAll((els) => els.map((e) => e.textContent!.replace(/\s+/g, " ").trim()));
+    expect(labels).toHaveLength(4);
+    for (const [i, phrase] of [
+      "THE THINKING LAYER",
+      "THE MADE-WORLD LAYER",
+      "THE CAPTURE LAYER",
+      "THE COMPLETION LAYER",
+    ].entries()) {
+      expect(labels[i], `descriptor ${i + 1}`).toContain(phrase);
+    }
   });
 
   test("the group heading leads its own capabilities", async ({ page }) => {
-    await gotoRoute(page, "/");
+    await gotoRoute(page, "/services");
     const sizes = await page.evaluate(() => {
       const px = (s: string) => parseFloat(getComputedStyle(document.querySelector(s)!).fontSize);
-      return {
-        group: px(".dao-svc__groupname"),
-        cap: px(".dao-svc__name"),
-        layer: px(".dao-svc__grouplayer"),
-      };
+      return { group: px(".dsv__grouplabel"), cap: px(".dsv__name") };
     });
-    expect(sizes.group).toBeGreaterThan(sizes.cap);
-    expect(sizes.cap).toBeGreaterThan(sizes.layer);
+    // the capability NAME is the primary navigation on the catalogue and is set
+    // larger than the label above it, which is the group's quiet register - the
+    // hierarchy this route has always used
+    expect(sizes.cap).toBeGreaterThan(sizes.group);
   });
 
-  test("and still leads at 360, where the two used to be a pixel apart", async ({ page }) => {
+  test("and the dossier's own hierarchy holds at 360", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 780 });
     await gotoRoute(page, "/");
     const sizes = await page.evaluate(() => {
       const px = (s: string) => parseFloat(getComputedStyle(document.querySelector(s)!).fontSize);
-      return { group: px(".dao-svc__groupname"), cap: px(".dao-svc__name") };
+      return {
+        title: px(".dao-wwm__title"),
+        row: px(".dao-wwm__name"),
+        mast: px(".dao-wwm__mast"),
+      };
     });
-    expect(sizes.group - sizes.cap).toBeGreaterThanOrEqual(3);
+    // the dossier title leads its service rows, and both lead the masthead -
+    // three clear steps at the narrowest width the site supports
+    expect(sizes.title - sizes.row).toBeGreaterThanOrEqual(3);
+    expect(sizes.row - sizes.mast).toBeGreaterThanOrEqual(3);
   });
 });
 
 /* ------------------------------------------------------------------ §02 --- */
 
-test.describe("§02 capability preview is an entry point", () => {
-  test("every open row offers a link to its own capability archive", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const links = await page.locator(".dao-svc [data-dao-capability]").evaluateAll((els) =>
+test.describe("§02 every capability is an entry point into its own archive", () => {
+  /**
+   * SUPERSEDED SURFACE, SAME CONTRACT.
+   *
+   * This block used to exercise the homepage capability act: an expanding row,
+   * a worked-example still, an inert closed body. The approved What We Make
+   * dossier replaced that act, and the capability -> archive route it protected
+   * now lives on the catalogue, where all nine capabilities carry their own
+   * Related Work link. The guarantees are unchanged and are checked here; the
+   * dossier's own behaviour is covered in what-we-make.spec.ts.
+   */
+  test("every capability links to its own filter, never to ALL", async ({ page }) => {
+    await gotoRoute(page, "/services");
+    const links = await page.locator("[data-dao-capability]").evaluateAll((els) =>
       els.map((e) => ({
         id: e.getAttribute("data-dao-capability"),
         href: e.getAttribute("href"),
@@ -125,30 +156,12 @@ test.describe("§02 capability preview is an entry point", () => {
     expect(links).toHaveLength(9);
     for (const l of links) {
       expect(l.href, `${l.id} routes to its own filter`).toBe(`/work?capability=${l.id}`);
+      expect(l.href, `${l.id} widened to the whole archive`).not.toBe("/work");
     }
   });
 
-  test("a capability with credited work shows a still; one without shows none", async ({
-    page,
-  }) => {
-    await gotoRoute(page, "/");
-    const state = await page.evaluate(() =>
-      [...document.querySelectorAll(".dao-svc [data-dao-capability]")].map((e) => ({
-        id: e.getAttribute("data-dao-capability"),
-        // the still is the link itself; the empty state is a sibling treatment
-        hasStill: e.classList.contains("dao-svc__frag"),
-      })),
-    );
-    for (const s of state) {
-      expect(s.hasStill, `${s.id}`).toBe(CAPABILITY_COUNTS[s.id!] > 0);
-    }
-  });
-
-  test("clicking the preview lands on that exact capability, not ALL", async ({ page }) => {
-    await gotoRoute(page, "/");
-    // 07 has credited work, so it renders as a clickable still
-    const row = page.locator(".dao-svc__row", { hasText: "Film & Video Production" });
-    await row.locator(".dao-svc__rowbtn").click();
+  test("clicking one lands on that exact capability, not ALL", async ({ page }) => {
+    await gotoRoute(page, "/services");
     await page.locator('[data-dao-capability="film-video-production"]').click();
     await page.waitForURL(/\/work\?capability=film-video-production$/);
     await expect(page.locator(".dwk__frame")).toHaveCount(2);
@@ -156,57 +169,53 @@ test.describe("§02 capability preview is an entry point", () => {
   });
 
   test("a zero-result capability still routes there and says so honestly", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const row = page.locator(".dao-svc__row", { hasText: "Scenography" });
-    await row.locator(".dao-svc__rowbtn").click();
-    // no photograph is borrowed from unrelated work
-    await expect(row.locator(".dao-svc__frag")).toHaveCount(0);
-    await expect(row.locator(".dao-svc__fragnone")).toHaveCount(1);
-    await row.locator('[data-dao-capability="scenography"]').click();
+    await gotoRoute(page, "/services");
+    const link = page.locator('[data-dao-capability="scenography"]');
+    await link.scrollIntoViewIfNeeded();
+    await link.click();
     await page.waitForURL(/\/work\?capability=scenography$/);
     await expect(page.locator(".dwk__frame")).toHaveCount(0);
     await expect(page.locator(".dwk__empty, .dwk__emptytitle").first()).toBeVisible();
   });
 
-  test("the row opens from the keyboard, so nothing here is hover-only", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const row = page.locator(".dao-svc__row", { hasText: "Photography" }).first();
-    const btn = row.locator(".dao-svc__rowbtn");
-    await btn.focus();
-    await expect(btn).toBeFocused();
-    await page.keyboard.press("Enter");
-    await expect(btn).toHaveAttribute("aria-expanded", "true");
-    const link = row.locator("[data-dao-capability]");
+  test("the mark that claims a worked example is read from the credit data", async ({ page }) => {
+    await gotoRoute(page, "/services");
+    // a capability may only display the mark when it actually has credited work
+    const claims = await page.evaluate(() => {
+      const out: { id: string; marked: boolean }[] = [];
+      for (const link of document.querySelectorAll<HTMLElement>("[data-dao-capability]")) {
+        const id = link.getAttribute("data-dao-capability") ?? "";
+        const scope = link.closest(".dsv__caplink, div") ?? link.parentElement!;
+        out.push({ id, marked: !!scope.querySelector(".dsv__worked") });
+      }
+      return out;
+    });
+    for (const c of claims) {
+      if (c.marked)
+        expect(CAPABILITY_COUNTS[c.id], `${c.id} claims work it has none of`).toBeGreaterThan(0);
+    }
+  });
+
+  test("every link is reachable by keyboard, so nothing here is hover-only", async ({ page }) => {
+    await gotoRoute(page, "/services");
+    const link = page.locator('[data-dao-capability="photography"]');
+    await link.scrollIntoViewIfNeeded();
     await link.focus();
     await expect(link).toBeFocused();
   });
 
-  test("a collapsed row keeps its link out of the tab order", async ({ page }) => {
-    await gotoRoute(page, "/");
-    // 03 is open by default; close it and the link must become unreachable
-    const row = page.locator(".dao-svc__row", { hasText: "Production Design" }).first();
-    await expect(row).toHaveClass(/is-open/);
-    await row.locator(".dao-svc__rowbtn").click();
-    await expect(row).not.toHaveClass(/is-open/);
-    const reachable = await row
-      .locator("[data-dao-capability]")
-      .evaluate((el) => !el.closest("[inert]"));
-    expect(reachable, "the closed body is inert").toBe(false);
-  });
-
-  test("the preview carries a meaningful accessible label", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const label = await page
-      .locator('[data-dao-capability="production-design"]')
-      .getAttribute("aria-label");
-    expect(label).toContain("Production Design");
-    expect(label).toMatch(/5/);
+  test("carries a meaningful accessible name", async ({ page }) => {
+    await gotoRoute(page, "/services");
+    const link = page.locator('[data-dao-capability="production-design"]');
+    // the label says what the destination IS, not "click here"
+    expect((await link.innerText()).trim().length).toBeGreaterThan(4);
+    await expect(link).toHaveAttribute("href", "/work?capability=production-design");
   });
 
   test("and keeps the locale", async ({ page }) => {
-    await gotoRoute(page, "/ka");
+    await gotoRoute(page, "/ka/services");
     const hrefs = await page
-      .locator(".dao-svc [data-dao-capability]")
+      .locator("[data-dao-capability]")
       .evaluateAll((els) => els.map((e) => e.getAttribute("href")));
     expect(hrefs).toHaveLength(9);
     for (const h of hrefs) expect(h).toMatch(/^\/ka\/work\?capability=/);

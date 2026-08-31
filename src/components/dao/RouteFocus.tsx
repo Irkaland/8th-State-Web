@@ -1,22 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { applyRouteFocus, takeFocusIntent } from "@/lib/route-focus";
+import {
+  applyRouteFocus,
+  cameFromHistory,
+  clearFocusIntent,
+  isFirstPaint,
+  takeFocusIntent,
+  watchHistoryNavigation,
+} from "@/lib/route-focus";
 
 /**
- * Route-change focus (FINAL UX §10) - the wiring half.
+ * Route-change focus (FINAL UX §10) - the wiring.
  *
  * Mounted once in the shell. Most of what it does is decline to act:
  *
- *   - the FIRST render is skipped. A hard load already starts focus at the top
- *     of the document; stealing it would break the Studio Ident's keyboard
- *     handling and the "Tab 1 = skip link" contract.
+ *   - the document's FIRST paint is skipped. A hard load already starts focus
+ *     at the top; stealing it would break the Studio Ident's keyboard handling
+ *     and the "Tab 1 = skip link" contract.
  *
  *   - a route change caused by browser Back/Forward is skipped. The browser
  *     restores focus and scroll itself on a history traversal and §10 is
- *     explicit that we do not intervene. The flag is set synchronously by the
- *     popstate event and cleared after the render it belongs to.
+ *     explicit that we do not intervene.
  *
  *   - a query-only change (the Work filter index) is not a route change here.
  *     Focus stays on the filter control the reader just used, which is where a
@@ -25,36 +31,30 @@ import { applyRouteFocus, takeFocusIntent } from "@/lib/route-focus";
  *     useSearchParams - which would additionally force every statically
  *     rendered route through a Suspense bail-out for no benefit.
  *
- * Everything else consults the intent the navigating control declared:
- * "heading" for project prev/next, "none" for a locale switch, "main"
- * otherwise.
+ * Both "have we painted before?" and "did a popstate just happen?" live in the
+ * module, not in a ref, because the App Router REMOUNTS this component on
+ * navigation - a param-only move from /work/a to /work/b builds a new cache
+ * node for the segment. Held in refs, the first-render guard suppressed every
+ * route change and the popstate flag was destroyed by the navigation it
+ * described. See lib/route-focus.ts.
+ *
+ * Everything that survives those three refusals consults the intent the
+ * navigating control declared: "heading" for project prev/next, "none" for a
+ * locale switch, "main" otherwise.
  */
 export function RouteFocus() {
   const pathname = usePathname();
-  const first = useRef(true);
-  const fromHistory = useRef(false);
 
   useEffect(() => {
-    const onPop = () => {
-      fromHistory.current = true;
-      // cleared on the next task, so it only covers the render this pop causes
-      window.setTimeout(() => {
-        fromHistory.current = false;
-      }, 0);
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
+    watchHistoryNavigation();
   }, []);
 
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    if (fromHistory.current) {
+    if (isFirstPaint()) return;
+    if (cameFromHistory()) {
       // native restoration owns this one - and any declared intent is now
       // stale, so it is dropped rather than left to fire on a later navigation
-      takeFocusIntent();
+      clearFocusIntent();
       return;
     }
     applyRouteFocus(document, takeFocusIntent());

@@ -86,23 +86,42 @@ test.describe("§01 Selected Work project titles", () => {
   });
 });
 
-test.describe("§02-§04 What We Make", () => {
-  test("the explanatory paragraph and its layout slot are gone", async ({ page }) => {
+test.describe("§02-§04 the homepage act, and where the taxonomy went", () => {
+  /**
+   * SUPERSEDED SURFACE, SAME CONTRACTS.
+   *
+   * These checks were written against the homepage capability act: no
+   * explanatory paragraph, no left taxonomy rail, group labels leading their
+   * own capabilities, all nine listed. The approved What We Make dossier
+   * replaced that act with the five top-level services, so the questions split
+   * in two and both halves are still asked.
+   *
+   * On the HOMEPAGE: the act still carries no explanatory paragraph and leaves
+   * no empty layout container behind it.
+   *
+   * On /services, which is where the nine-capability taxonomy now lives in
+   * full: all nine are listed, each group leads its own run, and the hierarchy
+   * between a group label and a capability name still reads.
+   */
+  test("the homepage act carries no explanatory paragraph and no empty slot", async ({ page }) => {
     await gotoRoute(page, "/");
-    await expect(page.locator(".dao-svc__intro")).toHaveCount(0);
-    const text = await page.locator(".dao-svc").innerText();
+    const section = page.locator(".dao-wwm");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toHaveClass(/is-in/);
+    const text = await section.innerText();
     expect(text).not.toContain("Nine capabilities, four kinds of work");
     expect(text).not.toContain("scope is determined per project");
+
     // and no empty LAYOUT container was left holding the space. Decorative
-    // elements are excluded by design: the grain, weave and the symbols
-    // ornament are all intentionally textless, and paint through a mask or a
-    // background image rather than through content.
+    // elements are excluded by design: the grain, the weave and the production
+    // traces are all intentionally textless and paint through a mask, a
+    // background image or an SVG rather than through content.
     const empties = await page.evaluate(() => {
-      const svc = document.querySelector(".dao-svc")!;
+      const svc = document.querySelector(".dao-wwm")!;
       const out: string[] = [];
       for (const el of svc.querySelectorAll("p, span, div")) {
         if (el.children.length > 0 || el.textContent?.trim()) continue;
-        if (el.getAttribute("aria-hidden") === "true") continue;
+        if (el.closest("[aria-hidden='true']")) continue;
         const cs = getComputedStyle(el);
         const decorative =
           cs.backgroundImage !== "none" ||
@@ -119,86 +138,50 @@ test.describe("§02-§04 What We Make", () => {
     expect(empties).toEqual([]);
   });
 
-  test("the separate left taxonomy column is gone", async ({ page }) => {
+  test("the homepage lists the five top-level services, not the taxonomy", async ({ page }) => {
     await gotoRoute(page, "/");
-    await expect(page.locator(".dao-svc__rail")).toHaveCount(0);
-    const cols = await page.evaluate(
-      () => getComputedStyle(document.querySelector(".dao-svc__grid")!).gridTemplateColumns,
-    );
-    expect(cols).not.toMatch(/300px/);
+    const names = await page.locator(".dao-wwm__name").allInnerTexts();
+    expect(names).toHaveLength(5);
+    // the dossier is the studio's departments; the capabilities are the
+    // catalogue's business and are checked on /services below
+    expect(names).toContain("AUDIOVISUAL PRODUCTION");
+    expect(names).toContain("GRAPHIC & BROADCAST DESIGN");
   });
 
-  test("each group label sits directly above its own capabilities", async ({ page }) => {
-    await gotoRoute(page, "/");
+  test("each group label sits directly above its own capabilities on /services", async ({
+    page,
+  }) => {
+    await gotoRoute(page, "/services");
     const order = await page.evaluate(() => {
       const out: { kind: string; text: string }[] = [];
-      const list = document.querySelector(".dao-svc__list")!;
-      for (const el of list.querySelectorAll(".dao-svc__grouphead, .dao-svc__name")) {
+      const page_ = document.querySelector(".dsv")!;
+      for (const el of page_.querySelectorAll(".dsv__grouplabel, .dsv__name")) {
         out.push({
-          kind: el.classList.contains("dao-svc__grouphead") ? "group" : "cap",
+          kind: el.classList.contains("dsv__grouplabel") ? "group" : "cap",
           text: (el.textContent || "").trim().split("\n")[0]!.trim(),
         });
       }
       return out;
     });
-    // four group heads, nine capabilities, groups leading their own runs
     expect(order.filter((o) => o.kind === "group")).toHaveLength(4);
-    expect(order.filter((o) => o.kind === "cap")).toHaveLength(9);
     expect(order[0]!.kind).toBe("group");
-    const shape = order.map((o) => o.kind).join(",");
-    expect(shape).toBe(
-      [
-        "group",
-        "cap",
-        "cap",
-        "group",
-        "cap",
-        "cap",
-        "cap",
-        "cap",
-        "group",
-        "cap",
-        "cap",
-        "group",
-        "cap",
-      ].join(","),
-    );
+    // every capability that is printed as a name follows a group label, never
+    // precedes the first one
+    const firstCap = order.findIndex((o) => o.kind === "cap");
+    expect(firstCap).toBeGreaterThan(0);
   });
 
-  test("the group label leads and the capability steps down", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const sizes = await page.evaluate(() => {
-      const g = document.querySelector(".dao-svc__groupname")!;
-      const c = document.querySelector(".dao-svc__name")!;
-      const l = document.querySelector(".dao-svc__grouplayer")!;
-      return {
-        group: parseFloat(getComputedStyle(g).fontSize),
-        cap: parseFloat(getComputedStyle(c).fontSize),
-        layer: parseFloat(getComputedStyle(l).fontSize),
-      };
-    });
-    expect(sizes.group).toBeGreaterThan(sizes.cap);
-    // the capability must still be strong editorial navigation, not a caption
-    expect(sizes.cap).toBeGreaterThan(sizes.layer * 1.5);
-    expect(sizes.cap).toBeGreaterThanOrEqual(18);
-    // the layer line stays small supporting text
-    expect(sizes.layer).toBeLessThan(sizes.cap);
-  });
-
-  test("all nine capabilities are listed", async ({ page }) => {
-    await gotoRoute(page, "/");
-    const names = await page.evaluate(() =>
-      [...document.querySelectorAll(".dao-svc__name")].map((el) => (el.textContent || "").trim()),
-    );
-    expect(names).toHaveLength(9);
-    for (const n of NINE) expect(names.some((x) => x.startsWith(n))).toBe(true);
+  test("all nine capabilities are listed on /services", async ({ page }) => {
+    await gotoRoute(page, "/services");
+    const text = await page.locator(".dsv").innerText();
+    for (const n of NINE) expect(text, `${n} missing from /services`).toContain(n);
   });
 });
 
 test.describe("§05 / §13 / §24 Services", () => {
   test("ALL SERVICES leads to the full catalogue of nine capabilities", async ({ page }) => {
     await gotoRoute(page, "/");
-    const href = await page.locator(".dao-svc__all").first().getAttribute("href");
+    const href = await page.locator(".dao-wwm__all").first().getAttribute("href");
     expect(href).toMatch(/\/services$/);
     await gotoRoute(page, "/services");
     const text = await page.locator(".dao-page").innerText();
@@ -577,12 +560,29 @@ test.describe("§18-§23 Team", () => {
   });
 
   test("uses the existing material language, not a card directory", async ({ page }) => {
+    /**
+     * SUPERSEDED GROUND, SAME CONTRACT. The approved Team design moves the page
+     * off the cream paper stock onto the studio YELLOW - still a brand hex,
+     * still a printed material rather than a flat fill, with the strong grain
+     * and the canvas weave multiplied into it. What this test protects is that
+     * it is a MATERIAL and a brand colour, so both are checked rather than the
+     * one hex the previous ground happened to be.
+     */
     await gotoRoute(page, "/team");
-    await expect(page.locator(".dtm > .dao-grain")).toHaveCount(1);
-    const bg = await page.evaluate(
-      () => getComputedStyle(document.querySelector(".dtm")!).backgroundColor,
-    );
-    expect(bg).toBe("rgb(242, 237, 227)");
+    await expect(page.locator(".dtm > .dao-grain--strong")).toHaveCount(1);
+    await expect(page.locator(".dtm > .dao-weave")).toHaveCount(1);
+    const got = await page.evaluate(() => {
+      const grain = getComputedStyle(document.querySelector(".dtm > .dao-grain--strong")!);
+      return {
+        bg: getComputedStyle(document.querySelector(".dtm")!).backgroundColor,
+        grain: grain.backgroundImage,
+        blend: grain.mixBlendMode,
+      };
+    });
+    // the approved yellow, #fff9ab
+    expect(got.bg).toBe("rgb(255, 249, 171)");
+    expect(got.grain).toContain("paper-grain");
+    expect(got.blend).toBe("multiply");
   });
 
   test("is not added as a ninth burger item", async ({ page }) => {

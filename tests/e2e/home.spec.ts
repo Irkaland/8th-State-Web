@@ -310,19 +310,40 @@ test.describe("Real-device mobile fixes", () => {
 });
 
 test.describe("Global polish pass", () => {
-  test("the open burger sheet hides the contextual return tab", async ({ page }) => {
-    await gotoRoute(page, "/work");
+  test("the open burger sheet is the only navigation on screen", async ({ page }) => {
+    /**
+     * SUPERSEDES "the open burger sheet hides the contextual return tab".
+     *
+     * The tab floated over the chrome, so it had to be actively hidden while
+     * the sheet was up or it would have read as a second HOME control on top of
+     * the burger composition. The masthead back is printed into the page and
+     * scrolls with it, so there is nothing floating to hide - what still has to
+     * hold is that no page control is drawn OVER the open sheet.
+     */
+    await gotoRoute(page, "/work/aom-summer-collection");
     await page.mouse.move(300, 400);
-    const tab = page.locator(".dao-returntab");
-    await expect(tab).toBeVisible();
+    const back = page.locator(".dao-mback");
+    await expect(back).toBeVisible();
     await page.getByRole("button", { name: /open menu/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    // opacity 0 + pointer-events none while the sheet is open - no HOME
-    // control may float over the burger composition
-    await expect.poll(() => tab.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
-    expect(await tab.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
+    // the sheet covers the page, so the page's own controls end up behind it -
+    // never painted over the burger composition. Polled, because the dialog
+    // becomes visible when its curtain STARTS travelling, not when it lands.
+    await expect
+      .poll(
+        () =>
+          back.evaluate((el) => {
+            const r = el.getBoundingClientRect();
+            // off the viewport entirely is also "not painted over the sheet"
+            if (r.bottom < 0 || r.top > window.innerHeight) return true;
+            const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            return !top || !el.contains(top);
+          }),
+        { timeout: 4000, message: "a page control was drawn over the open sheet" },
+      )
+      .toBe(true);
     await page.keyboard.press("Escape");
-    await expect.poll(() => tab.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+    await expect(back).toBeVisible();
   });
 
   test("burger WORK always opens the full archive with ALL active", async ({ page }) => {

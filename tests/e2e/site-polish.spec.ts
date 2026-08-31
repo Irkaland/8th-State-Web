@@ -26,15 +26,17 @@ const ROUTES = [
 /**
  * Wake the chrome before clicking anything in it.
  *
- * The site hides the mark, the EN/KA switch and the return tab after 1.8s of
- * pointer idle (v7 #5) - so in a long run the tab has genuinely withdrawn by the
- * time a test reaches it, and the page underneath takes the click. A user moves
- * the pointer first; so does this.
+ * The site hides the mark and the EN/KA switch after 1.8s of pointer idle
+ * (v7 #5) - so in a long run they have genuinely withdrawn by the time a test
+ * reaches them, and the page underneath takes the click. A user moves the
+ * pointer first; so does this.
+ *
+ * The contextual back no longer needs waking: it is printed INTO the page
+ * rather than floating over the chrome, so it never withdraws.
  */
 async function wakeChrome(page: Page) {
   await page.mouse.move(600, 400);
   await page.mouse.move(620, 420);
-  await expect(page.locator(".dao-returntab")).toBeVisible();
   await page.waitForFunction(
     () => !document.documentElement.hasAttribute("data-dao-idle"),
     undefined,
@@ -458,42 +460,82 @@ test.describe("§14-§16 the Start a Project swallow", () => {
 
 /* -------------------------------- §17-§20 the site BACK control is a route */
 
-test.describe("§17-§20 the site BACK control goes to the page's parent", () => {
+test.describe("§17-§20 the contextual BACK goes to the page's parent", () => {
+  /**
+   * SUPERSEDED CONTROL, NARROWED SCOPE.
+   *
+   * This suite was written for the ReturnTab, a fixed paper tab beside the
+   * chrome that appeared on ten routes - including top-level ones, where it
+   * pointed HOME and duplicated the brand mark. FINAL UX retires it and gives
+   * the site ONE contextual vocabulary: an in-page masthead back, on the three
+   * routes that genuinely have a contextual parent.
+   *
+   * Everything this suite actually guaranteed still holds and is still checked:
+   * it is a real link to an explicit route rather than a history pop, it names
+   * the parent in the reader's own locale, one click lands there, a locale
+   * switch does not change where it goes, and the browser's own Back is
+   * untouched. What changed is which routes have one - and that top-level
+   * routes now correctly have none.
+   */
   const PARENTS = [
-    ["/studio-lab", "/studio"],
-    ["/team", "/studio"],
-    ["/process", "/studio"],
-    ["/work/aom-summer-collection", "/work"],
-    ["/studio", "/"],
-    ["/services", "/"],
-    ["/georgia-production", "/"],
-    ["/contact", "/"],
-    ["/start-a-project", "/"],
+    [".dao-mback", "/team", "/studio"],
+    [".dao-mback", "/work/aom-summer-collection", "/work"],
+    [".dsc__back", "/studio-lab/photography", "/studio-lab"],
+  ] as const;
+
+  const NO_CONTEXTUAL_PARENT = [
+    "/",
+    "/studio",
+    "/services",
+    "/georgia-production",
+    "/process",
+    "/studio-lab",
+    "/contact",
+    "/start-a-project",
   ] as const;
 
   test("is a link to an explicit route, not a history pop", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoRoute(page, "/studio-lab");
-    const tab = page.locator(".dao-returntab");
+    await gotoRoute(page, "/team");
+    const back = page.locator(".dao-mback");
     // a real link: it has an href, so it prefetches and middle-clicks like one
-    await expect(tab).toHaveAttribute("href", "/studio");
-    expect(await tab.evaluate((el) => el.tagName)).toBe("A");
+    await expect(back).toHaveAttribute("href", "/studio");
+    expect(await back.evaluate((el) => el.tagName)).toBe("A");
   });
 
-  for (const [child, parent] of PARENTS) {
+  test("a top-level route carries none, because it has no contextual parent", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    for (const route of NO_CONTEXTUAL_PARENT) {
+      await gotoRoute(page, route);
+      expect(await page.locator(".dao-mback").count(), route).toBe(0);
+    }
+  });
+
+  for (const [sel, child, parent] of PARENTS) {
     test(`${child} returns to ${parent} in EN and KA`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       for (const loc of ["", "/ka"] as const) {
         await gotoRoute(page, loc + child);
-        const want = loc === "" ? parent : parent === "/" ? "/ka" : `/ka${parent}`;
-        await expect(page.locator(".dao-returntab")).toHaveAttribute("href", want);
-        await wakeChrome(page);
-        await page.locator(".dao-returntab").click();
+        const want = loc === "" ? parent : `/ka${parent}`;
+        const back = page.locator(sel);
+        await expect(back).toHaveAttribute("href", want);
+        await back.click();
         await page.waitForURL((u) => new URL(u).pathname === want, { timeout: 15000 });
         expect(new URL(page.url()).pathname).toBe(want);
       }
     });
   }
+
+  test("is present, and a real target, on a phone", async ({ page }) => {
+    // the whole reason the vocabulary changed: the tab was display:none below
+    // 720px, which left phone readers with no contextual parent at all
+    await page.setViewportSize({ width: 375, height: 812 });
+    await gotoRoute(page, "/team");
+    const back = page.locator(".dao-mback");
+    await expect(back).toBeVisible();
+    const box = await back.boundingBox();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  });
 
   for (const [from, to] of [
     ["", "/ka"],
@@ -503,8 +545,8 @@ test.describe("§17-§20 the site BACK control goes to the page's parent", () =>
       page,
     }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
-      await gotoRoute(page, `${from}/studio-lab`);
-      const beforeHref = await page.locator(".dao-returntab").getAttribute("href");
+      await gotoRoute(page, `${from}/team`);
+      const beforeHref = await page.locator(".dao-mback").getAttribute("href");
 
       // switch language on the page itself - this is the step that used to add a
       // history entry and send BACK into the previous language.
@@ -512,23 +554,21 @@ test.describe("§17-§20 the site BACK control goes to the page's parent", () =>
       // The chrome has to be awake first. `html[data-dao-idle]` fades the
       // language switcher (dao.css), so an idle or mid-transition chrome leaves
       // the link resolvable but never "stable", and the click then waits out the
-      // whole test timeout. Every other click in this file wakes the chrome;
-      // this one did not, which is why it was the last test failing under load.
+      // whole test timeout.
       await wakeChrome(page);
       await page
         .locator(".dao-lang a")
         .filter({ hasText: to === "/ka" ? "KA" : "EN" })
         .click();
-      const switched = to === "/ka" ? "/ka/studio-lab" : "/studio-lab";
+      const switched = to === "/ka" ? "/ka/team" : "/team";
       await page.waitForURL((u) => new URL(u).pathname === switched, { timeout: 15000 });
 
       const want = to === "/ka" ? "/ka/studio" : "/studio";
-      await expect(page.locator(".dao-returntab")).toHaveAttribute("href", want);
+      await expect(page.locator(".dao-mback")).toHaveAttribute("href", want);
       expect(beforeHref).not.toBe(want);
 
       // ONE click, and it lands on the parent in the CURRENT locale
-      await wakeChrome(page);
-      await page.locator(".dao-returntab").click();
+      await page.locator(".dao-mback").click();
       await page.waitForURL((u) => new URL(u).pathname === want, { timeout: 15000 });
       expect(new URL(page.url()).pathname).toBe(want);
     });
@@ -536,14 +576,13 @@ test.describe("§17-§20 the site BACK control goes to the page's parent", () =>
 
   test("the browser's own Back is left alone", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoRoute(page, "/studio");
-    await wakeChrome(page);
-    await page.locator(".dao-returntab").click();
-    await page.waitForURL((u) => new URL(u).pathname === "/", { timeout: 15000 });
-    // browser Back still means "the page I came from", which is /studio
-    await page.goBack();
+    await gotoRoute(page, "/team");
+    await page.locator(".dao-mback").click();
     await page.waitForURL((u) => new URL(u).pathname === "/studio", { timeout: 15000 });
-    expect(new URL(page.url()).pathname).toBe("/studio");
+    // browser Back still means "the page I came from", which is /team
+    await page.goBack();
+    await page.waitForURL((u) => new URL(u).pathname === "/team", { timeout: 15000 });
+    expect(new URL(page.url()).pathname).toBe("/team");
   });
 });
 

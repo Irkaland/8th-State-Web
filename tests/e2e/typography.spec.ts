@@ -34,7 +34,9 @@ test.describe("Typography system - Latin", () => {
   test("major display headings resolve to Adevas", async ({ page }) => {
     await gotoRoute(page, "/");
     // the brief's own examples, plus their equivalents on other routes
-    for (const sel of [".dao-work__title", ".dao-svc__title", ".dao-lab__title"]) {
+    // .dao-svc__title retired with the capability act; the dossier's own title
+    // is the display heading that took its place in the same composition
+    for (const sel of [".dao-work__title", ".dao-wwm__title", ".dao-lab__title"]) {
       expect(await famOf(page, sel), `${sel} must be the display face`).toContain("adevas");
     }
     // role, not size: these are deliberately NOT the same physical size

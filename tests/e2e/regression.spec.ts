@@ -456,12 +456,25 @@ test.describe("Mobile (390)", () => {
     expect(m.cols).toBe(3);
   });
 
-  test("no contextual return control on mobile", async ({ page }) => {
-    await gotoRoute(page, "/studio");
-    await page.mouse.move(200, 300);
-    await expect(page.locator(".dao-returntab")).toBeHidden();
+  test("the contextual return control is present ON mobile, and is a real target", async ({
+    page,
+  }) => {
+    /**
+     * INVERTS "no contextual return control on mobile", deliberately.
+     *
+     * The ReturnTab was a fixed tab floating beside the chrome, and it was
+     * display:none below 720px because there was nowhere to put it - which left
+     * phone readers with no contextual parent at all. The masthead back is
+     * printed into the page, so it is present at EVERY width, which is the whole
+     * reason the vocabulary changed.
+     */
     await gotoRoute(page, "/work/aom-summer-collection");
-    await expect(page.locator(".dao-returntab")).toBeHidden();
+    const back = page.locator(".dao-mback");
+    await expect(back).toBeVisible();
+    const box = await back.boundingBox();
+    expect(box!.height, "a 44px touch target").toBeGreaterThanOrEqual(44);
+    await gotoRoute(page, "/team");
+    await expect(page.locator(".dao-mback")).toBeVisible();
   });
 
   test("no horizontal body overflow on the lab room and KA home", async ({ page }) => {
@@ -508,9 +521,24 @@ test.describe("Mobile (320)", () => {
 });
 
 test.describe("Desktop return control", () => {
-  test("the return tab is still present on desktop", async ({ page }) => {
+  test("the contextual back names its parent, and goes there", async ({ page }) => {
+    /**
+     * SUPERSEDES "the return tab is still present on desktop". /studio is a
+     * TOP-LEVEL route and now carries no contextual back at all - the tab used
+     * to sit there pointing HOME, duplicating the brand mark. The control
+     * belongs to routes with a real contextual parent, and it names it.
+     */
+    await gotoRoute(page, "/team");
+    const back = page.locator(".dao-mback");
+    await expect(back).toBeVisible();
+    await expect(back).toHaveAttribute("href", "/studio");
+    await expect(back).toContainText(/STUDIO/i);
+    await back.click();
+    await expect(page).toHaveURL(/\/studio$/);
+  });
+
+  test("a top-level route carries none, because it has no contextual parent", async ({ page }) => {
     await gotoRoute(page, "/studio");
-    await page.mouse.move(300, 400);
-    await expect(page.locator(".dao-returntab")).toBeVisible();
+    await expect(page.locator(".dao-mback")).toHaveCount(0);
   });
 });

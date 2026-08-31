@@ -2407,7 +2407,9 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   font-family: var(--f-glacier), sans-serif;
   font-size: clamp(11px, 0.9vw, 13px);
   letter-spacing: var(--ls, 0.2em);
-  color: var(--g, var(--dao-paper));
+  /* the paper, at the register mark's own weight - see WhatWeMake.tsx for why
+     the row's accent is not used here */
+  color: rgb(242 237 227 / 0.86);
   min-width: 34px;
   flex: none;
 }
@@ -2508,6 +2510,10 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   font-size: 9px;
   letter-spacing: 0.24em;
   color: rgb(242 237 227 / 0.5);
+}
+:lang(ka) .dao-wwm__platecap {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
 }
 
 /* ---------- foot ---------- */
