@@ -4770,6 +4770,20 @@ html:has(.dsc) {
 .dtm__grid .dtm__frame {
   max-width: 286px;
 }
+/* §03: every portrait the same size.
+   The card is a <button>, and a button's `width: auto` is shrink-to-fit rather
+   than the stretch a div would take - so each card was only as wide as its own
+   longest line of text, and the frame inside it inherited that width. The
+   portraits were therefore being sized by the length of a person's name:
+   measured at 1440, "Keto Kiladze" resolved to a 159px frame while "Lasha
+   Bedianashvili" reached the 286px cap. Filling the grid cell hands every frame
+   the same width, and the 4:5 ratio does the rest.
+
+   The card's total height is deliberately left alone: names and roles still run
+   to whatever depth they need underneath. */
+.dtm__grid .dtm__person {
+  width: 100%;
+}
 .dtm__person {
   position: relative;
   display: flex;
@@ -4784,9 +4798,29 @@ html:has(.dsc) {
   cursor: pointer;
   transition: opacity 240ms var(--dao-ease-micro);
 }
+/* §02: NO box around the card. The outline that used to sit 8px outside the
+   whole card - portrait, name, role and all - drew a red rectangle over a
+   composition whose only frame is meant to be the hand-drawn one around the
+   photograph, and it read as a second, competing frame.
+
+   Focus now speaks through the card's own vocabulary instead: the VIEW PROFILE
+   affordance that hover already reveals, and a red rule under the name. The
+   name carries it because VIEW PROFILE is not drawn on the phone, and a
+   keyboard is not a desktop-only device - this way the indicator exists at
+   every width. Both survive forced-colors, where a text decoration is repainted
+   in the system colour rather than dropped. */
 .dtm__person:focus-visible {
-  outline: 2px solid var(--dao-red);
-  outline-offset: 8px;
+  outline: none;
+}
+.dtm__person:focus-visible .dtm__view {
+  opacity: 1;
+  transform: none;
+}
+.dtm__person:focus-visible .dtm__pname {
+  text-decoration: underline;
+  text-decoration-color: var(--dao-red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 /* the drawn frame carries the irregularity, so the tilt is only enough that no
    two frames sit on the same axis - not a scatter effect */
