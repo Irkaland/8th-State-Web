@@ -3,6 +3,7 @@ import { chromeMessages, identMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
 import { DaoChrome } from "./DaoChrome";
 import { DaoFooter } from "./DaoFooter";
+import { FragmentEntry } from "./FragmentEntry";
 import { PageVeil, type VeilFamily } from "./PageVeil";
 import { RouteFocus } from "./RouteFocus";
 import { SessionResume } from "./SessionResume";
@@ -54,6 +55,10 @@ export function DaoShell({
       <DaoChrome locale={locale} messages={chromeMessages(messages)} />
       {/* §10: differentiated route-change focus, in one place */}
       <RouteFocus />
+      {/* A shared #anchor URL lands where it says: the ident takes a hard load
+          to the top by design, which also lands on the browser's own fragment
+          scroll, so the fragment is re-applied once the ident has left. */}
+      <FragmentEntry />
       {/* §12: the skip link (rendered in the root layout) targets this element,
           so it has to be able to hold focus. tabindex="-1" makes it
           programmatically focusable without adding it to the tab order. */}
