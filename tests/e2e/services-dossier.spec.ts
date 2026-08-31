@@ -122,25 +122,55 @@ test.describe("C/D/E · the page's own navigation", () => {
     );
   });
 
-  test("the running folio links to all five and marks the one being read", async ({ page }) => {
+  /**
+   * The running department folio is GONE, and must stay gone.
+   *
+   * It was a sticky strip of `01 AUDIOVISUAL … 05 GRAPHICS` with an active
+   * underline and an `01 / 05` counter, permanently occupying a band under the
+   * chrome to repeat what the register at the top of the page already says.
+   * It was also the page's only client component, so its removal is what makes
+   * the dossier ship no client JavaScript at all.
+   *
+   * The band it reserved is checked too: removing a fixed strip and leaving
+   * its space behind is the failure this guards against.
+   */
+  test("the horizontal department folio is gone, and left no empty band", async ({ page }) => {
     await gotoRoute(page, "/services");
-    const links = page.locator(".dsvc__foliolink");
-    await expect(links).toHaveCount(5);
-    expect(await links.evaluateAll((e) => e.map((x) => x.getAttribute("href")))).toEqual(
-      ANCHORS.map((a) => `#${a}`),
+    for (const sel of [
+      ".dsvc__folio",
+      ".dsvc__foliorail",
+      ".dsvc__foliolink",
+      ".dsvc__folion",
+      ".dsvc__folioshort",
+      ".dsvc__foliocount",
+    ]) {
+      expect(await page.locator(sel).count(), `${sel} came back`).toBe(0);
+    }
+    // The folio's `01 / 05` counter is gone with it. `x / 05` still appears on
+    // the page, and legitimately: every chapter masthead prints DEPT. nn / 05,
+    // which is approved design and was never part of the folio. So what is
+    // asserted is that the ONLY place it survives is that masthead.
+    const counters = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>("*")]
+        .filter(
+          (el) =>
+            !el.children.length &&
+            /\b0[1-5]\s*\/\s*05\b/.test(el.textContent || "") &&
+            !el.closest(".dsvc__chaptermast"),
+        )
+        .map((el) => `${el.className}: ${(el.textContent || "").trim()}`),
     );
+    expect(counters, JSON.stringify(counters)).toEqual([]);
 
-    // the folio follows the reading position, and says so in more than colour
-    await page.evaluate(() => document.getElementById("photography")?.scrollIntoView());
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() =>
-            document.querySelector(".dsvc__foliolink[aria-current='true']")?.getAttribute("href"),
-          ),
-        { timeout: 8000 },
-      )
-      .toBe("#photography");
+    // and the register now meets chapter 01 directly: the gap between them is
+    // the opening's own closing padding, not a band left by a deleted strip
+    const gap = await page.evaluate(() => {
+      const reg = document.querySelector("#top-register")!.getBoundingClientRect();
+      const first = document.querySelector("#audiovisual-production")!.getBoundingClientRect();
+      return Math.round(first.top - reg.bottom);
+    });
+    expect(gap, "empty space where the folio used to be").toBeGreaterThan(0);
+    expect(gap, "empty space where the folio used to be").toBeLessThanOrEqual(80);
   });
 
   test("every WORKS WITH link names a real chapter of this page", async ({ page }) => {
@@ -288,19 +318,20 @@ test.describe("L · nothing overflows sideways", () => {
         ),
       ).toBeLessThanOrEqual(1);
 
-      // the folio stays usable, and never hides a chapter title it links to
-      await page.evaluate(() => document.getElementById("photography")?.scrollIntoView());
-      await page.waitForTimeout(600);
-      const clear = await page.evaluate(() => {
-        const folio = document.querySelector(".dsvc__folio")!.getBoundingClientRect();
-        const title = document
-          .querySelector("#photography .dsvc__chaptertitle")!
-          .getBoundingClientRect();
-        return { folioBottom: Math.round(folio.bottom), titleTop: Math.round(title.top) };
+      // nothing inside the register or the production line runs off the frame -
+      // these are the two compositions the redesign rebuilt, and both carry
+      // long uppercase runs that a narrow screen is the first to break
+      const escaped = await page.evaluate(() => {
+        const vw = document.documentElement.clientWidth;
+        return [
+          ...document.querySelectorAll<HTMLElement>(
+            ".dsvc__row, .dsvc__rowname, .dsvc__rowtag, .dsvc__route, .dsvc__routepath, .dsvc__node, .dsvc__stage",
+          ),
+        ]
+          .map((e) => ({ c: e.className, r: Math.round(e.getBoundingClientRect().right) }))
+          .filter((x) => x.r > vw + 1);
       });
-      expect(clear.titleTop, "the folio covers the chapter title").toBeGreaterThanOrEqual(
-        clear.folioBottom - 1,
-      );
+      expect(escaped, JSON.stringify(escaped)).toEqual([]);
     });
   }
 
@@ -308,7 +339,7 @@ test.describe("L · nothing overflows sideways", () => {
     await page.setViewportSize({ width: 390, height: 780 });
     await gotoRoute(page, "/services");
     const heights = await page
-      .locator(".dsvc__row, .dsvc__foliolink, .dsvc__cta, .dsvc__related, .dsvc__workslink")
+      .locator(".dsvc__row, .dsvc__cta, .dsvc__related, .dsvc__workslink")
       .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
     expect(heights.length).toBeGreaterThan(10);
     for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
@@ -348,13 +379,14 @@ test.describe("M/N/O · motion, keyboard and console", () => {
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/\/services#audiovisual-production$/);
 
-    // the folio is reachable too
-    const folioFocusable = await page.evaluate(() => {
-      const l = document.querySelector<HTMLElement>(".dsvc__foliolink")!;
+    // the production-line department nodes are reachable too - they are the
+    // page's other route into a chapter now that the folio is gone
+    const nodeFocusable = await page.evaluate(() => {
+      const l = document.querySelector<HTMLElement>(".dsvc__node")!;
       l.focus();
       return document.activeElement === l;
     });
-    expect(folioFocusable).toBe(true);
+    expect(nodeFocusable).toBe(true);
   });
 
   test("the page is quiet in the console", async ({ page }) => {

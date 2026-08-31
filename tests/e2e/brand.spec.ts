@@ -631,10 +631,11 @@ const FORMER_TEARS: { route: string; sel: string; edge: "top" | "bottom"; was: s
   // the catalogue s four group spreads became the dossier s five department
   // chapters, so the tears to check are the grounds where one chapter s
   // material gives way to the next
-  // NOT chapter 01 s top: that edge sits directly under the running folio,
-  // whose rule is a navigation affordance the approved design draws, not a
-  // divider standing in for a tear. 02 s top is the same blue-to-paper change
-  // with nothing but the two materials meeting.
+  // NOT chapter 01 s top: it is the one boundary where the department
+  // register - a bordered red block, drawn as a register rather than as a
+  // seam - is the thing above the edge, so its own bottom rule would read as
+  // a divider to this check. 02 s top is the same blue-to-paper change with
+  // nothing but the two materials meeting.
   { route: "/services", sel: "#production-design", edge: "top", was: "blue cut" },
   { route: "/services", sel: "#creative-direction", edge: "top", was: "ink cut" },
   { route: "/services", sel: "#graphic-broadcast-design", edge: "top", was: "paper cut" },

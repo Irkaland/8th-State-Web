@@ -31,6 +31,7 @@ export function DaoShell({
   veil,
   footer = false,
   footerGround = "light",
+  footerTextured = false,
   children,
 }: {
   locale: Locale;
@@ -39,6 +40,8 @@ export function DaoShell({
   /** §02: the eight informational/archival route families opt in */
   footer?: boolean;
   footerGround?: "light" | "dark";
+  /** print the light footer on the paper stock - see DaoFooter */
+  footerTextured?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -65,7 +68,14 @@ export function DaoShell({
       <main id="main" tabIndex={-1}>
         {children}
       </main>
-      {footer && <DaoFooter locale={locale} messages={messages} ground={footerGround} />}
+      {footer && (
+        <DaoFooter
+          locale={locale}
+          messages={messages}
+          ground={footerGround}
+          textured={footerTextured}
+        />
+      )}
     </div>
   );
 }

@@ -36,10 +36,10 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
   const m = getMessages(locale);
 
   return (
-    <DaoShell locale={locale} messages={m} veil="paper" footer>
+    <DaoShell locale={locale} messages={m} veil="paper" footer footerTextured>
       {/* --paper so the fixed-chrome clearance is the dossier's own ground:
           this page is paper from the very top edge, not paper below a dark band */}
-      <div className="dao-page dao-page--paper" data-dao-scene="light">
+      <div className="dao-page dao-page--paper dao-page--flush" data-dao-scene="light">
         <ServicesDossier locale={locale} />
       </div>
     </DaoShell>

@@ -26,17 +26,39 @@ export function DaoFooter({
   locale,
   messages,
   ground = "light",
+  textured = false,
 }: {
   locale: Locale;
   messages: Messages;
   /** which ground the footer is printed on */
   ground?: "light" | "dark";
+  /**
+   * Print the footer's light ground on the site's paper stock.
+   *
+   * Opt-in per route rather than on by default, because this footer is shared
+   * by eight route families and turning the material on for all of them is a
+   * change to seven pages nobody asked about. /services asks for it: the whole
+   * dossier is paper, and a flat off-white band under it was the one surface
+   * on that page that read as screen rather than stock.
+   */
+  textured?: boolean;
 }) {
   const c = messages.dao.credits;
   const L = messages.daoRoutes.legal;
 
   return (
-    <footer className={cn("dao-slimfoot", ground === "dark" && "dao-slimfoot--paper")}>
+    <footer
+      className={cn(
+        "dao-slimfoot",
+        ground === "dark" && "dao-slimfoot--paper",
+        textured && "dao-slimfoot--stock",
+      )}
+    >
+      {/* .dao-slimfoot is its own stacking context (position + z-index), so the
+          multiply stays inside the footer and never reaches the page above it */}
+      {textured && ground === "light" ? (
+        <span className="dao-grain--strong" aria-hidden="true" />
+      ) : null}
       <span className="dao-slimfoot__rule" aria-hidden="true" />
       <div className="dao-slimfoot__row">
         {/* the brand mark in the chrome is the home link on every route, so this

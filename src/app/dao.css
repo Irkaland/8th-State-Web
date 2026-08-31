@@ -37,6 +37,21 @@
   --dao-yellow: #fff9ab;
   --dao-orange: #e16912;
   --dao-gold: #f0ab11;
+  /* Lifted gold for small accents on the BRAND RED - the mirror of the move
+     that produced --dao-green-ink. Same hue (41.4deg, preserved exactly), same
+     family, moved in luminance until it is readable on the ground it is used
+     on: green-ink darkens the olive to clear paper, this lightens the gold to
+     clear #d03e26. Gold's saturation is the only thing that can give here -
+     at a fixed hue, luminance is bought with saturation - so it drops 0.93 ->
+     0.58, which is as far as it can go before it stops reading as gold and
+     starts reading as --dao-yellow.
+
+     Measured on the register ground: 2.40:1 -> 3.32:1 against the #d03e26
+     token, and 2.55:1 -> 3.53:1 against the red as it actually renders (the
+     paper grain multiplies into it). It stays 0.25 saturation and 14deg of hue
+     clear of --dao-yellow, which is the accent immediately above it in the
+     department register. */
+  --dao-gold-lift: #ffd16b;
   --dao-brown: #6c3e13;
   --dao-ink: #131210;
   --dao-paper: #f2ede3;

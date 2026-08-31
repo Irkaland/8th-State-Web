@@ -342,9 +342,11 @@ describe("§28 the five top-level services", () => {
     // emitted alongside it so published capability links keep resolving
     expect(dossier).toContain("id={d.anchor}");
     expect(dossier).toContain("<span key={c} id={c}");
-    // and the offset that clears the fixed chrome and the folio is declared once
+    // and the offset that clears the fixed chrome, plus its printed line of
+    // air, is declared once. The second term used to be the running folio's
+    // own band; the folio is gone and the clearance is named for what it is.
     expect(readSource("src/app/dao-routes.css")).toContain(
-      "scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-folio))",
+      "scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-lead))",
     );
   });
 

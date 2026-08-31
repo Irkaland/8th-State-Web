@@ -55,18 +55,48 @@ export type Department = {
   anchor: ServiceAnchor;
   /** joined from the preview, so both surfaces print one name */
   service: TopLevelService;
-  /** the folio's shortened label */
+  /**
+   * The studio's shortened department label.
+   *
+   * Printed by the production-line routes, where a route spelled out in full
+   * department names buries the route it is trying to show.
+   */
   short: LocalizedText;
-  /** the register's right-hand descriptor */
+  /**
+   * The register's right-hand descriptor - a CAPABILITY run, and only that.
+   *
+   * ONE information logic across all five rows, so the column can be read as
+   * a column: `DEPARTMENT NAME ---- WHAT IT IS COMMISSIONED FOR`. The earlier
+   * set described three different things in five rows - a process
+   * (`DEVELOPMENT -> DELIVERY`), a capability run, and a positioning statement
+   * (`UPSTREAM OF EVERYTHING`) - so the relationship between the two columns
+   * changed from row to row.
+   */
   tag: LocalizedText;
   /** the file line in the chapter masthead */
   file: LocalizedText;
   surface: DeptSurface;
   /** the chapter's accent, from the approved palette */
   accent: string;
-  /** the register swatch and its numeral colour */
-  registerColor: string;
-  swatch: string;
+  /**
+   * This department's accent as re-picked for the RED register ground, or
+   * absent when its own accent already reads there.
+   *
+   * The register's numeral and square take `service.accent` - the colour the
+   * homepage already prints this department in - so a department carries one
+   * identity across the site. This field is the single documented exception,
+   * and it exists for the same reason `DAO_SERVICE_GROUPS.onBlue` does: an
+   * accent chosen for one brand ground can be unreadable on another, and the
+   * fix is to re-pick within the same colour family rather than to abandon
+   * the department's identity.
+   *
+   * Only 02 needs it. Gold measures 2.40:1 on #d03e26 - it sinks into the red
+   * at register size - so it steps to `--dao-gold-lift`, which is gold's own
+   * hue lightened until it reads (3.32:1). See the token in dao.css for the
+   * derivation. Nothing else on the site changes: the homepage keeps gold,
+   * where it was chosen against the blue ground and measures fine.
+   */
+  onRed?: string;
   desc: LocalizedText;
   /** printed against CAPABILITY REGISTER */
   groupCount: LocalizedText;
@@ -114,11 +144,11 @@ const g = (title: string, key: string, items: string): CapabilityGroup => ({
 });
 
 /** the approved palette, named where it is used */
-const PAPER = "#f2ede3";
-const INK = "#131210";
 const BLUE = "#2374b3";
 const RED = "#d03e26";
 const ORANGE = "#f0ab11";
+/* --dao-gold-lift: gold's own hue, lightened to read on the brand red */
+const GOLD_LIFT = "#ffd16b";
 const YELLOW = "#fff9ab";
 
 export const DEPARTMENTS: Department[] = [
@@ -127,12 +157,10 @@ export const DEPARTMENTS: Department[] = [
     anchor: "audiovisual-production",
     service: byId("audiovisual-production"),
     short: pending("AUDIOVISUAL"),
-    tag: pending("DEVELOPMENT → DELIVERY"),
+    tag: pending("FILM · COMMERCIAL · CONTENT · POST"),
     file: pending("FILE 01 - FULL SERVICE"),
     surface: "blue",
     accent: YELLOW,
-    registerColor: BLUE,
-    swatch: BLUE,
     desc: pending(
       "Full-service audiovisual production - development and planning through shooting, post-production and final delivery. The broadest department: it can carry a commercial, film, documentary, music or television project end to end, or supply any single stage.",
     ),
@@ -212,8 +240,8 @@ export const DEPARTMENTS: Department[] = [
     file: pending("FILE 02 - WORLD · SPACE · OBJECT · CHARACTER · ATMOSPHERE"),
     surface: "paper",
     accent: ORANGE,
-    registerColor: ORANGE,
-    swatch: PAPER,
+    // gold sinks into the register red at 2.40:1 - see `onRed` above
+    onRed: GOLD_LIFT,
     desc: pending(
       "The department that builds worlds - from visual research and concept art to standing sets, decorated locations, props, costume and character. It works as the art department inside an 8th State production or as an independent design commission.",
     ),
@@ -274,12 +302,10 @@ export const DEPARTMENTS: Department[] = [
     anchor: "photography",
     service: byId("photography"),
     short: pending("PHOTOGRAPHY"),
-    tag: pending("COMMISSION → PRINT"),
+    tag: pending("CAMPAIGN · EDITORIAL · PRODUCT · PORTRAIT"),
     file: pending("FILE 03 - COMMISSION TO PRINT"),
     surface: "paper",
     accent: BLUE,
-    registerColor: BLUE,
-    swatch: PAPER,
     desc: pending(
       "A complete photography service - commercial, fashion, portrait, product, architecture, music, documentary and art photography - with its own creative services, production and post. Sellable as a single shoot or a full campaign.",
     ),
@@ -347,12 +373,10 @@ export const DEPARTMENTS: Department[] = [
     anchor: "creative-direction",
     service: byId("creative-art-direction"),
     short: pending("DIRECTION"),
-    tag: pending("UPSTREAM OF EVERYTHING"),
+    tag: pending("CONCEPT · CAMPAIGN · IMAGE · WORLD"),
     file: pending("FILE 04 - UPSTREAM OF EVERYTHING"),
     surface: "ink",
     accent: RED,
-    registerColor: INK,
-    swatch: INK,
     desc: pending(
       "The strategic department. It defines what the work becomes before execution begins - concept, campaign, visual language, research - then directs photography, film, fashion, music and graphic work through the other four departments.",
     ),
@@ -398,12 +422,10 @@ export const DEPARTMENTS: Department[] = [
     anchor: "graphic-broadcast-design",
     service: byId("graphic-broadcast-design"),
     short: pending("GRAPHICS"),
-    tag: pending("SYSTEMS · IMAGE · TYPE · MOTION"),
+    tag: pending("IDENTITY · TYPE · MOTION · BROADCAST"),
     file: pending("FILE 05 - SYSTEMS · IMAGE · TYPE · MOTION"),
     surface: "paper",
     accent: RED,
-    registerColor: RED,
-    swatch: PAPER,
     desc: pending(
       "Identity systems, printed matter, film graphics and on-air design - the department where systems, image, typography and movement work together, from a logo system to a complete broadcast package.",
     ),
@@ -463,20 +485,78 @@ export const CAPABILITY_HOME = new Map<CapabilityId, ServiceAnchor>(
   DEPARTMENTS.flatMap((d) => d.absorbs.map((c) => [c, d.anchor] as const)),
 );
 
-/** ONE PRODUCTION LINE - the approved routes, printed as written. */
-export const SYSTEM_ROUTES: { key: LocalizedText; path: LocalizedText }[] = [
+/**
+ * ONE PRODUCTION LINE - the four typical routes through the system.
+ *
+ * WHY A ROUTE IS A LIST OF STEPS AND NOT A STRING
+ * ----------------------------------------------
+ * The routes used to be printed as one run of text per route:
+ *
+ *   `04 DIRECTION → 01 PRODUCTION → 02 DESIGN → SHOOT → POST → 05 CAMPAIGN ASSETS`
+ *
+ * Which read as six things of the same kind. They are not. Four of them are
+ * DEPARTMENTS - the studio's five standing files, each with a chapter on this
+ * page - and two are WORKFLOW STAGES that every route passes through and no
+ * department owns. Printing them in one run said the studio has a "shoot"
+ * department, and it does not.
+ *
+ * Worse, a hand-written route could rename a department in passing: `05
+ * IDENTITY`, `05 CAMPAIGN ASSETS` and `05 TITLES & KEY ART` all appeared for
+ * Department 05, whose actual name is GRAPHIC & BROADCAST DESIGN. So a
+ * department step here carries an ANCHOR and nothing else: the label is read
+ * back out of DEPARTMENTS at render, which makes renaming a department in a
+ * route impossible rather than merely discouraged.
+ */
+export type RouteStep =
+  /** one of the five standing departments - numbered, named, and linked */
+  | { kind: "dept"; anchor: ServiceAnchor }
+  /** a stage of the work itself. Never numbered: it is not a sixth department. */
+  | { kind: "stage"; label: LocalizedText };
+
+export type SystemRoute = {
+  /** the route's category - the four the studio publishes */
+  key: LocalizedText;
+  /** what the route delivers, in one line, so it reads in a couple of seconds */
+  outcome: LocalizedText;
+  steps: RouteStep[];
+};
+
+const dept = (anchor: ServiceAnchor): RouteStep => ({ kind: "dept", anchor });
+const stage = (label: string): RouteStep => ({ kind: "stage", label: pending(label) });
+
+export const SYSTEM_ROUTES: SystemRoute[] = [
   {
     key: pending("COMMERCIAL"),
-    path: pending("04 DIRECTION → 01 PRODUCTION → 02 DESIGN → SHOOT → POST → 05 CAMPAIGN ASSETS"),
+    outcome: pending("A finished film, and the campaign that carries it."),
+    steps: [
+      dept("creative-direction"),
+      dept("audiovisual-production"),
+      dept("production-design"),
+      stage("SHOOT"),
+      stage("POST"),
+      dept("graphic-broadcast-design"),
+    ],
   },
-  { key: pending("CAMPAIGN"), path: pending("04 DIRECTION → 03 PHOTOGRAPHY → 05 GRAPHIC SYSTEM") },
+  {
+    key: pending("CAMPAIGN"),
+    outcome: pending("One image language, applied across every surface."),
+    steps: [dept("creative-direction"), dept("photography"), dept("graphic-broadcast-design")],
+  },
   {
     key: pending("FILM"),
-    path: pending("01 PRODUCTION → 02 PRODUCTION DESIGN → SHOOT → POST → 05 TITLES & KEY ART"),
+    outcome: pending("Long-form, from the built world to the title sequence."),
+    steps: [
+      dept("audiovisual-production"),
+      dept("production-design"),
+      stage("SHOOT"),
+      stage("POST"),
+      dept("graphic-broadcast-design"),
+    ],
   },
   {
     key: pending("BRAND"),
-    path: pending("05 IDENTITY → 04 BRAND WORLD → 03 PHOTOGRAPHY LANGUAGE"),
+    outcome: pending("An identity, and a world photographed in it."),
+    steps: [dept("graphic-broadcast-design"), dept("creative-direction"), dept("photography")],
   },
 ];
 
@@ -495,6 +575,21 @@ export const SERVICES_COPY = {
   worksWith: pending("WORKS WITH"),
   relatedWork: pending("VIEW RELATED WORK"),
   mapTitle: pending("ONE PRODUCTION LINE - TYPICAL ROUTES THROUGH THE SYSTEM"),
+  /* The one thing a reader has to know before the routes make sense: a
+     numbered step is a department with a chapter on this page, an unnumbered
+     one is a stage of the work. Printed as a key line rather than drawn as a
+     legend component - it is a caption, not a UI. */
+  /* The key, as its two halves. Kept apart rather than joined into one string
+     because the line has to break BETWEEN the definitions and nowhere else:
+     left as one run it broke after "UNNUMBERED -", dangling a dash and
+     splitting a definition across two lines. Non-breaking spaces do not fix
+     that - a hyphen is a break opportunity in its own right - and the Unicode
+     classes that would are engine-dependent, which is no good on a site that
+     ships WebKit as well. Two halves, each set `white-space: nowrap`, is the
+     answer that cannot be talked out of by a layout engine. */
+  mapKeyDept: pending("NUMBERED - DEPARTMENT"),
+  mapKeyStage: pending("UNNUMBERED - WORKFLOW STAGE"),
+  mapRoutes: pending("Typical routes through the system"),
   mapNote: pending(
     "A project can enter through any department. Direction can hand to photography, photography to graphics, design to the shoot - without leaving the studio.",
   ),
@@ -504,5 +599,4 @@ export const SERVICES_COPY = {
   cta: pending("START A PROJECT"),
   contactSheet: pending("CONTACT SHEET"),
   selectedFrame: pending("FR. 12 - SELECTED"),
-  departments: pending("Departments"),
 } as const;

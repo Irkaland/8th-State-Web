@@ -12,24 +12,30 @@ import { projectsSorted } from "@/content/projects";
 import { capabilityHasWork } from "@/content/work-filters";
 import { up } from "@/lib/cn";
 import { Reveal } from "./Reveal";
-import { ServicesFolio } from "./ServicesFolio";
 
 /**
  * THE SERVICES DOSSIER (approved Services design).
  *
- * A paper-dominant department file: an editorial opening, a register of the
- * five departments, a running folio, five chapters in the approved colour
- * rhythm, the production-line map, and a red closing.
+ * A paper-dominant department file: an editorial opening, a red register of the
+ * five departments, five chapters in the approved colour rhythm, the
+ * production-line map, and a red closing.
  *
- * IT IS A SERVER COMPONENT.
+ * IT IS A SERVER COMPONENT, AND IT SHIPS NO CLIENT JAVASCRIPT AT ALL.
  *
  * The prototype held the viewport width in state, re-rendered on resize, and
  * rescanned the DOM with a MutationObserver. None of that survives here.
  * Every responsive decision is a media query, so nothing is measured during
  * render, there is no hydration risk, and the whole page - all five chapters,
- * every capability group - is readable with JavaScript switched off. The only
- * client component is the folio's active-chapter highlight, which is genuinely
- * a fact about scroll position.
+ * every capability group - is readable with JavaScript switched off.
+ *
+ * The running department folio - a sticky strip of `01 AUDIOVISUAL … 05
+ * GRAPHICS` with an active underline and an `01 / 05` counter - is gone with
+ * this pass, and it was the page's only client component. It repeated, in a
+ * second navigation vocabulary and permanently in the reader's way, what the
+ * register at the top of the page already says once; the register's own
+ * anchors do the travelling. Its reserved band went with it rather than being
+ * left as air, so the opening now closes on its own bottom padding and chapter
+ * 01 begins directly beneath it.
  *
  * ANCHORS
  * -------
@@ -128,6 +134,11 @@ function Chapter({ d, locale, index }: { d: Department; locale: Locale; index: n
             <span key={c} id={c} className="dsvc__alias" aria-hidden="true" />
           ))}
 
+        {/* the paper chapters take the printed stock the light surfaces of
+            this page all carry. The blue and ink chapters deliberately do not:
+            the grain multiplies, which cannot lift fibre out of a dark ground -
+            their weave is already the material treatment approved for them. */}
+        {d.surface === "paper" ? <div className="dao-grain--strong" aria-hidden="true" /> : null}
         <div className="dao-weave" aria-hidden="true" />
         <span className="dsvc__numeral" aria-hidden="true">
           {d.n}
@@ -262,19 +273,46 @@ function Chapter({ d, locale, index }: { d: Department; locale: Locale; index: n
   );
 }
 
-export function ServicesDossier({ locale }: { locale: Locale }) {
-  const folio = DEPARTMENTS.map((d) => ({
-    n: d.n,
-    anchor: d.anchor,
-    short: t(d.short, locale),
-  }));
+/**
+ * One step of a production-line route.
+ *
+ * A DEPARTMENT is printed as its number in that department's own colour plus
+ * its short name, and links to its chapter. A WORKFLOW STAGE is printed
+ * smaller and quieter, with no number and no link, because it is not a sixth
+ * department and must never be mistaken for one - see SYSTEM_ROUTES.
+ */
+function RouteStep({
+  step,
+  locale,
+}: {
+  step: (typeof SYSTEM_ROUTES)[number]["steps"][number];
+  locale: Locale;
+}) {
+  if (step.kind === "stage") {
+    return <span className="dsvc__stage">{t(step.label, locale)}</span>;
+  }
+  const d = DEPARTMENTS.find((x) => x.anchor === step.anchor);
+  if (!d) return null;
+  return (
+    <Link href={`#${d.anchor}`} className="dsvc__node">
+      <span className="dsvc__noden">{d.n}</span>
+      <span className="dsvc__nodename">{up(t(d.short, locale))}</span>
+    </Link>
+  );
+}
 
+export function ServicesDossier({ locale }: { locale: Locale }) {
   return (
     <div className="dsvc">
-      <div className="dao-grain--strong" aria-hidden="true" />
-
       {/* ===== OPENING ===== */}
+      {/* §11 material: paper grain AND canvas weave, in that order - the light
+          surfaces of this page carry the same printed stock the rest of the
+          site does. The grain layer used to sit on .dsvc itself, where every
+          section's own opaque background painted straight over it, so the
+          off-white areas rendered as flat colour. It is applied per surface
+          now, which is the only place it can actually be seen. */}
       <Reveal as="header" className="dsvc__open">
+        <div className="dao-grain--strong" aria-hidden="true" />
         <div className="dao-weave" aria-hidden="true" />
         <svg className="dsvc__crop" viewBox="0 0 26 26" aria-hidden="true">
           <path
@@ -314,8 +352,15 @@ export function ServicesDossier({ locale }: { locale: Locale }) {
           </div>
         </div>
 
-        {/* ===== DEPARTMENT REGISTER ===== */}
+        {/* ===== DEPARTMENT REGISTER =====
+            Printed on the brand red, on the same paper stock as everything
+            else, so it reads as a red page bound into the file rather than a
+            filled rectangle. Each row's number and square take
+            `service.accent` - the colour the homepage already prints that
+            department in - so a department has ONE colour across the site. */}
         <div className="dsvc__index" id="top-register">
+          <span className="dao-grain--strong" aria-hidden="true" />
+          <span className="dao-weave" aria-hidden="true" />
           <div className="dsvc__indexhead">
             <span>{t(SERVICES_COPY.registerTitle, locale)}</span>
             <span className="dsvc__indexcontents">{t(SERVICES_COPY.registerContents, locale)}</span>
@@ -325,49 +370,71 @@ export function ServicesDossier({ locale }: { locale: Locale }) {
               key={d.anchor}
               href={`#${d.anchor}`}
               className="dsvc__row mo-d"
-              style={{ ["--d" as string]: `${i * 60}ms` }}
+              // the department's own accent, except where the red ground
+              // cannot carry it - see `onRed` in services-departments.ts
+              style={{
+                ["--d" as string]: `${i * 60}ms`,
+                ["--n" as string]: d.onRed ?? d.service.accent,
+              }}
               data-service={d.anchor}
             >
-              <span
-                className="dsvc__swatch"
-                style={{ ["--swatch" as string]: d.swatch }}
-                aria-hidden="true"
-              />
-              <span className="dsvc__rown" style={{ ["--n" as string]: d.registerColor }}>
-                {d.n}
-              </span>
+              <span className="dsvc__swatch" aria-hidden="true" />
+              <span className="dsvc__rown">{d.n}</span>
               <span className="dsvc__rowname">{up(t(d.service.name, locale))}</span>
+              {/* the contents-page leader: it is what makes the row read as
+                  "this department ---- these capabilities" at a glance */}
+              <span className="dsvc__rowlead" aria-hidden="true" />
               <span className="dsvc__rowtag">{t(d.tag, locale)}</span>
-              <Arrow className="dsvc__rowarrow" />
             </Link>
           ))}
         </div>
       </Reveal>
 
-      <ServicesFolio items={folio} label={t(SERVICES_COPY.departments, locale)} />
-
       {DEPARTMENTS.map((d, i) => (
         <Chapter key={d.anchor} d={d} locale={locale} index={i} />
       ))}
 
-      {/* ===== SYSTEM MAP ===== */}
+      {/* ===== SYSTEM MAP =====
+          Four typical routes, each a run of steps rather than a sentence. The
+          department steps are emphasised and linked; SHOOT and POST are drawn
+          as the smaller secondary process labels they are, so nobody reads the
+          studio as having six departments. */}
       <Reveal as="section" className="dsvc__map" aria-labelledby="services-map">
+        <div className="dao-grain--strong" aria-hidden="true" />
         <div className="dao-weave" aria-hidden="true" />
-        <h2 className="dsvc__maptitle mo-f" id="services-map">
-          {t(SERVICES_COPY.mapTitle, locale)}
-        </h2>
-        <div className="dsvc__routes">
+        <div className="dsvc__maphead">
+          <h2 className="dsvc__maptitle mo-f" id="services-map">
+            {t(SERVICES_COPY.mapTitle, locale)}
+          </h2>
+          {/* two halves, each unbreakable - so the key can only ever wrap
+              between the two definitions, never inside one */}
+          <span className="dsvc__mapkey mo-f">
+            <span>{t(SERVICES_COPY.mapKeyDept, locale)}</span>
+            <span>{t(SERVICES_COPY.mapKeyStage, locale)}</span>
+          </span>
+        </div>
+        <ol className="dsvc__routes" aria-label={t(SERVICES_COPY.mapRoutes, locale)}>
           {SYSTEM_ROUTES.map((r, i) => (
-            <div
+            <li
               key={r.key.en}
               className="dsvc__route mo-f"
               style={{ ["--d" as string]: `${i * 70}ms` }}
             >
-              <span className="dsvc__routekey">{t(r.key, locale)}</span>
-              <span className="dsvc__routepath">{t(r.path, locale)}</span>
-            </div>
+              <span className="dsvc__routehead">
+                <span className="dsvc__routekey">{t(r.key, locale)}</span>
+                <span className="dsvc__routeout">{t(r.outcome, locale)}</span>
+              </span>
+              <span className="dsvc__routepath">
+                {r.steps.map((s, j) => (
+                  <span key={j} className="dsvc__step">
+                    {j > 0 ? <Arrow className="dsvc__steparrow" /> : null}
+                    <RouteStep step={s} locale={locale} />
+                  </span>
+                ))}
+              </span>
+            </li>
           ))}
-        </div>
+        </ol>
         <p className="dsvc__mapnote mo-c">{t(SERVICES_COPY.mapNote, locale)}</p>
       </Reveal>
 
@@ -378,6 +445,10 @@ export function ServicesDossier({ locale }: { locale: Locale }) {
         data-dao-scene="dark"
         aria-labelledby="services-close"
       >
+        {/* the same stock the register is printed on, so the page's two reds
+            are one material - the weave alone left this one reading as a fine
+            digital mesh beside the register's fibre */}
+        <div className="dao-grain--strong" aria-hidden="true" />
         <div className="dao-weave" aria-hidden="true" />
         <svg className="dsvc__closemark" viewBox="0 0 34 34" aria-hidden="true">
           <path

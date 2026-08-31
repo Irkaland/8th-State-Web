@@ -35,6 +35,16 @@ html:has(.dsc) {
   background: var(--dao-paper);
   color: var(--dao-ink);
 }
+/* The fixed-chrome clearance moved INTO the route's own composition.
+   Only /services asks for this, and for a material reason: .dao-page's
+   padding band is the page element's flat background, which no section can
+   print its paper stock across - so the moment the dossier's opening gained
+   its grain, a seam appeared 104px down the page where the texture began.
+   The dossier reserves the same clearance in its own opening instead, and the
+   stock runs from the top edge. */
+.dao-page--flush {
+  padding-top: 0;
+}
 .dao-page--ink {
   background: var(--dao-ink);
   color: var(--dao-paper);
@@ -5955,6 +5965,16 @@ html:has(.dsc) {
   background: var(--dao-ink);
   color: var(--dao-paper);
 }
+/* §11 material, opt-in per route (see DaoFooter): the light footer printed on
+   the site's paper stock rather than as flat off-white. The footer already
+   makes its own stacking context - position + z-index - so the grain's
+   multiply is contained by it and cannot reach the page above.
+   The footer's own children are lifted over the texture. */
+.dao-slimfoot--stock > .dao-slimfoot__rule,
+.dao-slimfoot--stock > .dao-slimfoot__row,
+.dao-slimfoot--stock > .dao-slimfoot__legal {
+  position: relative;
+}
 .dao-slimfoot__rule {
   display: block;
   height: 1px;
@@ -6315,8 +6335,8 @@ html:has(.dtm) {
 /* ============================================================
    /services - THE DEPARTMENT DOSSIER (approved Services design)
    ============================================================
-   Paper dominant, five chapters in the approved colour rhythm, and a running
-   folio. Every surface is expressed as a token set switched by [data-surface],
+   Paper dominant, five chapters in the approved colour rhythm. Every surface
+   is expressed as a token set switched by [data-surface],
    so a chapter changes ground by changing one attribute rather than by
    restating forty declarations - and the blue, paper and ink chapters stay
    provably the same composition on different paper.
@@ -6326,10 +6346,13 @@ html:has(.dtm) {
 .dsvc {
   --dsvc-paper: #f2ede3;
   --dsvc-ink: #131210;
-  /* the clearance .dao-page already reserves for the fixed chrome, and the
-     folio that sits directly under it */
+  /* the clearance .dao-page already reserves for the fixed chrome, plus a
+     printed line of air. The second term used to be the running folio's own
+     band; the folio is gone and the air it happened to provide is kept
+     deliberately, so an anchored chapter still lands under the chrome with a
+     margin rather than jammed against it. */
   --dsvc-chrome: 104px;
-  --dsvc-folio: 48px;
+  --dsvc-lead: 28px;
   position: relative;
   background: var(--dsvc-paper);
   color: var(--dsvc-ink);
@@ -6369,9 +6392,17 @@ html:has(.dtm) {
 }
 
 /* ---------- opening ---------- */
+/* The bottom padding is the folio's former band, spent on air instead of on a
+   sticky strip: the register closes the opening and chapter 01 begins under
+   it, with the same measure of paper between them that the composition always
+   had. Removing the folio without this would have left the register butted
+   straight against the blue chapter. */
 .dsvc__open {
   position: relative;
-  padding: clamp(56px, 9vh, 110px) var(--dao-gutter) 0;
+  /* the chrome clearance is the opening s own, so the paper stock covers it -
+     see .dao-page--flush */
+  padding: calc(var(--dsvc-chrome) + clamp(24px, 5vh, 62px)) var(--dao-gutter)
+    clamp(40px, 7vh, 76px);
   background: var(--dsvc-paper);
 }
 .dsvc__crop {
@@ -6451,12 +6482,41 @@ html:has(.dtm) {
   color: rgba(19, 18, 16, 0.5);
 }
 
-/* ---------- department register ---------- */
+/* ---------- department register ----------
+   §11: printed red paper, never a flat digital red block. The ground is the
+   brand red and the site's own paper stock is multiplied into it - the same
+   material move .dao-btnfill--red and the Home red act already make - so the
+   register reads as a red leaf bound into a paper file.
+
+   `isolation: isolate` is what keeps that honest: the grain multiplies against
+   the register's own red and stops there, instead of reaching through to the
+   paper the register is sitting on.
+
+   TYPE. The five names are NOT in the display face. They are a contents page -
+   functional navigation into the chapters below - and setting them in Adevas
+   made five hero headlines out of an index. Optika at the editorial weight is
+   the system's own answer for structured, catalogue-like information: legible
+   at every width, unmistakably editorial, and no longer competing with the
+   chapter titles that are genuine headlines. */
 .dsvc__index {
   position: relative;
-  border: 1px solid rgba(19, 18, 16, 0.35);
+  isolation: isolate;
+  overflow: clip;
+  background: var(--dao-red);
+  border: 1px solid rgba(19, 18, 16, 0.4);
+  color: var(--dsvc-paper);
+}
+/* the printed stock, over the red - noticeably fibrous, never enough to eat
+   the type. Weave second, as everywhere else on the site. */
+.dsvc__index > .dao-grain--strong {
+  opacity: 0.42;
+}
+.dsvc__index > .dao-weave {
+  opacity: 0.2;
+  mix-blend-mode: multiply;
 }
 .dsvc__indexhead {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -6465,19 +6525,31 @@ html:has(.dtm) {
   font-family: var(--dao-f-numeral);
   font-size: 10px;
   letter-spacing: 0.28em;
-  color: rgba(19, 18, 16, 0.55);
-  border-bottom: 1px solid rgba(19, 18, 16, 0.25);
+  /* §14's rule for 10px type on the brand red: the off-white brand paper
+     measures 4.09:1 here, under AA for small text, and pure white clears it at
+     4.77:1. The same exception the red button label already takes. */
+  color: #fff;
+  /* the head rule outranks the row rules, the way a printed index separates
+     its heading from its entries - one weight for everything read as a table */
+  border-bottom: 1px solid rgba(19, 18, 16, 0.45);
 }
+/* the small functional contents label, in black - it locates the register
+   without competing with the five names, which is the whole of its job */
 .dsvc__indexcontents {
-  color: var(--dao-red);
+  color: var(--dao-black);
 }
+/* The gap is the CLUSTER gap - square to numeral - not the gap to the name.
+   One uniform gap set the numeral as far from its own square as from the
+   department it belongs to, which read as three loose columns rather than a
+   mark and its entry. The name takes its own larger margin below. */
 .dsvc__row {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: clamp(16px, 2.4vw, 36px);
+  gap: clamp(9px, 1vw, 14px);
   padding: clamp(14px, 2.4vh, 22px) clamp(16px, 2vw, 28px);
-  border-bottom: 1px solid rgba(19, 18, 16, 0.16);
-  color: var(--dsvc-ink);
+  border-bottom: 1px solid rgba(19, 18, 16, 0.22);
+  color: var(--dsvc-paper);
   min-height: 44px;
   transition:
     background 220ms var(--dao-ease-micro),
@@ -6486,109 +6558,76 @@ html:has(.dtm) {
 .dsvc__row:last-child {
   border-bottom: 0;
 }
+/* the department's own colour, on both marks. --n is set once on the row, so
+   the number and the square cannot be given two different colours. */
 .dsvc__swatch {
   width: 14px;
   height: 14px;
   flex: none;
-  background: var(--swatch);
-  outline: 1px solid rgba(19, 18, 16, 0.25);
+  background: var(--n);
+  outline: 1px solid rgba(19, 18, 16, 0.4);
   outline-offset: 2px;
 }
 .dsvc__rown {
   font-family: var(--dao-f-numeral);
-  font-size: 12px;
+  font-size: clamp(12px, 1vw, 14px);
   letter-spacing: 0.2em;
   color: var(--n);
-  min-width: 30px;
+  min-width: 32px;
   flex: none;
 }
 .dsvc__rowname {
-  font-family: var(--dao-f-display);
-  font-size: clamp(19px, 2.2vw, 34px);
-  line-height: 1.05;
-  flex: 1;
-  min-width: 180px;
+  /* the functional/secondary face, at the editorial weight - a register entry,
+     not a headline. See the block comment above. */
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(15px, 1.55vw, 23px);
+  letter-spacing: 0.05em;
+  line-height: 1.12;
+  min-width: 0;
+  /* the entry stands off its own index mark - see the cluster note on .dsvc__row */
+  margin-left: clamp(6px, 1.1vw, 18px);
+  text-wrap: balance;
+}
+/* the contents-page leader. It is what says DEPARTMENT ---- CAPABILITIES, and
+   it replaces the arrow that used to sit after the descriptor: an arrow after
+   a capability run reads as "and then", which is exactly the process logic
+   this column no longer carries. */
+.dsvc__rowlead {
+  flex: 1 1 clamp(20px, 6vw, 140px);
+  /* the leader carries the eye across the row, so it has to be seen doing it -
+     at 0.26 on this red it was a suggestion of a rule rather than one */
+  min-width: 16px;
+  height: 1px;
+  align-self: center;
+  margin-inline: clamp(10px, 1.4vw, 22px);
+  background: rgba(19, 18, 16, 0.34);
 }
 .dsvc__rowtag {
   font-family: var(--dao-f-numeral);
   font-size: 10px;
-  letter-spacing: 0.22em;
-  color: rgba(19, 18, 16, 0.5);
+  letter-spacing: 0.2em;
+  color: #fff;
   text-align: right;
-}
-.dsvc__rowarrow {
-  width: 30px;
-  height: 10px;
-  opacity: 0.6;
   flex: none;
-  color: var(--dsvc-ink);
+  /* half the row, so a four-term capability run holds one line down to the
+     width where the row stacks anyway. Capped rather than free so a long
+     descriptor can never crowd the department name off its own line. */
+  max-width: 50%;
 }
 @media (hover: hover) {
   .dsvc__row:hover {
-    background: rgba(19, 18, 16, 0.045);
+    background: rgba(19, 18, 16, 0.1);
     padding-left: clamp(26px, 3.2vw, 44px);
   }
-}
-
-/* ---------- running folio ---------- */
-.dsvc__folio {
-  position: sticky;
-  top: var(--dsvc-chrome);
-  z-index: 12;
-  background: rgba(242, 237, 227, 0.94);
-  backdrop-filter: blur(3px);
-  border-block: 1px solid rgba(19, 18, 16, 0.3);
-  margin-top: clamp(36px, 6vh, 68px);
-}
-.dsvc__foliorail {
-  display: flex;
-  align-items: stretch;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 0 clamp(12px, 2vw, 40px);
-}
-.dsvc__foliorail::-webkit-scrollbar {
-  display: none;
-}
-.dsvc__foliolink {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 13px clamp(12px, 1.6vw, 24px);
-  font-family: var(--dao-f-numeral);
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
-  color: rgba(19, 18, 16, 0.5);
-  white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  flex: none;
-  min-height: 44px;
-  box-sizing: border-box;
-}
-/* the active chapter is named by weight and rule, never by colour alone */
-.dsvc__foliolink[data-active] {
-  color: var(--dsvc-ink);
-  border-bottom-color: currentColor;
-  font-weight: var(--dao-w-copy, 600);
-}
-.dsvc__foliocount {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--dao-f-numeral);
-  font-size: 10px;
-  letter-spacing: 0.24em;
-  color: rgba(19, 18, 16, 0.5);
-  white-space: nowrap;
-  padding: 0 8px;
 }
 
 /* ---------- chapters ---------- */
 .dsvc__chapter {
   position: relative;
   padding: clamp(44px, 8vh, 92px) var(--dao-gutter) clamp(40px, 7vh, 80px);
-  /* clears the fixed chrome AND the folio that sits beneath it */
-  scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-folio));
+  /* clears the fixed chrome, plus a printed line of air */
+  scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-lead));
   background: var(--ground);
   color: var(--ink);
   overflow: clip;
@@ -6604,7 +6643,7 @@ html:has(.dtm) {
   inset-block-start: 0;
   width: 0;
   height: 0;
-  scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-folio));
+  scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-lead));
 }
 .dsvc__numeral {
   position: absolute;
@@ -6863,11 +6902,35 @@ html:has(.dtm) {
   background: var(--dsvc-paper);
 }
 
-/* ---------- system map ---------- */
+/* ---------- system map ----------
+   ONE PRODUCTION LINE. The section stays - it is what explains that the five
+   departments are one system rather than five isolated services - but the
+   routes are no longer one undifferentiated run of text per route.
+
+   A route is now two ranks of information, and they are drawn as two ranks:
+
+     DEPARTMENT  numbered in its own colour, named, and linked to its chapter
+     STAGE       smaller, quieter, bracketed, unnumbered and unlinked
+
+   That is the whole of the fix. `04 DIRECTION → … → SHOOT → POST → 05 …` gave
+   six steps the same weight, so SHOOT and POST read as departments six and
+   seven. Nothing in this section is set in the display face: routes, labels
+   and workflow information are all information architecture, and the display
+   face is reserved for genuine headlines. */
 .dsvc__map {
   position: relative;
   padding: clamp(40px, 7vh, 80px) var(--dao-gutter);
   background: var(--dsvc-paper);
+}
+.dsvc__maphead {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px 26px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(19, 18, 16, 0.25);
 }
 .dsvc__maptitle {
   position: relative;
@@ -6878,30 +6941,146 @@ html:has(.dtm) {
   letter-spacing: 0.28em;
   color: var(--dao-red);
 }
+/* the key that makes the two ranks legible without a legend component */
+.dsvc__mapkey {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 3px clamp(14px, 1.8vw, 30px);
+  font-family: var(--dao-f-numeral);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  color: rgba(19, 18, 16, 0.62);
+}
+/* each definition is atomic: the key wraps between them or not at all */
+.dsvc__mapkey > span {
+  white-space: nowrap;
+}
 .dsvc__routes {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 24px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .dsvc__route {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.22fr) 1fr;
   align-items: baseline;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-family: var(--dao-f-numeral);
-  font-size: clamp(10.5px, 0.9vw, 13px);
-  letter-spacing: 0.2em;
-  color: rgba(19, 18, 16, 0.82);
+  gap: 10px clamp(20px, 3vw, 48px);
+  padding: clamp(13px, 2.1vh, 19px) 0;
+  border-bottom: 1px solid rgba(19, 18, 16, 0.16);
+}
+.dsvc__route:last-child {
+  border-bottom: 0;
+}
+.dsvc__routehead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .dsvc__routekey {
-  font-size: 9.5px;
+  font-family: var(--dao-f-numeral);
+  font-size: 10px;
+  letter-spacing: 0.26em;
   color: var(--dao-red);
-  min-width: 84px;
+}
+/* what the route delivers - one line, so the category is understood before
+   the steps are read */
+.dsvc__routeout {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: clamp(12px, 0.92vw, 13.5px);
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: rgba(19, 18, 16, 0.72);
+  text-wrap: pretty;
 }
 .dsvc__routepath {
-  line-height: 2.1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px clamp(6px, 0.8vw, 12px);
+}
+.dsvc__step {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(6px, 0.8vw, 12px);
+}
+.dsvc__steparrow {
+  width: 22px;
+  height: 8px;
+  flex: none;
+  opacity: 0.4;
+  color: var(--dsvc-ink);
+}
+/* a DEPARTMENT node - the emphasised rank, and the only linked one.
+   The two ranks were separated by 1.5px of type and a little grey, which is a
+   distinction you can find but not one you can see at a glance. The node now
+   carries the authority: full ink, a step up in size, and a rule under it that
+   reads as an underline rather than as a stray hairline. */
+.dsvc__node {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--dsvc-ink);
+  border-bottom: 1px solid rgba(19, 18, 16, 0.4);
+  transition: border-color 200ms var(--dao-ease-micro);
+}
+/* Deliberately NOT the department colour.
+   Three of the five department accents - the pale yellow, the paper and the
+   mint - are at or near the paper's own luminance, so on this ground they
+   print as nothing. The department colours are established once, in the
+   register, on a ground chosen for them; here the number's job is to say
+   "this step is one of the five", and ink says that at every width. */
+.dsvc__noden {
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(10px, 0.8vw, 11.5px);
+  letter-spacing: 0.16em;
+  /* the number IS the rank marker - "numbered means department" is the key
+     this section prints, and at 0.55 the marker was the quietest thing in the
+     row it was supposed to qualify */
+  color: rgba(19, 18, 16, 0.78);
+}
+.dsvc__nodename {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(11.5px, 1.02vw, 14.5px);
+  letter-spacing: 0.14em;
+  color: var(--dsvc-ink);
+}
+@media (hover: hover) {
+  .dsvc__node:hover {
+    border-bottom-color: var(--dao-red);
+  }
+}
+/* a WORKFLOW STAGE - the secondary rank. Bracketed, unnumbered, unlinked and
+   deliberately lighter, so it can never be read as a sixth department. */
+.dsvc__stage {
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(8.5px, 0.63vw, 9.5px);
+  letter-spacing: 0.2em;
+  /* matches the department node's own vertical padding, so when the route
+     becomes a vertical run on a phone the steps keep one even rhythm instead
+     of the stages bunching together between them */
+  padding: 6px 0;
+  color: rgba(19, 18, 16, 0.42);
+}
+/* the brackets say "aside", so they sit below even the label they enclose */
+.dsvc__stage::before,
+.dsvc__stage::after {
+  opacity: 0.6;
+}
+.dsvc__stage::before {
+  content: "[";
+  margin-right: 3px;
+}
+.dsvc__stage::after {
+  content: "]";
+  margin-left: 3px;
 }
 .dsvc__mapnote {
   position: relative;
@@ -6941,12 +7120,21 @@ html:has(.dtm) {
   gap: clamp(24px, 4vw, 60px);
   flex-wrap: wrap;
 }
+/* "One brief. Five departments. A single production line…" is explanatory
+   copy - it tells the reader what the five chapters they have just read add up
+   to. It is not the page's headline; SERVICES is, and that one keeps Adevas.
+   Set in the functional face at the editorial weight, which is the register
+   the site already uses for a medium editorial statement (.dst__statement,
+   .dpr__practicetext). Sized down accordingly: at display size it read as a
+   second h1 sitting under the first. */
 .dsvc__closecopy {
   margin: 0;
-  font-family: var(--dao-f-display);
-  font-size: clamp(26px, 3.4vw, 52px);
-  line-height: 1.1;
-  max-width: 15em;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(19px, 2.2vw, 34px);
+  line-height: 1.28;
+  letter-spacing: 0.005em;
+  max-width: 17em;
   text-wrap: balance;
   color: var(--dsvc-paper);
 }
@@ -6976,7 +7164,7 @@ html:has(.dtm) {
 
 /* ---------- focus, on all four grounds ---------- */
 .dsvc__row:focus-visible,
-.dsvc__foliolink:focus-visible,
+.dsvc__node:focus-visible,
 .dsvc__workslink:focus-visible,
 .dsvc__related:focus-visible,
 .dsvc__cta:focus-visible {
@@ -6985,19 +7173,57 @@ html:has(.dtm) {
 }
 
 /* ---------- tablet ---------- */
-@media (max-width: 960px) {
+/* The register stacks at 760 rather than 960, so a tablet keeps the two-column
+   reading the composition is built on. It is measured rather than guessed: the
+   longest pair - GRAPHIC & BROADCAST DESIGN against IDENTITY · TYPE · MOTION ·
+   BROADCAST - and the longest Georgian name still leave the leader room at
+   768. Below that the leader has nothing left to lead and the row becomes
+   name-over-capabilities instead of two columns fighting over one line. The
+   descriptor is never DROPPED at any width: it is capability information, not
+   decoration, and hiding it was what let the old column go unread. */
+@media (max-width: 760px) {
+  .dsvc__row {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .dsvc__rowname {
+    flex: 1 1 100%;
+    order: 1;
+  }
   .dsvc__rowtag {
-    display: none;
+    flex: 1 1 100%;
+    order: 2;
+    max-width: none;
+    text-align: left;
+  }
+}
+
+@media (max-width: 960px) {
+  /* The leader stops being DRAWN before the rows stack. Between 760 and 960
+     there is still room for two columns but not for a leader of any real
+     length, and a 40px stub between a name and its descriptor reads as a stray
+     dash rather than as a contents leader.
+     It is emptied rather than removed: the leader is also the flex spacer that
+     holds the descriptor out to the right margin, and `display: none` let the
+     two columns collapse together into one packed run. */
+  .dsvc__rowlead {
+    background: transparent;
   }
   .dsvc__plate {
     width: min(100%, 320px);
+  }
+  /* the routes stop being two columns before the paths start wrapping badly.
+     The head stays a column: letting the outcome sit beside the key wherever
+     it happened to fit made four routes look like four different layouts. */
+  .dsvc__route {
+    grid-template-columns: 1fr;
   }
 }
 
 /* ---------- phone ---------- */
 @media (max-width: 760px) {
   .dsvc {
-    --dsvc-folio: 44px;
+    --dsvc-lead: 20px;
   }
   .dsvc__mastmid {
     display: none;
@@ -7009,21 +7235,11 @@ html:has(.dtm) {
     max-width: none;
   }
   .dsvc__rowname {
-    min-width: 0;
-    font-size: clamp(17px, 5vw, 22px);
-  }
-  .dsvc__rowarrow {
-    width: 22px;
+    font-size: clamp(15px, 4.4vw, 20px);
   }
   /* the plate is a wide-composition device; the phone keeps the reading */
   .dsvc__plate {
     display: none;
-  }
-  .dsvc__folioshort {
-    display: none;
-  }
-  .dsvc__foliolink {
-    padding-inline: 14px;
   }
   .dsvc__evpair {
     min-width: 0;
@@ -7033,20 +7249,41 @@ html:has(.dtm) {
     flex-direction: column;
     gap: 10px;
   }
+  /* a route becomes a vertical run: every node keeps its own line, so a
+     six-step route stays readable instead of collapsing into a word cloud */
+  .dsvc__routepath {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .dsvc__step {
+    gap: 8px;
+  }
+  .dsvc__steparrow {
+    width: 14px;
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 420px) {
   .dsvc__index {
-    /* the register keeps its rules but loses the box at the smallest widths,
-       so the rows are not squeezed between two borders */
+    /* the register keeps its rules but loses the side borders at the smallest
+       widths, so the rows are not squeezed between two edges */
     border-inline: 0;
   }
   .dsvc__row {
-    gap: 12px;
-    padding-inline: 4px;
+    gap: 10px;
+    padding-inline: 6px;
   }
+  /* At the narrowest widths the two head labels cannot share a line, and
+     letting them wrap in place produced a two-line, two-column table header.
+     Stacked they read as what they are: the register's title, and the range it
+     covers printed under it. */
   .dsvc__indexhead {
-    padding-inline: 4px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding-inline: 6px;
   }
   .dsvc__swatch {
     width: 10px;

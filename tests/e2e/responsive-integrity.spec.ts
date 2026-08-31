@@ -146,39 +146,41 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
   });
 });
 
-test.describe("§P5 Services - the off-frame folio control stays operable", () => {
-  // The catalogue s film carousel is gone with the redesign. The dossier has
-  // its own horizontally scrolling control at these widths - the running
-  // department folio - and the rule this protects is the same one: a control
-  // that runs off the frame must still be reachable, not merely present.
-  test("every folio control is hit-testable from 430px down to 320px", async ({ page }) => {
+test.describe("§P5 Services - the department register stays operable", () => {
+  // The catalogue s film carousel is gone with the redesign, and so is the
+  // running department folio that briefly replaced it as this page s
+  // off-frame control. The register is what carries the five departments now:
+  // it is not a scrolling rail, so the rule tightens rather than relaxes -
+  // every row must be FULLY on frame and hit-testable at every mobile width,
+  // not merely reachable by scrolling sideways.
+  test("every register row is on frame and hit-testable from 430px down to 320px", async ({
+    page,
+  }) => {
     await open(page, "/services");
     for (const w of MOBILE) {
       await atWidth(page, w);
-      const controls = await page.evaluate(() => {
+      const rows = await page.evaluate(() => {
         const vw = document.documentElement.clientWidth;
-        return [...document.querySelectorAll(".dsvc__foliolink")].map((el) => {
+        return [...document.querySelectorAll(".dsvc__row")].map((el) => {
           el.scrollIntoView({ block: "center", behavior: "instant" });
           const r = el.getBoundingClientRect();
-          const visL = Math.max(r.left, 0),
-            visR = Math.min(r.right, vw);
-          const visible = Math.max(0, visR - visL);
-          let reachable = false;
-          if (visible > 0) {
-            const at = document.elementFromPoint(visL + visible / 2, r.top + r.height / 2);
-            reachable = !!at && (at === el || el.contains(at) || at.contains(el));
-          }
+          const at = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
           return {
-            label: el.getAttribute("aria-label") || (el.textContent || "").trim().slice(0, 16),
-            visible: Math.round(visible),
-            reachable,
+            label: (el.querySelector(".dsvc__rowname")?.textContent || "").trim(),
+            right: Math.round(r.right),
+            vw,
+            height: Math.round(r.height),
+            reachable: !!at && (at === el || el.contains(at) || at.contains(el)),
           };
         });
       });
-      expect(controls.length, `no carousel controls at ${w}px`).toBeGreaterThan(0);
-      for (const c of controls) {
-        expect(c.visible, `"${c.label}" has no on-screen area at ${w}px`).toBeGreaterThan(24);
-        expect(c.reachable, `"${c.label}" is not hit-testable at ${w}px`).toBe(true);
+      expect(rows.length, `no register rows at ${w}px`).toBe(5);
+      for (const r of rows) {
+        expect(r.right, `"${r.label}" runs off the frame at ${w}px`).toBeLessThanOrEqual(r.vw + 1);
+        expect(r.height, `"${r.label}" is under the touch floor at ${w}px`).toBeGreaterThanOrEqual(
+          44,
+        );
+        expect(r.reachable, `"${r.label}" is not hit-testable at ${w}px`).toBe(true);
       }
     }
   });
