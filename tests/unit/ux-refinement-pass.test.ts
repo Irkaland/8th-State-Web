@@ -322,7 +322,7 @@ describe("§10/§13/§14 Optika at a real weight, never synthesised", () => {
   const cases: [string, string, string][] = [
     ["§13 Work card title", ".dwk__name", "var(--dao-f-latin)"],
     ["§14 Process stage title", ".dpr__stagename", "var(--dao-f-ui)"],
-    ["§10 Georgia support title", ".dgp__indexname", "var(--dao-f-ui)"],
+    ["§10 Georgia support title", ".dgp__itemtitle", "var(--dao-f-ui)"],
   ];
   for (const [label, selector, family] of cases) {
     it(`${label} is Optika at the editorial weight`, () => {
@@ -338,7 +338,7 @@ describe("§10/§13/§14 Optika at a real weight, never synthesised", () => {
     // anchored: .dwk__meta also appears in hover/focus descendant rules
     const meta = routes.match(/^\.dwk__meta \{[\s\S]*?\n\}/m)![0];
     expect(meta).toContain("font-weight: 500");
-    const desc = routes.match(/\.dgp__indexdesc \{[\s\S]*?\n\}/)![0];
+    const desc = routes.match(/\.dgp__itemdesc \{[\s\S]*?\n\}/)![0];
     expect(desc).not.toContain("--dao-w-editorial");
   });
 });

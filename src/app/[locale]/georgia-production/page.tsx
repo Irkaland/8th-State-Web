@@ -26,12 +26,58 @@ export async function generateMetadata({
   };
 }
 
+/** the drawn blue stroke under the cover title */
+function TitleStroke() {
+  return (
+    <svg className="dgp__stroke" viewBox="0 0 400 6" preserveAspectRatio="none" aria-hidden="true">
+      <path
+        d="M2 3.4 C90 2 210 4.8 398 2.6"
+        stroke="#2374b3"
+        strokeWidth="2.4"
+        fill="none"
+        opacity="0.85"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/** the imperfect ruled line the file is set on */
+function Rule({ className, opacity = 0.34 }: { className?: string; opacity?: number }) {
+  return (
+    <svg className={className} viewBox="0 0 400 4" preserveAspectRatio="none" aria-hidden="true">
+      <path
+        d="M0 2.4 C60 1.5 130 3.1 190 2.1 C260 1.2 330 3 400 2.3"
+        stroke="#131210"
+        strokeWidth="1"
+        fill="none"
+        opacity={opacity}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 /**
- * /georgia-production - cinematic field guide (handoff 4d). Dossier cover
- * with coordinates, dark location-plates band (plates hand off laterally;
- * swipe on mobile), production-support index A-D on real approved scope
- * content, field note, CTA. No capability is claimed that approved content
- * does not confirm.
+ * /georgia-production - the production dossier (approved Georgia Production
+ * design).
+ *
+ * A file rather than a page: a metadata strip, a dossier cover with the
+ * coordinates of the studio that would run the shoot, an ink band of location
+ * plates, the eight-item register of what local support actually covers, and a
+ * printed field note beside the way in.
+ *
+ * IT IS A SERVER COMPONENT. Every responsive decision is CSS; the only motion
+ * is the shared InView entrance the rest of the site uses.
+ *
+ * WHAT IS DELIBERATELY NOT CLAIMED
+ * --------------------------------
+ * The cover carries its own caveat - no confirmed permits, partnerships or
+ * response times - and item 03 of the register repeats it inline. Nothing on
+ * this page states a permit, an incentive, a partner network, a turnaround, a
+ * crew size or a credit, because the approved content confirms none of them.
+ * The register is rendered from `GEORGIA_SCOPE`, which is the studio's own
+ * scope list, so a claim cannot be introduced here without being added there.
  */
 export default async function GeorgiaPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
@@ -40,25 +86,34 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
   const m = getMessages(locale);
   const R = m.daoRoutes.georgia;
 
-  // Index A-D descriptions reuse the matching approved scope items.
-  const scope = (n: string) => GEORGIA_SCOPE.find((s) => s.n === n);
-  const index = [
-    { letter: "A", name: R.indexA, desc: scope("01")?.desc },
-    { letter: "B", name: R.indexB, desc: scope("02")?.desc },
-    { letter: "C", name: R.indexC, desc: scope("03")?.desc },
-    { letter: "D", name: R.indexD, desc: scope("04")?.desc },
-  ];
-
   const [plate1, ...plates] = GEORGIA_STILLS;
 
   return (
     <DaoShell locale={locale} messages={m} veil="blue" footer>
-      <div className="dao-page dao-page--paper" data-dao-scene="light">
+      <div className="dao-page dao-page--paper dgp" data-dao-scene="light">
         <div className="dao-grain" aria-hidden="true" />
 
-        {/* dossier cover */}
+        {/* ===== FILE STRIP =====
+            Page-level dossier metadata, not navigation: the global chrome
+            still carries the brand mark and the locale switch, and this says
+            which file of the studio's you are holding. */}
+        <div className="dgp__file">
+          {/* §02: a Latin wordmark, not translated copy - the slim footer
+              prints the same string the same way */}
+          <span className="dgp__filemark">8TH STATE PRODUCTION</span>
+          <span className="dgp__filemid">{up(R.fileLabel)}</span>
+          {/* the design prints EN / KA here as a file stamp. The chrome already
+              carries the real, working locale switch, so a second set of
+              controls would be two ways to do one thing - this is the stamp
+              only, and is hidden from assistive tech for that reason. */}
+          <span className="dgp__filelocales" aria-hidden="true">
+            EN / KA
+          </span>
+        </div>
+
+        {/* ===== DOSSIER COVER ===== */}
         <InView className="dgp__cover" threshold={0.05}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 800 }}>
+          <div className="dgp__coverlede">
             <span className="dao-kicker mo-f" style={{ color: "var(--dao-blue)" }}>
               {up(R.kicker)}
             </span>
@@ -78,22 +133,14 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
                 </span>
               </span>
             </h1>
-            <p
-              className="dao-fade"
-              style={{
-                ["--d" as string]: "180ms",
-                fontSize: 16,
-                lineHeight: 1.7,
-                maxWidth: 560,
-                textWrap: "pretty",
-              }}
-            >
+            <TitleStroke />
+            <p className="dgp__intro dao-fade" style={{ ["--d" as string]: "180ms" }}>
               {m.georgia.intro}
             </p>
-            <p
-              className="dao-label dao-fade"
-              style={{ ["--d" as string]: "240ms", color: "rgba(108,62,19,.7)", maxWidth: 560 }}
-            >
+            {/* the accuracy note. It is part of the composition, not a footnote:
+                the page offers coordination, and says in the same breath what
+                coordination is not. */}
+            <p className="dao-label dgp__honest dao-fade" style={{ ["--d" as string]: "240ms" }}>
               ※ {m.georgia.honestNote}
             </p>
           </div>
@@ -117,34 +164,23 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
                 width={176}
                 height={176}
                 aria-hidden="true"
-                style={{
-                  width: 88,
-                  height: "auto",
-                  mixBlendMode: "multiply",
-                  transform: "rotate(2deg)",
-                  marginTop: 10,
-                }}
               />
             </span>
           </div>
         </InView>
-        <div className="dao-rule-h" style={{ margin: "0 var(--dao-gutter)" }} aria-hidden="true" />
+        <Rule className="dgp__coverrule" opacity={0.4} />
 
-        {/* location plates - dark band */}
+        {/* ===== LOCATION PLATES - ink band ===== */}
         <InView threshold={0.06}>
-          <section className="dgp__plates" data-dao-scene="dark">
+          <section className="dgp__plates" data-dao-scene="dark" aria-labelledby="dgp-plates">
             <div className="dao-weave" aria-hidden="true" />
-            <h2
-              className="dlb__notestitle"
-              style={{
-                color: "var(--dao-paper)",
-                padding: "0 var(--dao-gutter)",
-                position: "relative",
-                fontSize: "clamp(28px,3vw,44px)",
-              }}
-            >
-              {up(R.locationPlates)}
-            </h2>
+            <div className="dgp__sectionhead">
+              <h2 className="dgp__sectiontitle" id="dgp-plates">
+                {up(R.locationPlates)}
+              </h2>
+              <span className="dgp__sectionmeta">{up(R.platesMeta)}</span>
+            </div>
+
             <div className="dgp__platemain dao-fade">
               <Image
                 src={plate1.src}
@@ -153,11 +189,29 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
                 sizes="100vw"
                 className="object-cover"
               />
+              {/* the drawn registration frame - a plate is marked up, not framed
+                  in a border */}
+              <svg
+                className="dgp__plateframe"
+                viewBox="0 0 400 170"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 5 C130 3.4 280 6 396 4.2 L397.5 164 C260 166.5 120 163.8 4.5 165.6 L3 5 M3 5 L14 5"
+                  stroke="#d03e26"
+                  strokeWidth="1.6"
+                  fill="none"
+                  opacity="0.9"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
               <div className="dgp__platetag">
                 <span className="dgp__platenum">{up(R.plate)} 01</span>
                 <span className="dgp__platename">{t(plate1.label, locale)}</span>
               </div>
             </div>
+
             <div className="dgp__platerow">
               {plates.map((p, i) => (
                 <div
@@ -169,16 +223,14 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
                     src={p.src}
                     alt={t(p.alt, locale)}
                     fill
-                    sizes="(max-width:720px) 78vw, 33vw"
+                    sizes="(max-width:720px) 78vw, 50vw"
                     className="object-cover"
                   />
-                  <div className="dgp__platetag" style={{ left: 12, bottom: 12 }}>
-                    <span className="dgp__platenum" style={{ fontSize: 12, padding: "4px 8px" }}>
+                  <div className="dgp__platetag dgp__platetag--sm">
+                    <span className="dgp__platenum">
                       {up(R.plate)} {String(i + 2).padStart(2, "0")}
                     </span>
-                    <span className="dgp__platename" style={{ fontSize: 8.5, padding: "4px 8px" }}>
-                      {t(p.label, locale)}
-                    </span>
+                    <span className="dgp__platename">{t(p.label, locale)}</span>
                   </div>
                 </div>
               ))}
@@ -186,73 +238,57 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
           </section>
         </InView>
 
-        {/* production support index */}
-        <InView className="dgp__support" threshold={0.1}>
-          <h2
-            className="dlb__notestitle"
-            style={{ color: "var(--dao-ink)", fontSize: "clamp(28px,3vw,44px)" }}
-          >
-            {up(R.productionSupport)}
-          </h2>
-          <div className="dgp__supportgrid">
-            <div>
-              {index.map((row, i) => (
-                <div
-                  key={row.letter}
-                  className="dgp__indexrow"
-                  style={{ ["--d" as string]: `${i * 80}ms` }}
-                >
-                  {/* D - the category letter registers, the name follows in C.
-                      --ls is 0em: the letter carries no designed tracking, so
-                      the settle closes to zero rather than inventing spacing. */}
-                  <span className="dgp__letter mo-d" style={{ ["--ls" as string]: "0em" }}>
-                    {row.letter}
-                  </span>
-                  <span className="dgp__indexname mo-c" style={{ ["--d" as string]: "80ms" }}>
-                    {row.name}
-                  </span>
-                  {row.desc && <span className="dgp__indexdesc">{t(row.desc, locale)}</span>}
-                </div>
-              ))}
-            </div>
-            {/* §18: blue stock. The three text colours were all dark - ink body,
-                red kicker, brown reference - and none of them survives on
-                #2374b3 (the red measures 1.04:1 against it). They move to the
-                palette's light end: yellow for the label, paper for the copy,
-                paper at 0.72 for the reference. Copy, sizes and hierarchy are
-                unchanged. */}
-            <div className="dao-sheet dgp__note dao-fade" style={{ ["--d" as string]: "200ms" }}>
-              <span className="dao-kicker" style={{ color: "var(--dao-yellow)" }}>
-                {up(R.fieldNote)}
-              </span>
-              {/* paper measures 4.26:1 on #2374b3 - just under AA for 14px copy,
-                  so the body takes white (5.05:1). The label above stays brand
-                  yellow, which already clears at 4.59:1. */}
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: "#fff" }}>{m.georgia.ctaDesc}</p>
-              <span
-                style={{
-                  fontFamily: "var(--dao-f-numeral)",
-                  fontSize: 12,
-                  // full white: on #2374b3 nothing under 0.95 alpha clears AA,
-                  // and a 5% step is not a hierarchy. The numeral face and the
-                  // smaller size already separate this from the body copy.
-                  color: "#fff",
-                }}
+        {/* ===== PRODUCTION SUPPORT - the register =====
+            All eight items, rendered from the studio's own scope list. The
+            previous composition printed four of them under invented letters
+            A-D, so half the scope the studio actually offers was not on the
+            page at all and the four that were had been relabelled. */}
+        <InView className="dgp__support" threshold={0.1} aria-labelledby="dgp-support">
+          <div className="dgp__sectionhead">
+            <h2 className="dgp__sectiontitle" id="dgp-support">
+              {up(R.productionSupport)}
+            </h2>
+            <span className="dgp__sectionmeta">{up(R.supportMeta)}</span>
+          </div>
+          <Rule className="dgp__supportrule" />
+          <div className="dgp__register">
+            {GEORGIA_SCOPE.map((s, i) => (
+              <div
+                key={s.n}
+                className="dgp__item"
+                style={{ ["--d" as string]: `${Math.min(i, 5) * 60}ms` }}
               >
-                GP-NOTE-01
-              </span>
-            </div>
+                <span className="dgp__itemn">{s.n}</span>
+                <span className="dgp__itemtitle">{t(s.title, locale)}</span>
+                <span className="dgp__itemdesc">{t(s.desc, locale)}</span>
+              </div>
+            ))}
+          </div>
+        </InView>
+
+        {/* ===== FIELD NOTE + CTA ===== */}
+        <InView className="dgp__close" threshold={0.1}>
+          {/* a printed note slipped into the file: blue stock, the studio's own
+              paper grain multiplied into it so it is a material and not a panel */}
+          <div className="dgp__note">
+            <span className="dgp__notegrain" aria-hidden="true" />
+            <span className="dgp__notelabel">{up(R.fieldNote)}</span>
+            <p className="dgp__notecopy">{m.georgia.ctaDesc}</p>
+            <span className="dgp__notecode">GP-NOTE-01</span>
           </div>
           <div className="dgp__cta">
-            <span className="dao-label" style={{ color: "var(--dao-brown)" }}>
-              {up(R.bring)}
-            </span>
-            <Link
-              href={localeHref(locale, "/start-a-project")}
-              className="dao-cta"
-              style={{ color: "var(--dao-ink)" }}
-            >
-              {up(R.startProject)} <span aria-hidden="true">→</span>
+            <span className="dao-label dgp__ctalabel">{up(R.bring)}</span>
+            <Link href={localeHref(locale, "/start-a-project")} className="dgp__ctalink">
+              {up(R.startProject)}
+              <svg viewBox="0 0 46 12" aria-hidden="true">
+                <path
+                  d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </svg>
             </Link>
           </div>
         </InView>

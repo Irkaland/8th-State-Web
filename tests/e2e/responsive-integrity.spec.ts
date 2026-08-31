@@ -89,16 +89,27 @@ test.describe("§P5 Team - the portrait never grows on a narrower screen", () =>
   });
 });
 
-test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
+/**
+ * The support register's descriptions are real translated content - what each
+ * item of local scope actually covers - and they appear nowhere else on the
+ * site, so a phone that hides them loses them entirely. That was the original
+ * defect and it is still what these guard.
+ *
+ * The register itself changed: it printed four of the studio's eight scope
+ * items under invented letters A-D, and now prints all eight under their own
+ * numbers. So the count asserted here rises from 4 to 8 - the guarantee is the
+ * same one, over twice as much content.
+ */
+test.describe("§P5 Georgia - the register descriptions survive on mobile", () => {
   for (const locale of ["en", "ka"] as const) {
-    test(`${locale.toUpperCase()}: every A-D description is rendered and visible at mobile widths`, async ({
+    test(`${locale.toUpperCase()}: every scope description is rendered and visible at mobile widths`, async ({
       page,
     }) => {
       await open(page, locale === "en" ? "/georgia-production" : "/ka/georgia-production");
       for (const w of [430, 390, 320]) {
         await atWidth(page, w);
         const state = await page.evaluate(() =>
-          [...document.querySelectorAll(".dgp__indexdesc")].map((el) => {
+          [...document.querySelectorAll(".dgp__itemdesc")].map((el) => {
             const cs = getComputedStyle(el);
             const r = el.getBoundingClientRect();
             return {
@@ -108,26 +119,26 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
             };
           }),
         );
-        expect(state.length, `index rows at ${w}px`).toBeGreaterThanOrEqual(4);
+        expect(state.length, `register rows at ${w}px`).toBe(8);
         expect(
           state.filter((s) => s.visible).length,
           `${state.filter((s) => !s.visible).length} description(s) hidden at ${w}px`,
         ).toBe(state.length);
         expect(
           state.every((s) => s.text > 0),
-          "an index description rendered empty",
+          "a register description rendered empty",
         ).toBe(true);
       }
     });
   }
 
-  test("the description sits on its own line, not squeezed beside the name", async ({ page }) => {
+  test("the description sits under its own item, not squeezed beside it", async ({ page }) => {
     await open(page, "/georgia-production");
     await atWidth(page, 390);
     const rows = await page.evaluate(() =>
-      [...document.querySelectorAll(".dgp__indexrow")].slice(0, 4).map((row) => {
-        const name = row.querySelector(".dgp__indexname")!.getBoundingClientRect();
-        const desc = row.querySelector(".dgp__indexdesc")!.getBoundingClientRect();
+      [...document.querySelectorAll(".dgp__item")].map((row) => {
+        const name = row.querySelector(".dgp__itemtitle")!.getBoundingClientRect();
+        const desc = row.querySelector(".dgp__itemdesc")!.getBoundingClientRect();
         return {
           nameBottom: name.bottom,
           descTop: desc.top,
@@ -136,12 +147,13 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
         };
       }),
     );
-    expect(rows.length).toBe(4);
+    expect(rows.length).toBe(8);
     for (const r of rows) {
-      // wrapped onto a new line: the description starts below the name, and is
-      // left-aligned rather than pushed to a right rail
+      // on its own line under the item, and indented to the item's own column
+      // rather than pushed out to a right rail - the rail is what left a phone
+      // with nowhere to put it
       expect(r.descTop).toBeGreaterThanOrEqual(r.nameBottom - 2);
-      expect(r.descLeft).toBeLessThanOrEqual(r.nameLeft + 2);
+      expect(Math.abs(r.descLeft - r.nameLeft)).toBeLessThanOrEqual(2);
     }
   });
 });

@@ -498,10 +498,12 @@ test.describe("§09/§10 Georgia Production", () => {
     expect(stacked).toBe(true);
   });
 
-  test("the four support titles are Optika at the editorial weight", async ({ page }) => {
+  test("the eight support titles are Optika at the editorial weight", async ({ page }) => {
     await gotoRoute(page, "/georgia-production");
-    const names = page.locator(".dgp__indexname");
-    await expect(names).toHaveCount(4);
+    // the register prints all eight of the studio s scope items now, not the
+    // four it used to relabel A-D
+    const names = page.locator(".dgp__itemtitle");
+    await expect(names).toHaveCount(8);
     const styles = await names.evaluateAll((els) =>
       els.map((e) => {
         const cs = getComputedStyle(e);

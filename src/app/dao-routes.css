@@ -114,18 +114,11 @@ html:has(.dsc) {
 .dao-sheet--cream {
   background: var(--dao-paper);
 }
-/* §18: the Georgia Production field note is Production Blue stock rather than
-   white. .dao-sheet already carries a paper-grain ::before, so the material
-   system is reused - it is only pushed harder here (0.45 -> 0.72) because the
-   same grain that reads clearly on white barely registers on a mid-tone. Card
-   position, size, shadow and copy are untouched; the text colours move in the
-   JSX, where they were set. */
-.dao-sheet.dgp__note {
-  background: var(--dao-blue);
-}
-.dao-sheet.dgp__note::before {
-  opacity: 0.72;
-}
+/* The Georgia Production field note used to borrow .dao-sheet for its stock -
+   a tilted white card with a grain ::before, overridden to blue. The approved
+   design prints it as a flat blue note squared to the grid, so it carries its
+   own material now (.dgp__note / .dgp__notegrain) and the two overrides that
+   lived here have gone with the card. */
 .dao-sheet > * {
   position: relative;
 }
@@ -4284,52 +4277,194 @@ html:has(.dsc) {
    the rank of the page. */
 .dgp__title {
   font-size: clamp(44px, 9vw, 108px);
-  line-height: 0.98;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
 }
+
+/* GEORGIA above PRODUCTION, which is how the approved cover sets it.
+   The two entrance wrappers are plain spans and so ran inline: measured on
+   live production at 390px the h1 was 415px wide in a 390px viewport, both
+   lines sharing one baseline, and the title read "GEORGIAPRODUCTIO" with the
+   rest clipped off the frame. The document did not scroll because .dao-page
+   clips horizontally, which is exactly why it survived unnoticed. */
+.dgp__title > .dao-rise {
+  display: block;
+}
+
+/* ---- file strip -------------------------------------------------------
+   Page-level dossier metadata. It is NOT navigation and deliberately repeats
+   none: the global chrome above it still owns the brand link and the working
+   locale switch. This says which file of the studio's you are holding. */
+.dgp__file {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  padding: clamp(18px, 2.8vh, 28px) var(--dao-gutter) 0;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  color: rgb(19 18 16 / 0.6);
+}
+
+.dgp__filemid {
+  color: var(--dao-blue);
+}
+
+:lang(ka) .dgp__filemid,
+:lang(ka) .dgp__sectionmeta,
+:lang(ka) .dgp__coords,
+:lang(ka) .dgp__notelabel,
+:lang(ka) .dgp__notecode {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+/* ---- dossier cover ---------------------------------------------------- */
 .dgp__cover {
   position: relative;
-  padding: 26px var(--dao-gutter) 70px;
+  padding: clamp(30px, 6vh, 70px) var(--dao-gutter) clamp(40px, 7vh, 82px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 40px;
+  /* the approved 7/3 cover split. `auto` on the right let the rail collapse to
+     its own text, which pushed the divider out to ~82% and left a dead band of
+     paper in the middle of the cover. */
+  grid-template-columns: minmax(0, 7fr) minmax(220px, 3fr);
+  gap: clamp(28px, 5vw, 90px);
+  align-items: start;
 }
+
+.dgp__coverlede {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2.6vh, 26px);
+  max-width: 800px;
+  min-width: 0;
+}
+
+/* the drawn stroke under the title - the file is marked by hand, not ruled */
+.dgp__stroke {
+  display: block;
+  width: min(420px, 80%);
+  height: 6px;
+}
+
+.dgp__intro {
+  margin: 0;
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.7;
+  max-width: 560px;
+  text-wrap: pretty;
+}
+
+.dgp__honest {
+  max-width: 560px;
+  line-height: 1.9;
+  color: rgb(108 62 19 / 0.75);
+}
+
+/* the right rail: where the shoot would actually be run from */
 .dgp__coords {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 10px;
   text-align: right;
-  font-family: var(--dao-f-numeral);
-  font-size: 14px;
-  color: var(--dao-brown);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: rgb(19 18 16 / 0.72);
+  border-left: 1px solid rgb(19 18 16 / 0.22);
+  padding-left: clamp(18px, 2.4vw, 34px);
 }
-/* §09: a grouping wrapper that does nothing at all above 720px - the star and
-   the mark stay direct flex children of .dgp__coords, so desktop is unchanged. */
+
+/* §09: a grouping wrapper that does nothing at all above the tablet break -
+   the star and the mark stay direct flex children of .dgp__coords there. */
 .dgp__symbols {
   display: contents;
 }
-/* carried inline until §09; it has to live in CSS so the mobile block can move it */
+
 .dgp__mark {
   align-self: flex-end;
+  width: 100px;
+  height: auto;
+  margin-top: 20px;
+  mix-blend-mode: multiply;
+  opacity: 0.92;
 }
+
 .dgp__star {
   align-self: flex-end;
-  width: 60px;
-  height: 60px;
+  width: 46px;
+  height: 46px;
   background: var(--dao-red);
   --m: url("/assets/graphics/star-4.webp");
-  margin-top: 8px;
+  margin-top: clamp(18px, 3vh, 34px);
 }
+
+.dgp__coverrule {
+  display: block;
+  position: relative;
+  width: calc(100% - 2 * var(--dao-gutter));
+  margin: 0 auto;
+  height: 5px;
+}
+
+/* ---- shared section head ---------------------------------------------
+   The title against its own file metadata: how many plates, how many items.
+   The count is part of the document rather than decoration - it tells the
+   reader the register in front of them is the whole register. */
+.dgp__sectionhead {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  padding: 0 var(--dao-gutter);
+}
+
+.dgp__sectiontitle {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(30px, 3.4vw, 50px);
+  line-height: 1;
+}
+
+:lang(ka) .dgp__sectiontitle {
+  font-family: var(--dao-f-ka-display);
+}
+
+.dgp__sectionmeta {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  color: rgb(19 18 16 / 0.55);
+}
+
+/* ---- location plates - ink band --------------------------------------- */
 .dgp__plates {
   position: relative;
   background: var(--dao-ink);
   color: var(--dao-paper);
-  padding: 66px 0 90px;
+  margin-top: clamp(36px, 6vh, 64px);
+  padding: clamp(40px, 7vh, 76px) 0 clamp(44px, 8vh, 84px);
 }
+
+.dgp__plates .dgp__sectionmeta {
+  color: rgb(242 237 227 / 0.55);
+}
+
 .dgp__platemain {
   position: relative;
-  height: clamp(260px, 39vw, 560px);
-  margin-top: 40px;
+  aspect-ratio: 21 / 9;
+  min-height: 260px;
+  margin: clamp(24px, 4.4vh, 42px) var(--dao-gutter) 0;
+  overflow: hidden;
 }
+
 .dgp__platemain img {
   position: absolute;
   inset: 0;
@@ -4337,54 +4472,89 @@ html:has(.dsc) {
   height: 100%;
   object-fit: cover;
 }
+
+/* the registration frame: drawn over the plate and slightly outside its edge,
+   so it reads as a mark made ON the print rather than a border around a card */
+.dgp__plateframe {
+  position: absolute;
+  inset: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  pointer-events: none;
+}
+
 .dgp__platetag {
   position: absolute;
-  left: var(--dao-gutter);
-  bottom: 24px;
+  left: 18px;
+  bottom: 18px;
   display: flex;
-  gap: 16px;
-  align-items: center;
+  align-items: stretch;
   pointer-events: none;
-  flex-wrap: wrap;
+  max-width: calc(100% - 36px);
 }
+
 .dgp__platenum {
-  font-family: var(--dao-f-numeral);
-  font-size: 15px;
+  background: var(--dao-blue);
   color: var(--dao-paper);
-  background: rgba(19, 18, 16, 0.65);
-  padding: 6px 11px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  padding: 8px 12px;
+  white-space: nowrap;
 }
+
 .dgp__platename {
-  font-weight: 500;
+  background: rgb(19 18 16 / 0.85);
+  color: var(--dao-paper);
+  font-family: var(--f-glacier), sans-serif;
   font-size: 10px;
   letter-spacing: 0.2em;
-  color: #fff;
-  background: var(--dao-blue);
-  padding: 6px 11px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
   text-transform: uppercase;
 }
+
+:lang(ka) .dgp__platenum,
+:lang(ka) .dgp__platename {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.06em;
+}
+
+.dgp__platetag--sm {
+  left: 12px;
+  bottom: 12px;
+  max-width: calc(100% - 24px);
+}
+
+.dgp__platetag--sm .dgp__platenum {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  padding: 5px 9px;
+}
+
+.dgp__platetag--sm .dgp__platename {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  padding: 5px 9px;
+}
+
+/* two secondary plates side by side, square-cornered and flat - a contact
+   sheet, not a gallery. No rotation and no shadow: these are prints laid
+   down, and the previous composition's tilt and drop shadow read as cards. */
 .dgp__platerow {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  padding: 60px var(--dao-gutter) 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(14px, 2vw, 26px);
+  margin: clamp(14px, 2vw, 26px) var(--dao-gutter) 0;
 }
+
 .dgp__platerow > div {
   position: relative;
-  aspect-ratio: 448 / 250;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  aspect-ratio: 4 / 3;
   overflow: hidden;
 }
-.dgp__platerow > div:nth-child(1) {
-  transform: rotate(-0.8deg);
-}
-.dgp__platerow > div:nth-child(2) {
-  transform: rotate(0.7deg);
-  top: 22px;
-}
-.dgp__platerow > div:nth-child(3) {
-  transform: rotate(-0.6deg);
-}
+
 .dgp__platerow img {
   position: absolute;
   inset: 0;
@@ -4392,137 +4562,275 @@ html:has(.dsc) {
   height: 100%;
   object-fit: cover;
 }
+
+/* ---- production support register --------------------------------------
+   A register, not cards: an index number, the item, and what it covers, on a
+   ruled line. Two columns of one register on a wide screen, one on a phone -
+   the rule under each row is what holds it together, so nothing is boxed and
+   nothing needs an icon. */
 .dgp__support {
   position: relative;
-  padding: 80px var(--dao-gutter) 60px;
+  padding: clamp(48px, 9vh, 100px) 0 clamp(40px, 7vh, 72px);
 }
-.dgp__supportgrid {
+
+.dgp__supportrule {
+  display: block;
+  width: calc(100% - 2 * var(--dao-gutter));
+  margin: 16px auto 0;
+  height: 4px;
+}
+
+/* Two columns, stated rather than fitted. `auto-fit` with a 380px floor packs
+   three columns in at 1440, which squeezes the descriptions - the longest of
+   them wraps onto a second line and the register starts to read as a table of
+   cells. Two columns keep each entry on one measure at every desktop width. */
+.dgp__register {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px;
-  gap: 68px;
-  margin-top: 40px;
-  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(28px, 5vw, 80px);
+  margin: clamp(10px, 2vh, 20px) var(--dao-gutter) 0;
 }
-.dgp__indexrow {
-  display: flex;
+
+@media (max-width: 760px) {
+  .dgp__register {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dgp__item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 4px 18px;
+  padding: clamp(16px, 2.6vh, 24px) 0;
+  border-bottom: 1px solid rgb(19 18 16 / 0.16);
   align-items: baseline;
-  gap: 18px;
-  padding: 13px 0;
-  border-bottom: 1px solid rgba(19, 18, 16, 0.14);
 }
-.dgp__indexrow:last-child {
-  border-bottom: 0;
-}
-.dgp__letter {
-  font-family: var(--dao-f-numeral);
+
+.dgp__itemn {
+  font-family: var(--f-glacier), sans-serif;
   font-size: 13px;
+  letter-spacing: 0.14em;
   color: var(--dao-blue);
 }
-/* §10: strong Optika at the real heaviest weight (600 - Optika ships no Bold).
-   Translated copy, so --dao-f-ui follows the locale. Scale is unchanged and
-   .dgp__indexdesc stays visually secondary. */
-.dgp__indexname {
+
+.dgp__itemtitle {
   font-family: var(--dao-f-ui);
   font-weight: var(--dao-w-editorial);
-  font-size: clamp(21px, 2.1vw, 30px);
-  line-height: 1.2;
-  color: var(--dao-ink);
+  font-size: clamp(15px, 1.3vw, 18px);
+  letter-spacing: 0.04em;
+  line-height: 1.3;
 }
-.dgp__indexdesc {
-  font-size: 11.5px;
-  line-height: 1.55;
-  color: rgba(19, 18, 16, 0.6);
-  margin-left: auto;
-  max-width: 240px;
-  text-align: right;
+
+/* the description sits under the title, in the title's own column: it explains
+   that item, so it is indented to it rather than pushed out to a right rail.
+   The rail was why a phone had nowhere to put it and hid it entirely. */
+.dgp__itemdesc {
+  grid-column: 2;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgb(19 18 16 / 0.66);
+  text-wrap: pretty;
 }
+
+/* ---- field note + CTA -------------------------------------------------- */
+.dgp__close {
+  position: relative;
+  display: flex;
+  gap: clamp(28px, 5vw, 80px);
+  flex-wrap: wrap;
+  align-items: stretch;
+  padding: 0 var(--dao-gutter) clamp(56px, 10vh, 110px);
+}
+
+/* a printed note slipped into the file: brand blue stock with the site's own
+   paper grain multiplied into it, so it is a material rather than a panel */
 .dgp__note {
-  transform: rotate(1deg);
-  padding: 24px;
+  position: relative;
+  isolation: isolate;
+  flex: 5;
+  min-width: min(100%, 300px);
+  background: var(--dao-blue);
+  color: var(--dao-paper);
+  padding: clamp(24px, 4vh, 40px) clamp(22px, 3vw, 36px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
+
+.dgp__notegrain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+}
+
+.dgp__notelabel {
+  position: relative;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
+  /* §18: the brand yellow is the one label colour that survives this blue -
+     it measures 4.59:1, where the studio red lands at 1.04:1 */
+  color: #e8c15a;
+}
+
+/* paper measures 4.26:1 on #2374b3 - just under AA at this size - so the
+   note's body takes white, at 5.05:1 */
+.dgp__notecopy {
+  position: relative;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: #fff;
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+.dgp__notecode {
+  position: relative;
+  margin-top: auto;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #fff;
+}
+
 .dgp__cta {
+  flex: 6;
+  min-width: min(100%, 300px);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   gap: 20px;
-  border-top: 1px solid rgba(19, 18, 16, 0.15);
-  padding-top: 26px;
-  margin-top: 60px;
-  flex-wrap: wrap;
+  padding: clamp(10px, 2vh, 20px) 0;
 }
-@media (max-width: 960px) {
-  .dgp__supportgrid {
-    grid-template-columns: 1fr;
-    gap: 34px;
-  }
-  .dgp__note {
-    max-width: 460px;
+
+.dgp__ctalabel {
+  color: var(--dao-brown);
+}
+
+.dgp__ctalink {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  align-self: flex-start;
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: clamp(15px, 1.6vw, 20px);
+  letter-spacing: 0.28em;
+  padding-bottom: 12px;
+  min-height: 44px;
+  border-bottom: 1px solid rgb(19 18 16 / 0.6);
+  color: var(--dao-ink);
+  transition: gap 240ms var(--dao-ease-micro);
+}
+
+:lang(ka) .dgp__ctalink {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dgp__ctalink svg {
+  width: 54px;
+  height: 13px;
+  flex: none;
+  opacity: 0.8;
+}
+
+@media (hover: hover) {
+  .dgp__ctalink:hover {
+    gap: 30px;
   }
 }
-@media (max-width: 720px) {
+
+.dgp__ctalink:focus-visible {
+  outline: 2px solid var(--dao-ink);
+  outline-offset: 4px;
+}
+
+/* ---- tablet ----------------------------------------------------------- */
+@media (max-width: 860px) {
+  /* the right rail stops being a rail: the coordinates become a stamped row
+     under the title rather than a column squeezed beside it */
   .dgp__cover {
     grid-template-columns: 1fr;
   }
+
   .dgp__coords {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
     text-align: left;
+    border-left: 0;
+    border-top: 1px solid rgb(19 18 16 / 0.22);
+    padding-left: 0;
+    padding-top: clamp(18px, 3vh, 26px);
   }
-  .dgp__star {
-    align-self: flex-start;
-    margin-top: 0;
-  }
+
   /* §09: the star and the official mark used to end up on opposite sides here -
      the star moved left with the column while the mark was pinned right by an
-     inline align-self. They now share one row and read as a single symbol
-     group. display:contents above this breakpoint keeps desktop byte-identical. */
+     inline align-self. They share one cluster now. display:contents above this
+     breakpoint keeps the desktop composition unchanged. */
   .dgp__symbols {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 18px;
-    margin-top: 8px;
+    margin-left: auto;
   }
+
+  .dgp__star,
   .dgp__mark {
-    align-self: flex-end;
+    align-self: center;
+    margin-top: 0;
   }
-  .dgp__platerow {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-  .dgp__platerow > div {
-    flex: 0 0 78%;
-    scroll-snap-align: start;
-    aspect-ratio: 448 / 280;
-  }
-  .dgp__platerow > div:nth-child(2) {
-    top: 0;
-  }
-  /* §P5: the A-D index descriptions are real translated content - what each
-     pathway actually covers - and they were the only copy on this page with no
-     mobile presentation at all. Measured at 390px in both locales: 4 of 4
-     hidden, and the same text appears nowhere else on the page, so a phone
-     visitor lost it entirely rather than reading it somewhere else.
 
-     The cause is horizontal, not editorial: .dgp__indexrow is one flex line of
-     letter + name + description, with the description pushed to the right rail
-     (margin-left:auto, max-width:240px, right-aligned). Three items cannot
-     share one line on a phone, so it was switched off.
-
-     It now wraps onto its own line under the row instead of being removed:
-     the letter and name keep their line and their rhythm, and the description
-     reads as the secondary caption it already is - same 11.5px, same colour,
-     just left-aligned and full width. Desktop is untouched. */
-  .dgp__indexrow {
-    flex-wrap: wrap;
+  .dgp__star {
+    width: 34px;
+    height: 34px;
   }
-  .dgp__indexdesc {
-    flex-basis: 100%;
-    margin-left: 0;
-    max-width: none;
-    text-align: left;
+
+  .dgp__mark {
+    width: 70px;
+  }
+}
+
+/* ---- phone ------------------------------------------------------------ */
+@media (max-width: 560px) {
+  /* the file strip stacks rather than wrapping mid-phrase */
+  .dgp__file {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* the 21:9 hero plate is a wide-composition crop; on a phone it becomes 3:2
+     so the location is still legible rather than a letterbox sliver */
+  .dgp__platemain {
+    aspect-ratio: 3 / 2;
+    min-height: 0;
+  }
+
+  .dgp__platetag,
+  .dgp__platetag--sm {
+    left: 10px;
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .dgp__platetag .dgp__platenum,
+  .dgp__platetag .dgp__platename {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    padding: 5px 8px;
+  }
+
+  /* the register keeps its number column but narrows it */
+  .dgp__item {
+    grid-template-columns: 34px 1fr;
+    gap: 4px 12px;
   }
 }
 
