@@ -3361,3 +3361,33 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
     display: none;
   }
 }
+
+/* WCAG 2.2.2: the reel loops, so it offers a way to stop it. A text control in
+   the reel's own meta strip, in the same register as the authorship line beside
+   it - the strip itself is pointer-events:none so the composition stays
+   untouchable, and only this control takes them back. */
+.dao-reel__meta .dao-reel__toggle {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  /* §13: a real target without changing the printed line */
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  --ls: 0.22em;
+  letter-spacing: var(--ls);
+  text-transform: uppercase;
+  opacity: 0.8;
+  transition: opacity 200ms ease;
+}
+.dao-reel__meta .dao-reel__toggle:hover,
+.dao-reel__meta .dao-reel__toggle:focus-visible {
+  opacity: 1;
+}
+:lang(ka) .dao-reel__meta .dao-reel__toggle {
+  font-family: var(--dao-f-ka);
+  --ls: 0.08em;
+}

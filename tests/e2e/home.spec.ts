@@ -9,10 +9,20 @@ test.describe("Homepage - One Continuous Take", () => {
     await expect(page.locator(".dao-ident")).toContainText("8TH STATE");
     // v7 short form auto-advances (~1.8s) to the showreel beneath.
     await expect(page.locator(".dao-ident")).toBeHidden({ timeout: 8_000 });
-    // the reel is a moving hero now: it autoplays muted, no Play control
+    // The reel is a moving hero: it autoplays muted, and the visitor is never
+    // asked to press anything to START it. Before playback is confirmed there
+    // is no control at all - which is what this used to assert absolutely, and
+    // is the half of it that matters. Once it IS playing it offers a way to
+    // STOP it, because a looping hero has to (WCAG 2.2.2); that control is
+    // covered in ux-architecture.spec.ts.
     const reel = page.locator(".dao-reel__media video");
     await expect(reel).toBeVisible();
-    await expect(page.locator(".dao-reel button")).toHaveCount(0);
+    const controls = await page
+      .locator(".dao-reel button")
+      .evaluateAll((els) => els.map((e) => (e.getAttribute("aria-label") ?? "").toLowerCase()));
+    for (const label of controls) {
+      expect(label, "the reel must never ask to be started").not.toMatch(/^play/);
+    }
     await expect
       .poll(
         () =>

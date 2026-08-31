@@ -229,6 +229,7 @@ const ka: Messages = {
       // §16: the wordmark stays Latin - it is the studio's name
       authored: "An 8th State Production",
       play: "შოურილის ჩართვა",
+      pause: "დააპაუზე რილი",
       title: "მთავარი შოურილი - 2026",
       pending: "შოურილი მზადდება - საბოლოო მასტერი მოლოდინშია",
     },

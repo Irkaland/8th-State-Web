@@ -9,7 +9,10 @@ import { gotoRoute } from "./helpers";
  * because a pixel moved.
  */
 
-const WIDTHS = [1440, 1024, 768, 430, 390, 375, 360, 320] as const;
+// the approved responsive matrix. 1280 is the tier-1/tier-2 boundary of the
+// motion system and 600/480 straddle tier 3 and tier 4, so all four tiers are
+// actually exercised rather than assumed.
+const WIDTHS = [1440, 1280, 1024, 768, 600, 480, 430, 390, 375, 360, 320] as const;
 const ROUTES = [
   "/",
   "/work",

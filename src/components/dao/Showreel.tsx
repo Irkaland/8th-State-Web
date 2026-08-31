@@ -4,12 +4,26 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { ReelMessages } from "@/i18n/slices";
 import { IDENT_ATTR, IDENT_DONE_EVENT } from "@/lib/session-lifecycle";
+import { up } from "@/lib/cn";
 
 /**
  * Act 01 - Master Showreel. A cinematic moving hero: the master at
  * /media/showreel.mp4 starts by itself (muted, inline, looping), with the
  * optimized first-frame poster covering the stage until playback is
  * actually confirmed advancing.
+ *
+ * IT LOOPS, SO IT CAN BE STOPPED (WCAG 2.2.2).
+ *
+ * Content that moves by itself for more than five seconds has to offer a
+ * mechanism to pause it, and a looping reel never ends on its own. The control
+ * is a text control in the reel's own meta strip, in the same register as the
+ * authorship line beside it - not a media chrome overlay, which would be a
+ * second visual language on the site's most composed frame. It appears only
+ * once playback is genuinely confirmed, so it never offers to pause a still.
+ *
+ * Reduced motion is handled separately and more strongly: the reel is never
+ * started at all, and the poster stands - so there is nothing to pause and no
+ * control is drawn.
  */
 const REEL_SRC = "/media/showreel.mp4";
 // The poster is the reel's own first frame - the pre-play stage reads as the
@@ -24,6 +38,25 @@ export function Showreel({ reel, hasReel }: { reel: ReelMessages; hasReel: boole
   const m = reel;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  /**
+   * Whether the reader has paused it.
+   *
+   * Separate from `playing`, which means "real playback was ever confirmed" and
+   * is what retires the poster. Pausing must not bring the poster back over a
+   * frame the reader chose to stop on.
+   */
+  const [paused, setPaused] = useState(false);
+  /**
+   * The reader asked for it to stop.
+   *
+   * A ref as well as state, because the autoplay lifecycle below reads it from
+   * inside long-lived listeners: the reel's own "pause" handler exists to
+   * recover from a browser-initiated pause (backgrounding, an audio-session
+   * interruption) by trying again, and without this it would immediately undo a
+   * deliberate one - which would make the control useless and WCAG 2.2.2
+   * unmet in practice while appearing to be met.
+   */
+  const userPaused = useRef(false);
 
   // Autoplay lifecycle (§10-§12). muted + playsInline satisfies the
   // Safari/Chrome autoplay policy with no user gesture, but two things went
@@ -108,6 +141,8 @@ export function Showreel({ reel, hasReel }: { reel: ReelMessages; hasReel: boole
     // audio-session interruption), one more bounded round is allowed.
     const onPause = () => {
       if (disposed || !confirmed) return;
+      // the reader stopped it on purpose - leave it stopped
+      if (userPaused.current) return;
       if (document.visibilityState !== "visible") return;
       confirmed = false;
       tries = 0;
@@ -126,8 +161,15 @@ export function Showreel({ reel, hasReel }: { reel: ReelMessages; hasReel: boole
     );
     io.observe(v);
 
+    // keep the control's label in step with the element, however it got there
+    const syncPaused = () => {
+      if (!disposed) setPaused(v.paused);
+    };
+
     v.addEventListener("playing", onPlaying);
     v.addEventListener("pause", onPause);
+    v.addEventListener("pause", syncPaused);
+    v.addEventListener("play", syncPaused);
     for (const e of readiness) v.addEventListener(e, attempt);
     document.addEventListener("visibilitychange", onVisibility);
     // the ident tells us the moment it leaves the stage
@@ -140,6 +182,8 @@ export function Showreel({ reel, hasReel }: { reel: ReelMessages; hasReel: boole
       io.disconnect();
       v.removeEventListener("playing", onPlaying);
       v.removeEventListener("pause", onPause);
+      v.removeEventListener("pause", syncPaused);
+      v.removeEventListener("play", syncPaused);
       for (const e of readiness) v.removeEventListener(e, attempt);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener(IDENT_DONE_EVENT, rearm);
@@ -182,6 +226,29 @@ export function Showreel({ reel, hasReel }: { reel: ReelMessages; hasReel: boole
           same typography, same position */}
       <div className="dao-reel__meta dao-label">
         <span>{m.authored}</span>
+        {/* WCAG 2.2.2: the reel loops, so it must be stoppable. Rendered only
+            once real playback is confirmed - there is nothing to pause before
+            that, and under reduced motion there never will be. */}
+        {playing && (
+          <button
+            type="button"
+            className="dao-reel__toggle mo-h"
+            aria-label={paused ? m.play : m.pause}
+            onClick={() => {
+              const v = videoRef.current;
+              if (!v) return;
+              if (v.paused) {
+                userPaused.current = false;
+                void v.play();
+              } else {
+                userPaused.current = true;
+                v.pause();
+              }
+            }}
+          >
+            {paused ? up(m.play) : up(m.pause)}
+          </button>
+        )}
       </div>
     </section>
   );

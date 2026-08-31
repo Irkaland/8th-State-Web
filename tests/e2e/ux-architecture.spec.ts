@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { gotoRoute } from "./helpers";
+import { expectNoSeriousA11y, gotoRoute } from "./helpers";
 
 /**
  * FINAL UX ARCHITECTURE - the journeys.
@@ -548,6 +548,219 @@ test.describe("§02 the footer is where it was decided to be", () => {
       .locator(".dao-slimfoot a")
       .evaluateAll((els) => els.map((e) => e.getAttribute("href")));
     for (const h of links) expect(h).toMatch(/^\/ka\//);
+  });
+});
+
+/* ----------------------------------------- §47 keyboard-only journeys ---- */
+
+test.describe("§47 the journeys complete without a pointer", () => {
+  /**
+   * Not a tab-order audit - burger-keyboard.spec.ts owns the nav sheet's trap
+   * and cycle. This walks the two journeys §47 names, end to end, using only
+   * the keyboard, and checks that focus is somewhere useful at each landing.
+   */
+  const activeInfo = (page: Page) =>
+    page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null;
+      return {
+        tag: el?.tagName ?? "",
+        id: el?.id ?? "",
+        cls: typeof el?.className === "string" ? el.className : "",
+        text: (el?.textContent ?? "").trim().slice(0, 30),
+      };
+    });
+
+  test("WORK: home -> archive -> project -> back to work", async ({ page }) => {
+    await gotoRoute(page, "/");
+
+    // the burger, reached and opened from the keyboard
+    await page.locator(".dao-burger").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".dao-nav.is-open")).toHaveCount(1);
+    // opening the sheet lands focus on its first destination
+    await expect.poll(async () => (await activeInfo(page)).cls).toContain("dao-nav__link");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/work$/);
+
+    // a route change puts focus in main, so the next Tab starts at the content
+    await expect.poll(async () => (await activeInfo(page)).id).toBe("main");
+
+    // into a project, by keyboard
+    const card = page.locator(".dwk__frame").first();
+    const slug = await card.getAttribute("data-dao-card");
+    await card.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(new RegExp("/work/" + slug + "$"));
+
+    // and back out through the masthead control
+    const back = page.locator(".dao-mback");
+    await back.focus();
+    await expect(back).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/work(\?.*)?$/);
+    await expect.poll(async () => (await activeInfo(page)).id).toBe("main");
+  });
+
+  test("TEAM: studio -> team -> person -> next -> close", async ({ page }) => {
+    await gotoRoute(page, "/team");
+
+    const card = page.locator("[data-dtm-card]").first();
+    const slug = await card.getAttribute("data-dtm-card");
+    await card.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".dtm__dossier")).toHaveCount(1);
+    // focus enters the dialog
+    await expect.poll(async () => (await activeInfo(page)).cls).toContain("dtm__dossier");
+
+    // NEXT is operable from the keyboard, and focus stays on it
+    const next = page.locator(".dtm__nav .dtm__tcta").nth(1);
+    await next.focus();
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(400);
+    await expect.poll(async () => (await activeInfo(page)).text).toMatch(/NEXT/i);
+
+    // Escape closes, and focus goes back to a card in the roster
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".dtm__dossier")).toHaveCount(0);
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement?.getAttribute("data-dtm-card")))
+      .not.toBeNull();
+    expect(slug, "the roster is where the reader lands").toBeTruthy();
+  });
+});
+
+/* ------------------------------- §37 the personnel file on a phone ------- */
+
+test.describe("§37 the personnel file is usable at every phone width", () => {
+  for (const width of [430, 390, 375, 320] as const) {
+    test(`at ${width} the file bar works and nothing overflows`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 812 });
+      await gotoRoute(page, "/team?person=lasha-bedianashvili");
+      await expect(page.locator(".dtm__dossier")).toHaveCount(1);
+      await page.waitForTimeout(700);
+
+      // BACK / PREV / NEXT are all real targets, and none of them wraps away
+      const controls = await page.locator(".dtm__tcta").evaluateAll((els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return {
+            text: (e.textContent ?? "").trim().slice(0, 12),
+            h: Math.round(r.height),
+            w: Math.round(r.width),
+          };
+        }),
+      );
+      expect(controls.length, "prev, next and close").toBe(3);
+      for (const c of controls) {
+        expect(c.h, `${c.text} is not a 44px target at ${width}`).toBeGreaterThanOrEqual(44);
+        expect(c.w).toBeGreaterThan(20);
+      }
+
+      // the sheet itself, and the page, stay inside the viewport
+      const box = await page.evaluate(() => {
+        const d = document.querySelector<HTMLElement>(".dtm__dossier")!;
+        const r = d.getBoundingClientRect();
+        return {
+          right: Math.round(r.right),
+          left: Math.round(r.left),
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          sheetOverflow: d.scrollWidth - d.clientWidth,
+        };
+      });
+      expect(box.left, "the sheet starts inside the viewport").toBeGreaterThanOrEqual(-1);
+      expect(box.right).toBeLessThanOrEqual(width + 1);
+      expect(box.overflow, "the page must not scroll sideways").toBeLessThanOrEqual(1);
+      expect(box.sheetOverflow, "the sheet must not scroll sideways").toBeLessThanOrEqual(1);
+
+      // a long role wraps rather than running out of its column
+      const roleFits = await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>(".dtm__id .dtm__role");
+        if (!el) return true;
+        return el.scrollWidth <= el.clientWidth + 1;
+      });
+      expect(roleFits, "a long role overflowed its column").toBe(true);
+
+      // and the page behind it does not scroll
+      expect(
+        await page.evaluate(() => getComputedStyle(document.documentElement).overflow),
+      ).toContain("hidden");
+    });
+  }
+});
+
+/* ------------------------------------------- §17 automated a11y ---------- */
+
+test.describe("§17 no serious automated violations on the routes this pass changed", () => {
+  /**
+   * Automated checks are a floor, not a ceiling - the keyboard journeys, the
+   * focus order and the dialog semantics above are what actually carry §17.
+   * This catches the classes a machine is good at: contrast, names, landmarks,
+   * duplicate ids.
+   *
+   * Imagery is excluded where contrast is provided by a photograph rather than
+   * by a colour pair, which axe cannot measure; the chrome is excluded for the
+   * same reason it always has been (it sits transparently over artwork).
+   */
+  for (const [route, exclude] of [
+    ["/", [".dao-reel", ".dao-chrome", ".dwk__frame"]],
+    ["/ka", [".dao-reel", ".dao-chrome", ".dwk__frame"]],
+    ["/team", [".dao-chrome", ".dtm__frame"]],
+    ["/ka/team", [".dao-chrome", ".dtm__frame"]],
+    ["/work/aom-summer-collection", [".dao-chrome", ".dpj__hero"]],
+    ["/services", [".dao-chrome", ".dsv__img"]],
+  ] as const) {
+    test(`${route} has no serious violations`, async ({ page }) => {
+      await gotoRoute(page, route);
+      await page.waitForLoadState("load");
+      await expectNoSeriousA11y(page, [...exclude]);
+    });
+  }
+
+  test("the open personnel file has no serious violations", async ({ page }) => {
+    await gotoRoute(page, "/team?person=beka-jokharidze");
+    await expect(page.locator(".dtm__dossier")).toHaveCount(1);
+    await page.waitForTimeout(800);
+    await expectNoSeriousA11y(page, [".dao-chrome", ".dtm__frame"]);
+  });
+});
+
+/* -------------------------------------- §24 the reel can be stopped ------ */
+
+test.describe("WCAG 2.2.2 the showreel offers a way to stop it", () => {
+  test("a pause control appears once it is really playing, and it holds", async ({ page }) => {
+    await gotoRoute(page, "/");
+    const toggle = page.locator(".dao-reel__toggle");
+    // it appears only once playback is CONFIRMED - there is nothing to pause
+    // before that, and offering to pause a still would be a lie
+    await expect(toggle).toBeVisible({ timeout: 20000 });
+
+    const box = await toggle.boundingBox();
+    expect(box!.height, "a 44px target").toBeGreaterThanOrEqual(44);
+    const labelled = await toggle.getAttribute("aria-label");
+    expect(labelled).toMatch(/pause/i);
+
+    await toggle.click();
+    await expect
+      .poll(() => page.evaluate(() => document.querySelector("video")!.paused))
+      .toBe(true);
+    // and it STAYS paused - the autoplay lifecycle recovers from a browser
+    // pause by trying again, and must not undo a deliberate one
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => document.querySelector("video")!.paused)).toBe(true);
+    await expect(toggle).toHaveAttribute("aria-label", /play/i);
+
+    await toggle.click();
+    await expect
+      .poll(() => page.evaluate(() => document.querySelector("video")!.paused))
+      .toBe(false);
+  });
+
+  test("under reduced motion the reel never starts, so no control is drawn", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await gotoRoute(page, "/");
+    await page.waitForTimeout(2500);
+    expect(await page.evaluate(() => document.querySelector("video")!.paused)).toBe(true);
+    await expect(page.locator(".dao-reel__toggle")).toHaveCount(0);
   });
 });
 

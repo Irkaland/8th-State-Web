@@ -227,6 +227,7 @@ const en = {
     reel: {
       act: "Master Showreel",
       play: "Play reel",
+      pause: "Pause reel",
       // §16: the meta strip carries studio authorship, not technical specs
       authored: "An 8th State Production",
       title: "Master Showreel - 2026",
