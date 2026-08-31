@@ -3036,13 +3036,25 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
     letter-spacing: 0.08em;
   }
 
+  /* §09/§10: the botanical stays, and stops pushing the title down.
+     On the desktop composition this ornament is absolutely positioned and
+     therefore free - it costs no layout. The phone override turned it back
+     into a relative, in-flow block 249px tall, wedged between the masthead
+     rule and the body, and that single change is where the empty green field
+     came from: STUDIO LAB began 422px into an 812px viewport, more than half
+     the screen spent before the title.
+
+     Returning it to out-of-flow puts the artwork back in the upper right where
+     it already sat, at the same size, and lets the section open on its title.
+     No negative margin, and no change to the desktop rule above. */
   .dao-lab__orn {
-    position: relative;
-    right: auto;
+    position: absolute;
+    right: -34px;
+    top: 128px;
     bottom: auto;
-    align-self: flex-end;
+    align-self: auto;
     width: 215px;
-    margin: 12px -34px 0 0;
+    margin: 0;
     gap: 8px;
   }
 
