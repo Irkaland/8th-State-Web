@@ -218,17 +218,21 @@ test.describe("§28 the five top-level services", () => {
 });
 
 test.describe("§29 the rows are real routes", () => {
-  test("each row lands on the catalogue, and four on their own capability", async ({ page }) => {
+  test("each row lands on its own department", async ({ page }) => {
     await dossier(page);
     const hrefs = await page
       .locator(".dao-wwm__row")
       .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    // Every row names a DEPARTMENT now. Row 05 used to route to the bare
+    // catalogue because it had no capability to anchor to; the dossier gives
+    // all five a chapter, so the preview and the destination finally use one
+    // vocabulary and the fallback is gone.
     expect(hrefs).toEqual([
-      "/services#film-video-production",
+      "/services#audiovisual-production",
       "/services#production-design",
       "/services#photography",
       "/services#creative-direction",
-      "/services",
+      "/services#graphic-broadcast-design",
     ]);
     // the prototype's placeholder must never ship
     for (const h of hrefs) expect(h).not.toBe("#services");

@@ -198,14 +198,17 @@ test.describe("in-app anchor navigation is unchanged", () => {
   });
 
   test("every WHAT WE MAKE row that names a capability lands on it", async ({ page }) => {
-    // the dossier's five rows: four carry an anchor, the fifth routes to the
-    // catalogue itself. Each is walked from the home page the way a reader does.
+    // All FIVE rows now name a department. The fifth used to fall back to the
+    // catalogue with no anchor, because it had no capability to point at - the
+    // dossier gives every department a chapter of its own, so there is nothing
+    // left to fall back from. services-dossier.spec.ts owns the canonical
+    // anchor set; this walks the journey and asserts the landing.
     await gotoRoute(page, "/");
     const hrefs = await page
       .locator(".dao-wwm__row")
       .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
     const anchored = hrefs.filter((h) => h.includes("#"));
-    expect(anchored.length, "WHAT WE MAKE lost its capability links").toBe(4);
+    expect(anchored.length, "WHAT WE MAKE lost its department links").toBe(5);
 
     for (const href of anchored) {
       const id = href.split("#")[1];
