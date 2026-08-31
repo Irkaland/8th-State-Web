@@ -5602,8 +5602,38 @@ html:has(.dsc) {
     max-height: calc(100vh - 40px);
     max-height: calc(100dvh - 40px);
   }
+  /* §05/§06: the sheet's own header was being painted over.
+     .dtm__stage carried the same z-index as the site chrome (60), so with both
+     fixed at the root the tie fell to DOM order and the chrome won: its
+     translucent scrim sat across the top 30px of the sheet, the wordmark and
+     the burger landed on top of "PROFILE n / 13", and the roster behind showed
+     through the whole band. The header itself was never transparent - opaque
+     white, sticky, holding a constant 20px offset inside its scrollport - it
+     was simply underneath something else.
+
+     Raising the stage itself does nothing, because the stage is not competing
+     at the root: .dtm__sheet is part of the "every text layer sits above the
+     traces" group, whose z-index: 1 traps the whole subtree at level 1. So the
+     lift has to happen at the trap. It is scoped with :has() to the moment a
+     file is actually open - the stage renders only then - which leaves the
+     roster's own layering untouched the rest of the time.
+
+     On the phone this sheet is a modal that covers the screen and carries its
+     own CLOSE, so nothing should paint above it; the backdrop covers the
+     chrome, which is what a focus-trapped dialog should do anyway. Scoped to
+     this breakpoint: on desktop the dossier is not a full-screen sheet and the
+     chrome above it is correct. */
+  .dtm__sheet:has(.dtm__stage) {
+    z-index: 70;
+  }
+  /* §05/§06: no band above the header for content to scroll through.
+     The scrollport used to carry 20px of top padding, and the sticky header
+     stuck BELOW it - so a 20px strip of the profile (the portrait and its
+     drawn rules) rode up past the controls and sat above them. The padding
+     moves into the header itself, which now starts at the scrollport's very
+     top edge, and nothing can pass above it. */
   .dtm__dossier {
-    padding: 20px 18px 22px;
+    padding: 0 18px 22px;
   }
   /* §02/§15: the portrait comes down on phones too - 320 -> 214 */
   .dtm__bigframe {
@@ -5615,7 +5645,15 @@ html:has(.dsc) {
     top: 0;
     z-index: 4;
     background: #fff;
-    padding-top: 12px;
+    /* 12px of its own, plus the 20px the scrollport no longer carries, so the
+       spacing above PROFILE n / 13 is unchanged */
+    padding-top: 32px;
+    /* and it spans the whole sheet, not just the text measure: the portrait
+       frame is drawn with a -5px overshoot and rides up past the controls, so
+       a header stopping at the content box left a sliver of that rule showing
+       in the gutter beside it */
+    margin-inline: -18px;
+    padding-inline: 18px;
   }
   .dtm__nav {
     width: 100%;
