@@ -102,6 +102,10 @@ export const TEAM: TeamMember[] = [
        confused with a /work credit. Only set where the studio has given a real
        URL: an absent value renders nothing at all. */
     portfolioUrl: "https://www.mariamkandiashvili.com",
+    resume: {
+      en: "/team/resumes/mariam-kandiashvili-en.pdf",
+      es: "/team/resumes/mariam-kandiashvili-es.pdf",
+    },
     order: 1,
     featured: true,
   },
@@ -131,6 +135,10 @@ export const TEAM: TeamMember[] = [
     education: [],
     languages: [],
     portfolioUrl: "https://www.bekassio.com/",
+    resume: {
+      en: "/team/resumes/beka-jokharidze-en.pdf",
+      es: "/team/resumes/beka-jokharidze-es.pdf",
+    },
     order: 2,
     featured: true,
   },

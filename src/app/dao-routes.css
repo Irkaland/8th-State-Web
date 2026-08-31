@@ -4834,6 +4834,382 @@ html:has(.dsc) {
   }
 }
 
+/* ---- the dossier's new furniture (approved personnel-file design) ------ */
+
+/* the ruled line under the file bar and above the overview - drawn, not a
+   border, so the sheet reads as ruled paper rather than a panel */
+.dtm__slugrule,
+.dtm__idrule {
+  display: block;
+  width: 100%;
+  height: 4px;
+  flex: none;
+}
+
+.dtm__idrule {
+  margin-top: 4px;
+}
+
+/* the way out, in words. Closing IS going back to the sheet, so the control
+   says so - a bare cross made the reader guess where it led. */
+.dtm__tcta--back {
+  margin-right: auto;
+}
+
+/* the index line: where this file sits in the roster */
+.dtm__breadcrumb {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  line-height: 1.9;
+  color: var(--dao-brown);
+}
+
+:lang(ka) .dtm__breadcrumb,
+:lang(ka) .dtm__framecap,
+:lang(ka) .dtm__filenote {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+/* the plate's caption, the way a contact sheet marks a frame */
+.dtm__framecap {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  color: rgb(19 18 16 / 0.5);
+}
+
+/* the file's closing metadata, pushed to the foot of the identity column so
+   the actions always sit on the same line of the sheet */
+.dtm__filenote {
+  margin-top: auto;
+  padding-top: clamp(14px, 2.4vh, 22px);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  line-height: 2;
+  color: rgb(19 18 16 / 0.45);
+}
+
+/* ---- the action row: one editorial control system --------------------- */
+
+/* Sharp rectangles, no radius, no shadow, no fill. The three actions are
+   peers - a site, a profile, a document - so they are drawn identically and
+   separated only by what they say. */
+.dtm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+  align-items: center;
+  margin-top: clamp(12px, 2vh, 18px);
+}
+
+.dtm__portfolio,
+.dtm__linkedin,
+.dtm__resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgb(19 18 16 / 0.55);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--f-glacier), sans-serif;
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--dao-red);
+  transition:
+    background 200ms var(--dao-ease-micro),
+    border-color 200ms var(--dao-ease-micro);
+}
+
+:lang(ka) .dtm__portfolio,
+:lang(ka) .dtm__linkedin,
+:lang(ka) .dtm__resume {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+@media (hover: hover) {
+  .dtm__portfolio:hover,
+  .dtm__linkedin:hover,
+  .dtm__resume:hover {
+    background: rgb(19 18 16 / 0.05);
+    border-color: var(--dao-ink);
+  }
+}
+
+.dtm__portfolio:focus-visible,
+.dtm__linkedin:focus-visible,
+.dtm__resume:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 3px;
+}
+
+/* the drawn rule these used to carry belongs to the roster's text CTAs, not to
+   a bordered control - it would draw a second line inside the box */
+.dtm__portfolio::after,
+.dtm__linkedin::after {
+  content: none;
+}
+
+/* ---- the resume menu -------------------------------------------------- */
+
+.dtm__resumewrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* attached to its own control, opening upward: the actions sit at the foot of
+   the sheet, so a menu below them would fall outside the paper */
+.dtm__resumemenu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
+  background: var(--dao-paper);
+  border: 1px solid rgb(19 18 16 / 0.55);
+}
+
+.dtm__resumeitem {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: var(--dao-ink);
+  white-space: nowrap;
+}
+
+.dtm__resumeitem + .dtm__resumeitem {
+  border-top: 1px solid rgb(19 18 16 / 0.28);
+}
+
+.dtm__resumeitem:hover,
+.dtm__resumeitem:focus-visible {
+  background: rgb(19 18 16 / 0.06);
+  color: var(--dao-red);
+  outline: none;
+}
+
+.dtm__resumeitem:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--dao-red);
+}
+
+/* ============================================================
+   THE RESUME SHEET (.dtr) - a CV inside the studio's own file
+   ============================================================
+   The document is the one the studio supplied, displayed and never converted.
+   What is designed here is the folder around it: a dossier bar naming the
+   person and the edition, the paper ground the rest of the site is printed on,
+   and one way out. */
+
+.dtr__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(19 18 16 / 0.62);
+}
+
+.dtr__sheet {
+  position: fixed;
+  z-index: 71;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(94vw, 1080px);
+  height: min(94vh, 980px);
+  display: flex;
+  flex-direction: column;
+  background: var(--dao-paper);
+  color: var(--dao-ink);
+  isolation: isolate;
+}
+
+.dtr__sheet:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: -4px;
+}
+
+.dtr__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url("/assets/textures/paper-grain.webp");
+  background-size: 352px;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+}
+
+.dtr__bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 18px;
+  flex-wrap: wrap;
+  flex: none;
+  padding: clamp(14px, 2.2vh, 20px) clamp(16px, 2.4vw, 30px);
+  border-bottom: 1px solid rgb(19 18 16 / 0.3);
+}
+
+.dtr__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.dtr__name {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(13px, 1.3vw, 17px);
+  letter-spacing: 0.16em;
+}
+
+.dtr__ed {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--dao-red);
+}
+
+:lang(ka) .dtr__name,
+:lang(ka) .dtr__ed,
+:lang(ka) .dtr__close,
+:lang(ka) .dtr__tab {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dtr__baractions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.dtr__close,
+.dtr__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgb(19 18 16 / 0.55);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-decoration: none;
+  color: var(--dao-ink);
+  white-space: nowrap;
+  transition: background 200ms var(--dao-ease-micro);
+}
+
+.dtr__tab {
+  color: rgb(19 18 16 / 0.62);
+}
+
+.dtr__close:hover,
+.dtr__close:focus-visible,
+.dtr__tab:hover,
+.dtr__tab:focus-visible {
+  background: rgb(19 18 16 / 0.06);
+}
+
+.dtr__close:focus-visible,
+.dtr__tab:focus-visible {
+  outline: 2px solid var(--dao-red);
+  outline-offset: 2px;
+}
+
+/* the document viewport - the frame fills it and the browser pages the PDF */
+.dtr__doc {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  background: rgb(19 18 16 / 0.06);
+}
+
+.dtr__frame {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  border: 0;
+}
+
+/* Behind the frame, so it is what a reader sees only when the frame draws
+   nothing - which is what some mobile browsers do with a PDF. */
+.dtr__fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.7);
+}
+
+.dtr__fallback a {
+  color: var(--dao-red);
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  /* the CV takes the whole phone: a document is the thing being read, and a
+     centred sheet with air around it wastes the only space it has */
+  .dtr__sheet {
+    width: 100%;
+    height: 100%;
+    inset: 0;
+    left: 0;
+    top: 0;
+    transform: none;
+  }
+
+  .dtr__bar {
+    gap: 10px 12px;
+  }
+
+  .dtr__baractions {
+    margin-left: auto;
+  }
+}
+
 /* ============================================================
    /contact - the final scene as a route (4c)
    ============================================================ */
@@ -5796,9 +6172,8 @@ html:has(.dsc) {
      profile gets a short sheet, a long one stops at the cap and scrolls. The
      flex column is what gives the dossier a definite box to scroll inside while
      the sheet itself is still content-sized. */
-  width: min(86vw, 1180px);
-  height: auto;
-  max-height: min(86vh, 900px);
+  width: min(92vw, 1180px);
+  height: min(90vh, 860px);
   display: flex;
   transform: translate(-50%, -50%);
   z-index: 1;
@@ -5955,9 +6330,13 @@ html:has(.dsc) {
   position: relative;
   display: grid;
   /* §02: 392 -> 264, the same ~two-thirds reduction as the roster */
-  grid-template-columns: 264px minmax(0, 1fr);
-  gap: 36px;
-  padding-top: 24px;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  gap: clamp(24px, 3.4vw, 52px);
+  padding-top: clamp(16px, 2.6vh, 28px);
+  /* the two columns stretch to each other, so the file metadata and the action
+     row settle onto the foot of the identity column - level with the base of
+     the plate beside them, which is where the approved dossier prints them */
+  align-items: stretch;
 }
 .dtm__bigframe {
   position: relative;
@@ -5974,9 +6353,10 @@ html:has(.dsc) {
 .dtm__dname {
   margin: 0;
   font-family: var(--dao-f-display);
-  font-size: clamp(32px, 4vw, 52px);
-  line-height: 1;
+  font-size: clamp(34px, 4.6vw, 68px);
+  line-height: 0.96;
   letter-spacing: 0.004em;
+  text-wrap: balance;
 }
 .dtm__statement {
   margin: 0;
@@ -6475,10 +6855,6 @@ html:has(.dsc) {
   .dtm__dossier {
     padding: 0 18px 22px;
   }
-  /* §02/§15: the portrait comes down on phones too - 320 -> 214 */
-  .dtm__bigframe {
-    max-width: 214px;
-  }
   /* close stays reachable however far the sheet scrolls */
   .dtm__slug {
     position: sticky;
@@ -6495,11 +6871,36 @@ html:has(.dsc) {
     margin-inline: -18px;
     padding-inline: 18px;
   }
+  /* the file bar is two lines on a phone, not three: the way out, then the
+     position and the two steps together. It was taking a fifth of the screen
+     before the portrait had started. */
   .dtm__nav {
     width: 100%;
     margin-left: 0;
     justify-content: space-between;
-    gap: 12px;
+    align-items: center;
+    gap: 4px 10px;
+    flex-wrap: wrap;
+  }
+
+  .dtm__slug .dtm__no {
+    flex: 1 0 100%;
+    font-size: 11px;
+  }
+
+  .dtm__tcta--back {
+    margin-right: 0;
+  }
+
+  /* the portrait is the plate on a phone - it takes the measure it is given
+     rather than being held to a desktop rail width */
+  .dtm__bigframe {
+    max-width: none;
+  }
+
+  .dtm__framecap {
+    font-size: 9px;
+    letter-spacing: 0.18em;
   }
   .dtm__nav .dtm__tcta,
   .dtm__portfolio,
@@ -7076,20 +7477,6 @@ html:has(.dtm) {
 }
 
 /* ---------- the personnel file's closing stamp ---------- */
-
-.dtm__stamp {
-  display: block;
-  margin-top: 4px;
-  font-family: var(--f-glacier), sans-serif;
-  font-size: 9.5px;
-  letter-spacing: 0.24em;
-  line-height: 2;
-  color: rgb(19 18 16 / 0.45);
-}
-:lang(ka) .dtm__stamp {
-  font-family: var(--dao-f-ka);
-  letter-spacing: 0.06em;
-}
 
 /* ---------- the file bar on a phone ---------- */
 

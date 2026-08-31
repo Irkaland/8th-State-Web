@@ -170,25 +170,29 @@ describe("§24/§26 placement and external behaviour", () => {
     expect(ka.daoRoutes.team.opensExternal.length).toBeGreaterThan(5);
   });
 
+  /**
+   * The three profile actions - portfolio, LinkedIn, resume - are ONE control
+   * system in the approved dossier: sharp bordered rectangles, Glacier, red
+   * label, no fill, no radius, no shadow. They were text CTAs carrying a drawn
+   * pencil rule; that rule belongs to the roster's inline links, and inside a
+   * box it drew a second line under the label. What is asserted is the system
+   * they now share, and that the rule is explicitly retired rather than merely
+   * unused.
+   */
   it("is styled in the editorial CTA language, not a rounded button", () => {
     const css = readSrc("src/app/dao-routes.css");
-    // the LinkedIn action is a peer of the portfolio and shares its rule
-    const rule = css.match(/\.dtm__portfolio,\s*\.dtm__linkedin,\s*\.dtm__jump \{[\s\S]*?\n\}/)![0];
-    expect(rule).toContain("var(--dao-f-ui)");
-    expect(rule).toContain("text-transform: uppercase");
-    expect(rule).not.toContain("border-radius");
-    expect(rule).not.toContain("background:");
-    // the pencil mask is on the rule shared with the secondary jump link...
-    const shared = css.match(
-      /\.dtm__portfolio::after,\s*\.dtm__linkedin::after,\s*\.dtm__jump::after \{[\s\S]*?\n\}/,
+    const rule = css.match(
+      /\.dtm__portfolio,\s*\.dtm__linkedin,\s*\.dtm__resume \{[\s\S]*?\n\}/,
     )![0];
-    expect(shared).toContain("pencil-rule-h.webp");
-    expect(shared).toContain("height: 2px");
-    // ...and the portfolio overrides it to sit drawn, in red, at rest - which is
-    // what makes it read as the primary CTA rather than a hover affordance
-    const drawn = css.match(/\.dtm__portfolio::after,\s*\.dtm__linkedin::after \{[\s\S]*?\n\}/)![0];
-    expect(drawn).toContain("clip-path: inset(0 0 0 0)");
-    expect(drawn).toContain("var(--dao-red)");
+    expect(rule).toContain("text-transform: uppercase");
+    expect(rule).toContain("border: 1px solid");
+    expect(rule).toContain("min-height: 44px");
+    expect(rule).toContain("color: var(--dao-red)");
+    expect(rule).toContain("background: transparent");
+    expect(rule).not.toContain("border-radius");
+    expect(rule).not.toContain("box-shadow");
+    const off = css.match(/\.dtm__portfolio::after,\s*\.dtm__linkedin::after \{[\s\S]*?\n\}/)![0];
+    expect(off).toContain("content: none");
   });
 
   it("has a comfortable touch target on mobile", () => {

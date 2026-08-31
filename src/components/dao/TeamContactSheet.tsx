@@ -9,6 +9,7 @@ import { type Locale, localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
 import { IDENT_ATTR } from "@/lib/session-lifecycle";
 import { Reveal } from "./Reveal";
+import { TeamResume, type ResumeSet } from "./TeamResume";
 
 /** One project a person is credited on, resolved against the real Work archive. */
 export type TeamWorkCredit = {
@@ -60,6 +61,8 @@ export type TeamCard = {
   portfolioUrl?: string;
   /** rendered as LINKEDIN PROFILE beside it, and never also in the links row */
   linkedinUrl?: string;
+  /** the CV, per language, as supplied. Absent = no RESUME control at all. */
+  resume?: ResumeSet;
   /** vimeo / instagram / linkedin / imdb - the professional link row */
   links: { key: string; label: string; href: string }[];
 };
@@ -82,15 +85,23 @@ const GEOMETRY = ["left", "top", "width", "height"];
  */
 const sheetWidth = (): number => {
   const vw = window.innerWidth;
-  return vw <= 720 ? vw - 20 : Math.min(vw * 0.86, 1180);
+  return vw <= 720 ? vw - 20 : Math.min(vw * 0.92, 1180);
 };
 
-const sheetBox = (contentHeight: number): Box => {
+/**
+ * The approved dossier is a FIXED sheet, not a content-sized one: a personnel
+ * file is the same size whoever it is about, and a reader stepping through the
+ * roster should not watch the paper change shape under them. Content scrolls
+ * inside it instead.
+ *
+ * Nothing about it is measured from the content any more, which also removes
+ * the frame of layout reading the old version did on every open.
+ */
+const sheetBox = (): Box => {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const width = sheetWidth();
-  const cap = vw <= 720 ? vh - 40 : Math.min(vh * 0.86, 900);
-  const height = Math.min(contentHeight, cap);
+  const height = vw <= 720 ? vh - 40 : Math.min(vh * 0.9, 860);
   return { left: (vw - width) / 2, top: (vh - height) / 2, width, height };
 };
 
@@ -176,6 +187,28 @@ function Frame({
         )}
       </span>
     </span>
+  );
+}
+
+/**
+ * The dossier's ruled line - drawn, never a border.
+ *
+ * A personnel file is ruled by hand, so the divider under the file bar and the
+ * one above the overview are the same imperfect stroke the rest of the site
+ * uses rather than a 1px CSS edge.
+ */
+function Rule({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 400 4" preserveAspectRatio="none" aria-hidden="true">
+      <path
+        d="M0 2.4 C60 1.5 130 3.1 190 2.1 C260 1.2 330 3 400 2.3"
+        stroke="#131210"
+        strokeWidth="1"
+        fill="none"
+        opacity="0.3"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
   );
 }
 
@@ -390,12 +423,9 @@ export function TeamContactSheet({
     if (phase !== "opening") return;
     let next = 0;
     const id = requestAnimationFrame(() => {
-      // the dossier is pinned to the sheet's width with its height left free, so
-      // this reads the height the profile actually wants
-      const d = sheetRef.current;
-      // ceil: a fractional measurement rounded DOWN leaves the sheet a hair
-      // shorter than its content, which turns a short profile into a scrolling one
-      setTo(sheetBox(d ? Math.ceil(d.getBoundingClientRect().height) : Number.POSITIVE_INFINITY));
+      // the sheet is a fixed size now, so its destination is known without
+      // measuring the profile first
+      setTo(sheetBox());
       next = requestAnimationFrame(() => {
         if (!wantClose.current) setPhase("settling");
       });
@@ -798,13 +828,22 @@ export function TeamContactSheet({
           >
             {/* §01: the ONLY close control, beside prev/next. There is deliberately
               no second one at the foot of the sheet. */}
+            {/* ---- the file bar: the way out on the left, the position in the
+                 roster on the right. Closing IS going back to the sheet, so
+                 that control says so in words rather than as a bare cross. */}
             <div className="dtm__slug">
-              <span className="dtm__no">
-                {up(R.profile)} {String(index + 1).padStart(2, "0")} /{" "}
-                {String(order.length).padStart(2, "0")}
-              </span>
-              <span className="dtm__dept">{up(card.departmentName)}</span>
+              <button
+                type="button"
+                className="dtm__tcta dtm__tcta--back mo-h"
+                onClick={() => close()}
+              >
+                <span aria-hidden="true">&larr;</span> {up(R.backToSheet)}
+              </button>
               <span className="dtm__nav">
+                <span className="dtm__no">
+                  {up(R.personnel)} · {String(index + 1).padStart(2, "0")} /{" "}
+                  {String(order.length).padStart(2, "0")}
+                </span>
                 {/* a wheel has no ends, so neither control is ever disabled -
                     and each is a >=44px target in its own right */}
                 <button type="button" className="dtm__tcta mo-h" onClick={() => step(-1)}>
@@ -813,27 +852,34 @@ export function TeamContactSheet({
                 <button type="button" className="dtm__tcta mo-h" onClick={() => step(1)}>
                   {up(R.nextPerson)} <span aria-hidden="true">&rarr;</span>
                 </button>
-                <button
-                  type="button"
-                  className="dtm__tcta dtm__tcta--close mo-h"
-                  onClick={() => close()}
-                >
-                  {up(R.close)} <span aria-hidden="true">&#10005;</span>
-                </button>
               </span>
             </div>
+            <Rule className="dtm__slugrule" />
 
             {/* ---- header: portrait against identity ---- */}
             <div className="dtm__dtop">
               <div className="dtm__bigframe">
                 <Frame
                   card={card}
-                  sizes="(max-width: 720px) 62vw, 264px"
+                  sizes="(max-width: 720px) 84vw, 40vw"
                   pending={R.portraitPending}
                 />
+                {/* the plate's own caption, as a contact sheet marks a frame */}
+                <span className="dtm__framecap">
+                  <span>
+                    FR. {String(index + 1).padStart(2, "0")} — {up(R.selectedFrame)}
+                  </span>
+                  <span>8TH STATE</span>
+                </span>
               </div>
 
               <div className="dtm__id">
+                {/* the index line: where this file sits in the roster, printed
+                    the way a personnel file is filed */}
+                <span className="dtm__breadcrumb">
+                  {up(R.mastLabel)} / {String(index + 1).padStart(2, "0")} ·{" "}
+                  {up(card.departmentName)} · {up(R.profileIndex)}
+                </span>
                 <h2 id="dtm-file-name" className="dtm__dname mo-a">
                   <span>
                     <NameOrSlot card={card} pending={R.namePending} />
@@ -847,7 +893,12 @@ export function TeamContactSheet({
                 ))}
 
                 {/* §04: the short overview - a concise introduction, not the bio */}
-                {card.shortStatement && <p className="dtm__statement">{card.shortStatement}</p>}
+                {card.shortStatement && (
+                  <>
+                    <Rule className="dtm__idrule" />
+                    <p className="dtm__statement">{card.shortStatement}</p>
+                  </>
+                )}
 
                 {/* §14: a reserved seat says so in one line rather than opening onto
                   a column of empty labelled blocks. */}
@@ -857,7 +908,20 @@ export function TeamContactSheet({
                     Every action here is driven by a URL on the person's own
                     record; nothing is hardcoded, and a person with no URLs
                     renders no row at all rather than an empty one. */}
-                {(card.portfolioUrl || card.linkedinUrl || hasContact) && (
+                {/* The file's closing metadata, above the actions - where the
+                    approved dossier prints it, rather than at the very foot of
+                    the sheet under every block.
+
+                    The design also prints "FULL PROFILE - BIOGRAPHY, PRACTICE
+                    AND CREDITS PUBLISH ONCE THE STUDIO CONFIRMS THEM" here. It
+                    is not shipped, for the reason a previous pass recorded: it
+                    is a note to the studio rather than production copy - and it
+                    reads stranger still on the two people who now carry a
+                    statement, a portfolio and a CV. A seat that genuinely has
+                    nothing already says so, in its own line, above. */}
+                <span className="dtm__filenote">8TH STATE PRODUCTION · {up(R.city)}</span>
+
+                {(card.portfolioUrl || card.linkedinUrl || card.resume || hasContact) && (
                   <span className="dtm__actions">
                     {/* the person's OWN external site. Never /work. */}
                     {card.portfolioUrl && (
@@ -881,6 +945,24 @@ export function TeamContactSheet({
                       >
                         {up(R.viewLinkedin)} <span aria-hidden="true">↗</span>
                       </a>
+                    )}
+                    {/* ONE control, whatever number of editions exist behind it */}
+                    {card.resume && (
+                      <TeamResume
+                        name={card.name ?? R.namePending}
+                        resume={card.resume}
+                        className="dtm__resume"
+                        copy={{
+                          resume: R.resume,
+                          chooseLanguage: R.chooseLanguage,
+                          viewerKicker: R.resume,
+                          close: R.close,
+                          cannotDisplay: R.resumeCannotDisplay,
+                          openInTab: R.resumeOpenInTab,
+                          english: R.resumeEnglish,
+                          spanish: R.resumeSpanish,
+                        }}
+                      />
                     )}
                     {hasContact && (
                       <a className="dtm__jump" href={`#contact-${card.slug}`}>
@@ -1008,13 +1090,6 @@ export function TeamContactSheet({
                 </div>
               </section>
             )}
-
-            {/* The studio stamp closes the sheet. The prototype printed
-                "FULL PROFILE - BIOGRAPHY, PRACTICE AND CREDITS PUBLISH ONCE THE
-                STUDIO CONFIRMS THEM" here; that is a note to the studio rather
-                than approved production copy, so it is not shipped - and
-                nothing is invented to fill the space it leaves. */}
-            <span className="dtm__stamp mo-c">8TH STATE PRODUCTION &middot; {up(R.city)}</span>
 
             {/* ---- §09 CONTACT against the professional links ---- */}
             {hasContact && (

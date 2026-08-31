@@ -356,7 +356,10 @@ describe("the roster is one continuous grid", () => {
     // ...the sections are still built, because the flat order comes from them...
     expect(teamByDepartment().length).toBeGreaterThan(1);
     // ...and the profile still prints it
-    expect(jsx).toContain('<span className="dtm__dept">{up(card.departmentName)}</span>');
+    // the approved dossier prints it in the index line under the file bar,
+    // not as a label beside the roster count
+    expect(jsx).toContain("{up(card.departmentName)}");
+    expect(jsx).toContain('className="dtm__breadcrumb"');
   });
 
   it("hides the sheet's scrollbar without disabling the scroll", () => {
@@ -393,19 +396,22 @@ describe("the profile morphs out of the card that opened it", () => {
     expect(morph).toContain("left: 50%");
     expect(morph).toContain("top: 50%");
     expect(morph).toContain("translate(-50%, -50%)");
-    // large, but bounded on both axes and never full-bleed. The height is a CAP
-    // rather than a fixed size, so a short profile does not open onto a void.
-    expect(morph).toMatch(/^ {2}width: min\(8[2-9]vw/m);
-    expect(morph).toMatch(/^ {2}height: auto;/m);
-    expect(morph).toMatch(/^ {2}max-height: min\(8[4-9]vh/m);
+    // Large, bounded on both axes, never full-bleed - and now a FIXED size on
+    // both. The approved personnel dossier is the same sheet whoever it is
+    // about, so the height is no longer a cap over measured content; the
+    // content scrolls inside it instead. sheetBox() in the component has to
+    // resolve to the same numbers, or the morph lands somewhere else.
+    expect(morph).toMatch(/^ {2}width: min\(92vw, 1180px\);/m);
+    expect(morph).toMatch(/^ {2}height: min\(90vh, 860px\);/m);
+    expect(morph).not.toMatch(/^ {2}height: auto;/m);
     // the sheet scrolls itself inside that cap
     const doss = css.match(/^\.dtm__dossier \{[\s\S]*?\n\}/m)![0];
     expect(doss).toContain("overflow-y: auto");
     expect(doss).toContain("min-height: 0");
     // and JS resolves the same rest box, or dropping the inline geometry at the
     // end of the travel would jump
-    expect(jsx).toContain("Math.min(vw * 0.86, 1180)");
-    expect(jsx).toContain("Math.min(vh * 0.86, 900)");
+    expect(jsx).toContain("Math.min(vw * 0.92, 1180)");
+    expect(jsx).toContain("Math.min(vh * 0.9, 860)");
   });
 
   it("measures the clicked card and animates from that geometry", () => {
@@ -693,7 +699,10 @@ describe("§01 there is exactly one close control", () => {
 
   it("renders one close, in the top navigation only", () => {
     expect((jsx.match(/onClick=\{\(\) => close\(\)\}/g) || []).length).toBe(1);
-    expect(jsx).toContain("dtm__tcta--close");
+    // still exactly one way out of the sheet - the approved dossier NAMES it
+    // ("BACK TO THE SHEET") instead of marking it with a bare cross
+    expect(jsx).toContain("dtm__tcta--back");
+    expect(jsx).not.toContain("dtm__tcta--close");
   });
 
   it("has no bottom navigation row left, in markup or CSS", () => {
@@ -716,16 +725,25 @@ describe("§02 the portrait footprint is reduced, not the picture inside it", ()
     expect(css).toMatch(/\.dtm__grid \.dtm__frame \{\s*max-width: 286px;/);
   });
 
-  it("reduces the layout footprint of the profile portrait", () => {
+  /**
+   * The PROFILE plate is no longer held to a fixed 264px rail. The approved
+   * dossier gives it 4 of the sheet's 10 columns - deliberately larger than the
+   * rail this section once reduced it to - so what is asserted here is the
+   * approved split rather than the old cap. The ROSTER reduction is untouched
+   * by that change and still stands, above and below.
+   */
+  it("gives the profile portrait the approved share of the sheet", () => {
     const top = css.match(/^\.dtm__dtop \{[\s\S]*?\n\}/m)![0];
-    expect(top).toContain("264px minmax(0, 1fr)");
+    expect(top).toContain("minmax(0, 4fr) minmax(0, 6fr)");
+    expect(top).not.toContain("264px");
     expect(top).not.toContain("392px");
   });
 
-  it("reduces the mobile roster and profile portraits too", () => {
+  it("reduces the mobile roster, and lets the profile plate take the measure", () => {
     const m720 = css.slice(css.indexOf("@media (max-width: 720px)"));
     expect(m720).toContain("80px minmax(0, 1fr)");
-    expect(m720).toMatch(/\.dtm__bigframe \{\s*max-width: 214px;/);
+    // the 214px cap goes with the rail: on a phone the plate IS the page
+    expect(m720).toMatch(/\.dtm__bigframe \{\s*max-width: none;/);
   });
 
   it("keeps the frame thin and complete after the reduction", () => {

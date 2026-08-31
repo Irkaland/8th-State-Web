@@ -198,7 +198,7 @@ test.describe("the representative profiles read correctly", () => {
     expect(await page.locator(".dtm__statement").innerText()).toMatch(/[Ⴀ-ჿ]/);
     // scoped to the file bar: the approved design also prints the department
     // on every roster card, so the bare class is no longer unique to the profile
-    expect(await page.locator(".dtm__slug .dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    expect(await page.locator(".dtm__breadcrumb").innerText()).toMatch(/[Ⴀ-ჿ]/);
   });
 });
 
@@ -419,6 +419,6 @@ test.describe("the keyboard lifecycle survives the real roster", () => {
     await expect(heading).toHaveCount(1);
     expect(await heading.innerText()).toContain("Keto Kiladze");
     // and the department is still on the sheet, in its own line
-    expect(await page.locator(".dtm__slug .dtm__dept").innerText()).toMatch(/STUDIO SUPPORT/i);
+    expect(await page.locator(".dtm__breadcrumb").innerText()).toMatch(/STUDIO SUPPORT/i);
   });
 });

@@ -44,7 +44,7 @@ for (const [label, base] of [
       await settle(page);
       // the profile is open once the ident has left the stage
       await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-      await expect(page.locator(".dtm__slug .dtm__dept")).toContainText(/DIRECTION|რეჟისურა/i);
+      await expect(page.locator(".dtm__breadcrumb")).toContainText(/DIRECTION|რეჟისურა/i);
       expect(await person(page)).toBe("beka-siradze");
       expect(new URL(page.url()).pathname).toBe(`${base}/team`);
     });
@@ -58,7 +58,7 @@ for (const [label, base] of [
       expect(await person(page), "query dropped by the reload").toBe("beka-siradze");
       await settle(page);
       await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-      await expect(page.locator(".dtm__slug .dtm__dept")).toContainText(/DIRECTION|რეჟისურა/i);
+      await expect(page.locator(".dtm__breadcrumb")).toContainText(/DIRECTION|რეჟისურა/i);
     });
 
     test(`${label}: skipping the ident with Escape does NOT close the profile`, async ({

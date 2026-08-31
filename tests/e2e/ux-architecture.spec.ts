@@ -434,7 +434,7 @@ test.describe("§08 one exploration session, one history entry", () => {
     const slug = await card.getAttribute("data-dtm-card");
     await card.click();
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-    await page.locator(".dtm__tcta--close").click();
+    await page.locator(".dtm__tcta--back").click();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     await expect
       .poll(() => page.evaluate(() => document.activeElement?.getAttribute("data-dtm-card")))
@@ -444,7 +444,7 @@ test.describe("§08 one exploration session, one history entry", () => {
   test("a deep-linked file closes to /team", async ({ page }) => {
     await gotoRoute(page, "/team?person=beka-siradze");
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-    await page.locator(".dtm__tcta--close").click();
+    await page.locator(".dtm__tcta--back").click();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     expect(new URL(page.url()).search).toBe("");
   });

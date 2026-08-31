@@ -178,6 +178,20 @@ export const teamMemberSchema = z.object({
   languages: z.array(localizedTextSchema).default([]),
   location: localizedTextSchema.optional(),
   portfolioUrl: z.string().url().optional(),
+  /**
+   * The person's CV, as the studio supplied it, in each language it exists in.
+   *
+   * Paths under /team/resumes, never filenames spelled at a call site: the
+   * RESUME control reads this object, so a person with no entry renders no
+   * control and a language the studio has not supplied is simply not offered.
+   * The documents themselves are the originals, unedited.
+   */
+  resume: z
+    .object({
+      en: z.string().startsWith("/team/resumes/").optional(),
+      es: z.string().startsWith("/team/resumes/").optional(),
+    })
+    .optional(),
   instagramUrl: z.string().url().optional(),
   vimeoUrl: z.string().url().optional(),
   linkedinUrl: z.string().url().optional(),

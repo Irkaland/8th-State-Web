@@ -255,7 +255,7 @@ test.describe("WebKit: the Team journeys", () => {
     expect(await page.evaluate(() => history.length), "stepping stacked history").toBe(h);
 
     // close returns to the roster and hands focus back to a card
-    await page.locator(".dtm__tcta--close").tap();
+    await page.locator(".dtm__tcta--back").tap();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     expect(new URL(page.url()).pathname).toMatch(/\/team$/);
   });
@@ -271,7 +271,7 @@ test.describe("WebKit: the Team journeys", () => {
     for (const h of controls) expect(h).toBeGreaterThanOrEqual(44);
     expect(await overflow(page)).toBeLessThanOrEqual(1);
 
-    await page.locator(".dtm__tcta--close").tap();
+    await page.locator(".dtm__tcta--back").tap();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     expect(new URL(page.url()).search).toBe("");
   });

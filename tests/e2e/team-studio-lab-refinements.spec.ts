@@ -194,7 +194,9 @@ test.describe("Personnel file on a phone: the header holds", () => {
       // it starts at the very top of the scrollport, so there is no band above
       // it for content to ride up into
       expect(top.offsetInScrollport).toBe(0);
-      expect(top.controls, "PREVIOUS / NEXT / CLOSE").toHaveLength(3);
+      // BACK TO THE SHEET / PREVIOUS / NEXT PERSON - the approved dossier
+      // names its way out instead of marking it with a cross
+      expect(top.controls, "BACK / PREVIOUS / NEXT").toHaveLength(3);
       for (const h of top.controls) expect(h).toBeGreaterThanOrEqual(44);
       expect(top.overflowX).toBeLessThanOrEqual(1);
 
@@ -216,8 +218,8 @@ test.describe("Personnel file on a phone: the header holds", () => {
       ).toEqual([]);
       expect(top.hits, "something was over the header before scrolling").toEqual([]);
       // the controls are still usable
-      await expect(page.locator(".dtm__tcta--close")).toBeVisible();
-      await page.locator(".dtm__tcta--close").click();
+      await expect(page.locator(".dtm__tcta--back")).toBeVisible();
+      await page.locator(".dtm__tcta--back").click();
       await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     });
   }

@@ -138,6 +138,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
         phone: p.phone,
         portfolioUrl: p.portfolioUrl,
         linkedinUrl: p.linkedinUrl,
+        resume: p.resume,
         links,
       };
     }),

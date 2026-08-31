@@ -357,10 +357,10 @@ test.describe("the roster is one continuous contact sheet", () => {
     const card = await park(page, 4);
     await card.click();
     await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
-    // the fifth seat is in Direction, and its profile says so. Scoped to the
-    // file bar: the approved design also prints the department on every roster
-    // card, so the bare class is no longer unique to the profile.
-    await expect(page.locator(".dtm__slug .dtm__dept")).toContainText("DIRECTION");
+    // the fifth seat is in Direction, and its profile says so. The approved
+    // dossier prints that in the index line under the file bar - TEAM / nn ·
+    // DEPARTMENT · PROFILE / PERSONNEL - rather than beside the roster count.
+    await expect(page.locator(".dtm__breadcrumb")).toContainText("DIRECTION");
   });
 
   test("states the page over two lines, not as a Meet the Team banner", async ({ page }) => {
@@ -782,7 +782,7 @@ test.describe("§08/§11 the expanded profile", () => {
   test("deep links straight into a person", async ({ page }) => {
     await gotoRoute(page, "/team?person=beka-siradze");
     await expect(page.locator(".dtm__dossier")).toHaveCount(1);
-    await expect(page.locator(".dtm__slug .dtm__dept")).toContainText("DIRECTION");
+    await expect(page.locator(".dtm__breadcrumb")).toContainText("DIRECTION");
   });
 
   test("shows only the blocks that have content", async ({ page }) => {
@@ -889,8 +889,10 @@ test.describe("§12 mobile", () => {
         // nothing pushed sideways, and the roster did not move underneath
         expect(m.over, "@" + width + " overflow").toBeLessThanOrEqual(0);
         expect(m.y, "@" + width + " scroll held").toBe(at);
-        // and closing puts the page back exactly as it was
-        await page.locator(".dtm__dossier .dtm__tcta").last().click();
+        // and closing puts the page back exactly as it was. The way out is the
+        // named control - the approved bar ends on NEXT PERSON, so the last
+        // button in it steps rather than closes.
+        await page.locator(".dtm__tcta--back").click();
         await expect(page.locator(".dtm__stage")).toHaveCount(0);
         expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(at);
       },
@@ -959,7 +961,7 @@ test.describe("§13 EN and KA", () => {
     await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
     // and the department is Georgian in both places it appears - the file bar
     // and the roster card's own index row
-    expect(await page.locator(".dtm__slug .dtm__dept").innerText()).toMatch(/[Ⴀ-ჿ]/);
+    expect(await page.locator(".dtm__breadcrumb").innerText()).toMatch(/[Ⴀ-ჿ]/);
     // NOT the first card - its seat is deliberately visibility:hidden while its
     // own profile is on the stage, and innerText reports nothing for it
     expect(await page.locator(".dtm__grid .dtm__dept").nth(1).innerText()).toMatch(/[Ⴀ-ჿ]/);
@@ -1034,8 +1036,11 @@ test.describe("§01 exactly one close control", () => {
     const controls = await page
       .locator(".dtm__dossier .dtm__tcta")
       .evaluateAll((els) => els.map((e) => (e as HTMLElement).innerText.trim()));
+    // BACK TO THE SHEET, PREVIOUS, NEXT PERSON. The approved dossier names
+    // its way out rather than marking it with a cross, so what has to be
+    // unique is the control that leaves - not the word "close".
     expect(controls).toHaveLength(3);
-    expect(controls.filter((c) => /CLOSE/i.test(c))).toHaveLength(1);
+    expect(await page.locator(".dtm__tcta--back").count()).toBe(1);
     // and nothing resembling a second nav row at the foot
     expect(await page.locator(".dtm__dfoot").count()).toBe(0);
   });
@@ -1044,7 +1049,7 @@ test.describe("§01 exactly one close control", () => {
     await page.setViewportSize({ width: 375, height: 900 });
     await gotoRoute(page, "/team");
     await openFirst(page);
-    const close = page.locator(".dtm__dossier .dtm__tcta").last();
+    const close = page.locator(".dtm__tcta--back");
     await expect(close).toBeVisible();
     const h = await close.evaluate((el) => el.getBoundingClientRect().height);
     expect(h).toBeGreaterThanOrEqual(44);
@@ -1053,34 +1058,35 @@ test.describe("§01 exactly one close control", () => {
   });
 });
 
-test.describe("§02 the portrait footprint is reduced", () => {
+/**
+ * §02 THE PORTRAIT FOOTPRINT.
+ *
+ * The per-width shrink assertions are RETIRED, not relaxed. They measured the
+ * profile portrait against a pre-refinement build and required it to be about
+ * two thirds of that size; the approved personnel dossier deliberately gives
+ * the plate 4 of the sheet's 10 columns, which is larger again. Holding the
+ * old ratio would mean refusing the design this pass was asked to build.
+ *
+ * The ROSTER portrait is unaffected by that change, so its reduction is still
+ * measured here. The profile plate's share is asserted in team-resume.spec.ts,
+ * against the proportion the approved design actually specifies.
+ */
+test.describe("§02 the portrait footprint", () => {
   /** measured on the pre-refinement build, at the same viewports */
-  const BEFORE = {
-    1440: { roster: 438, profile: 395 },
-    1024: { roster: 298, profile: 395 },
-    390: { roster: 119, profile: 320 },
-  } as const;
+  const BEFORE = { 1440: 438, 1024: 298, 390: 119 } as const;
 
   for (const width of [1440, 1024, 390] as const) {
-    test(`is about two thirds of its former size at ${width}`, async ({ page }) => {
+    test(`the roster portrait is about two thirds of its former size at ${width}`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width, height: 1000 });
       await gotoRoute(page, "/team");
       const roster = await page
         .locator(".dtm__frame")
         .first()
         .evaluate((el) => Math.round(el.getBoundingClientRect().width));
-      await openFirst(page);
-      await page.waitForTimeout(300);
-      const profile = await page
-        .locator(".dtm__bigframe .dtm__frame")
-        .evaluate((el) => Math.round(el.getBoundingClientRect().width));
-
-      const b = BEFORE[width];
-      // the target is 65-70%; allow a little slack for grid rounding per width
-      expect(roster / b.roster, `roster @${width}`).toBeLessThan(0.78);
-      expect(roster / b.roster, `roster @${width}`).toBeGreaterThan(0.55);
-      expect(profile / b.profile, `profile @${width}`).toBeLessThan(0.78);
-      expect(profile / b.profile, `profile @${width}`).toBeGreaterThan(0.55);
+      expect(roster / BEFORE[width], `roster @${width}`).toBeLessThan(0.78);
+      expect(roster / BEFORE[width], `roster @${width}`).toBeGreaterThan(0.55);
     });
   }
 
@@ -1141,9 +1147,16 @@ test.describe("§03-§12 the profile collapses and expands with its content", ()
     // the sheet still stays compact rather than opening onto a long column
     expect(m.awaiting).toBe(0);
     await expect(page.locator(".dtm__statement")).toHaveCount(1);
-    expect(m.content).toBeLessThan(620);
-    // and a profile this short never needs scrolling to read
-    expect(m.scrolls).toBe(false);
+    // The CONTENT stays short - that is what "no empty blocks" means, and it is
+    // still measured. What is no longer asserted is that the SHEET is short:
+    // the approved dossier is a fixed size whoever it is about, so a thin
+    // profile now sits in a full sheet with air under it rather than shrinking
+    // the paper. The old measurement conflated the two.
+    // 700, re-measured against the approved dossier: an identity-only profile
+    // is 652 tall in it - the index line, the plate caption and the two ruled
+    // dividers are new furniture - and one labelled block would add ~90px and
+    // breach this. The old 620 was calibrated against the previous sheet.
+    expect(m.content).toBeLessThan(700);
   });
 });
 
@@ -1226,18 +1239,20 @@ test.describe("§23-§29 the external portfolio CTA", () => {
   test("its absence does not disturb close, previous or next", async ({ page }) => {
     await gotoRoute(page, "/team");
     await openFirst(page);
-    const controls = page.locator(".dtm__dossier .dtm__tcta");
-    await expect(controls).toHaveCount(3);
+    await expect(page.locator(".dtm__dossier .dtm__tcta")).toHaveCount(3);
+    // Addressed by name, not by position: the approved bar leads with BACK TO
+    // THE SHEET, so nth(1) is PREVIOUS and the last control is NEXT PERSON.
+    const nav = page.locator(".dtm__nav .dtm__tcta");
     // next still steps
-    await controls.nth(1).click();
+    await nav.nth(1).click();
     await page.waitForTimeout(400);
     expect(new URL(page.url()).searchParams.get("person")).toBe("beka-jokharidze");
     // previous still steps back
-    await page.locator(".dtm__dossier .dtm__tcta").first().click();
+    await nav.nth(0).click();
     await page.waitForTimeout(400);
     expect(new URL(page.url()).searchParams.get("person")).toBe("mariam-kandiashvili");
-    // close still closes and restores focus
-    await page.locator(".dtm__dossier .dtm__tcta").last().click();
+    // and the way out still closes and restores focus
+    await page.locator(".dtm__tcta--back").click();
     await expect(page.locator(".dtm__dossier")).toHaveCount(0);
     await expect(page.locator(".dtm__person").first()).toBeFocused();
   });
