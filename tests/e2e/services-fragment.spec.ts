@@ -119,6 +119,30 @@ test.describe("direct fragment entry into the Services catalogue", () => {
     }
   });
 
+  test("KA: the deepest capability, under the Georgian prefix", async ({ page }) => {
+    // the anchor furthest down the catalogue is the one the old implementation
+    // missed, so it is asserted in both languages rather than only in English
+    await hardLoad(page, "/ka/services#creative-direction");
+    const p = await settled(page, "creative-direction");
+    expect(p.scrollY).toBeGreaterThan(200);
+    expect(Math.abs(p.off)).toBeLessThanOrEqual(TOLERANCE);
+    expect(await page.evaluate(() => document.documentElement.lang)).toBe("ka");
+  });
+
+  test("KA: every capability the dossier links to", async ({ page }) => {
+    for (const id of [
+      "film-video-production",
+      "production-design",
+      "photography",
+      "creative-direction",
+    ]) {
+      await hardLoad(page, `/ka/services#${id}`);
+      const p = await settled(page, id);
+      expect(p.exists, `#${id} is missing on /ka`).toBe(true);
+      expect(Math.abs(p.off), `#${id} did not land on /ka`).toBeLessThanOrEqual(TOLERANCE);
+    }
+  });
+
   test("no hash means the ordinary top of the page", async ({ page }) => {
     await hardLoad(page, "/services");
     await page.waitForTimeout(1200);
@@ -171,6 +195,28 @@ test.describe("in-app anchor navigation is unchanged", () => {
     await page.waitForURL(/\/services#photography$/);
     const p = await settled(page, "photography");
     expect(Math.abs(p.off)).toBeLessThanOrEqual(TOLERANCE);
+  });
+
+  test("every WHAT WE MAKE row that names a capability lands on it", async ({ page }) => {
+    // the dossier's five rows: four carry an anchor, the fifth routes to the
+    // catalogue itself. Each is walked from the home page the way a reader does.
+    await gotoRoute(page, "/");
+    const hrefs = await page
+      .locator(".dao-wwm__row")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    const anchored = hrefs.filter((h) => h.includes("#"));
+    expect(anchored.length, "WHAT WE MAKE lost its capability links").toBe(4);
+
+    for (const href of anchored) {
+      const id = href.split("#")[1];
+      await gotoRoute(page, "/");
+      const row = page.locator(`.dao-wwm__row[href="${href}"]`);
+      await row.scrollIntoViewIfNeeded();
+      await row.click();
+      await page.waitForURL(new RegExp(`/services#${id}$`));
+      const p = await settled(page, id);
+      expect(Math.abs(p.off), `${href} did not land`).toBeLessThanOrEqual(TOLERANCE);
+    }
   });
 
   test("a project's discipline link lands on its capability", async ({ page }) => {
