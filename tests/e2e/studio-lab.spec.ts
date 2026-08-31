@@ -79,11 +79,19 @@ test.describe("the Studio Lab page is the approved composition", () => {
     });
   }
 
+  /**
+   * The guarantee is unchanged - four courses, each opening its own sheet -
+   * but it is now carried by the course NAME rather than by the whole row.
+   * The row gained a second destination (the registration file), and a control
+   * inside a link is unreachable by keyboard and is announced as part of the
+   * link's own name, so the row became a container holding two real elements.
+   */
   test("lists the four courses, each linking to its own sheet", async ({ page }) => {
     await gotoRoute(page, "/studio-lab");
-    const rows = page.locator(".dsl__prow");
-    await expect(rows).toHaveCount(4);
-    const hrefs = await rows.evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+    await expect(page.locator(".dsl__prow")).toHaveCount(4);
+    const links = page.locator(".dsl__prtitle");
+    await expect(links).toHaveCount(4);
+    const hrefs = await links.evaluateAll((els) => els.map((e) => e.getAttribute("href")));
     expect(hrefs).toEqual(COURSES.map((c) => `/studio-lab/${c}`));
   });
 
@@ -273,9 +281,9 @@ test.describe("the Lab stays reachable and legible", () => {
     expect(svgHidden).toBe(0);
   });
 
-  test("keyboard reaches a discipline row and shows focus", async ({ page }) => {
+  test("keyboard reaches a course row and shows focus", async ({ page }) => {
     await gotoRoute(page, "/studio-lab");
-    const row = page.locator(".dsl__prow").first();
+    const row = page.locator(".dsl__prtitle").first();
     await row.focus();
     await expect(row).toBeFocused();
     const outline = await row.evaluate((el) => {
@@ -287,7 +295,7 @@ test.describe("the Lab stays reachable and legible", () => {
 
   test("Enter on a course row opens that course", async ({ page }) => {
     await gotoRoute(page, "/studio-lab");
-    await page.locator(".dsl__prow").first().focus();
+    await page.locator(".dsl__prtitle").first().focus();
     await page.keyboard.press("Enter");
     await page.waitForURL(/\/studio-lab\/photography/);
     await expect(page.locator(".dsc__title")).toContainText("Photography");

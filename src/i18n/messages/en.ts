@@ -547,19 +547,6 @@ const en = {
       registerTitle: "Register",
       registerCopy:
         "Choose a course and open the registration sheet. The Lab reads every application and responds personally.",
-      sheetAsks: "The sheet asks for",
-      registerFields: [
-        "Full name",
-        "Age",
-        "Phone",
-        "Email",
-        "Desired course",
-        "Desired format",
-        "Experience level",
-        "Your goal, briefly",
-        "Portfolio - when applicable",
-      ],
-      paymentNote: "Payment details follow after confirmation",
       // §11 footer
       index: ["Field notes", "Archive", "Research", "Workshops", "Experiments", "Education"],
       footerMark: "8th State Production - Studio Lab",

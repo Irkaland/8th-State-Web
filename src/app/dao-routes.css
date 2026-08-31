@@ -2569,14 +2569,30 @@ html:has(.dsc) {
   color: rgb(19 18 16 / 0.75);
 }
 
+/* Now a real <button> rather than a cell inside the row s link, so it needs
+   the things the row used to provide: its own touch target, and a reset of the
+   control defaults a button brings with it. The composition is unchanged. */
 .dsl__prreg {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   justify-self: end;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.26em;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.dsl__prreg:focus-visible {
+  outline: 2px solid var(--dao-ink);
+  outline-offset: 3px;
 }
 
 .dsl__prreg .dsl-arrow {
@@ -3053,6 +3069,474 @@ html:has(.dsc) {
 .dsl__footlink:hover,
 .dsl__footlink:focus-visible {
   color: var(--dao-ink);
+}
+
+/* ============================================================
+   THE STUDIO LAB REGISTRATION FILE (.dlr)
+   ============================================================
+   The approved design opens the registration as a large editorial FILE over
+   the page rather than routing to a form: the reader keeps their place in the
+   catalogue, and the file is already turned to the course they asked from.
+
+   It is the Lab's own material - the olive ground, the paper stock, the
+   serpent in the corner - so it reads as another sheet out of the same
+   workbook and not as a modal borrowed from somewhere else. Sharp geometry
+   only: no rounded panel, no shadowed card, no dashboard chrome. */
+
+.dlr__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgb(19 18 16 / 0.62);
+}
+
+/* the scroll container: the file itself is centred in it and can grow taller
+   than the viewport on a phone without trapping the reader */
+.dlr__sheetwrap {
+  position: fixed;
+  inset: 0;
+  z-index: 61;
+  display: flex;
+  overflow: auto;
+  scrollbar-width: none;
+  padding: clamp(10px, 3vh, 40px) clamp(8px, 2vw, 24px);
+  pointer-events: none;
+}
+
+.dlr__sheetwrap::-webkit-scrollbar {
+  display: none;
+}
+
+.dlr__sheet {
+  position: relative;
+  isolation: isolate;
+  margin: auto;
+  width: min(1240px, 100%);
+  background: var(--dao-green);
+  color: var(--dao-ink);
+  box-shadow: 0 30px 80px rgb(0 0 0 / 0.45);
+  pointer-events: auto;
+}
+
+.dlr__sheet:focus-visible {
+  outline: 2px solid var(--dao-ink);
+  outline-offset: -4px;
+}
+
+/* the same stock every other Lab surface is printed on */
+.dlr__grain,
+.dlr__weave,
+.dlr__serpent {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dlr__grain {
+  background: url("/assets/textures/paper-grain-strong.webp");
+  background-size: 352px;
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+}
+
+.dlr__weave {
+  background: url("/assets/textures/canvas-weave.webp");
+  background-size: 512px;
+  opacity: 0.12;
+  mix-blend-mode: overlay;
+}
+
+.dlr__serpent {
+  inset: auto auto -30px clamp(-60px, -3vw, -20px);
+  width: clamp(260px, 30vw, 420px);
+  aspect-ratio: 1;
+  background: url("/assets/graphics/serpent-long.webp") no-repeat left bottom / contain;
+  opacity: 0.14;
+  transform: rotate(-6deg);
+}
+
+.dlr__mast {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(14px, 2.2vh, 22px) clamp(18px, 2.6vw, 36px);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  border-bottom: 1px solid rgb(19 18 16 / 0.5);
+}
+
+.dlr__mark {
+  color: var(--dao-red);
+}
+
+.dlr__close {
+  background: none;
+  border: 1px solid rgb(19 18 16 / 0.55);
+  color: var(--dao-ink);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  padding: 12px 18px;
+  cursor: pointer;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.dlr__close:hover,
+.dlr__close:focus-visible {
+  background: rgb(19 18 16 / 0.08);
+}
+
+.dlr__body {
+  position: relative;
+  display: flex;
+  gap: clamp(24px, 3.4vw, 54px);
+  flex-wrap: wrap;
+  padding: clamp(16px, 2.4vh, 24px) clamp(18px, 2.6vw, 36px) clamp(20px, 3vh, 30px);
+}
+
+.dlr__side {
+  flex: 4;
+  min-width: min(100%, 260px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vh, 18px);
+}
+
+.dlr__main {
+  flex: 6;
+  min-width: min(100%, 300px);
+}
+
+.dlr__eyebrow {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--dao-red);
+}
+
+.dlr__course {
+  font-family: var(--dao-f-display);
+  font-size: clamp(26px, 3vw, 44px);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+:lang(ka) .dlr__course {
+  font-family: var(--dao-f-ka-display);
+}
+
+.dlr__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  line-height: 2;
+  color: rgb(19 18 16 / 0.8);
+}
+
+.dlr__meta .is-tbd {
+  color: rgb(19 18 16 / 0.45);
+}
+
+.dlr__desk {
+  margin-top: auto;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  line-height: 2;
+  color: rgb(19 18 16 / 0.55);
+}
+
+.dlr__form,
+.dlr__done {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2vh, 20px);
+}
+
+.dlr__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: clamp(12px, 1.8vh, 18px) 26px;
+}
+
+.dlr__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dlr__label {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  color: rgb(19 18 16 / 0.7);
+  padding: 0;
+}
+
+:lang(ka) .dlr__label,
+:lang(ka) .dlr__eyebrow,
+:lang(ka) .dlr__meta,
+:lang(ka) .dlr__desk,
+:lang(ka) .dlr__mast {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+/* the ruled line a form is written on, not a boxed input */
+.dlr__input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgb(19 18 16 / 0.6);
+  color: var(--dao-ink);
+  font-family: var(--dao-f-ui);
+  font-size: 15px;
+  padding: 8px 2px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  border-radius: 0;
+}
+
+.dlr__input:focus-visible {
+  outline: 2px solid var(--dao-ink);
+  outline-offset: 2px;
+}
+
+.dlr__textarea {
+  border: 1px solid rgb(19 18 16 / 0.45);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px;
+  resize: vertical;
+}
+
+.dlr__input::placeholder {
+  color: rgb(19 18 16 / 0.62);
+  opacity: 1;
+}
+
+.dlr__choices {
+  display: flex;
+  gap: clamp(20px, 3vw, 48px);
+  flex-wrap: wrap;
+}
+
+.dlr__choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.dlr__opts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* a real radio, dressed as the approved chip: the input carries the semantics
+   and the label carries the design, so the row is a radio group to a screen
+   reader and a row of stamps to everyone else */
+.dlr__opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 1px solid rgb(19 18 16 / 0.5);
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  cursor: pointer;
+  transition:
+    background 200ms var(--dao-ease-micro),
+    color 200ms var(--dao-ease-micro);
+}
+
+:lang(ka) .dlr__opt {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.06em;
+}
+
+.dlr__opt input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dlr__opt.is-on {
+  background: var(--dao-red);
+  border-color: var(--dao-red);
+  color: var(--dao-paper);
+}
+
+.dlr__opt:has(input:focus-visible) {
+  outline: 2px solid var(--dao-ink);
+  outline-offset: 2px;
+}
+
+.dlr__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 28px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgb(19 18 16 / 0.3);
+  padding-top: clamp(14px, 2vh, 18px);
+}
+
+.dlr__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1;
+  min-width: min(100%, 300px);
+  cursor: pointer;
+}
+
+.dlr__check {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  accent-color: var(--dao-red);
+}
+
+.dlr__consenttext {
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgb(19 18 16 / 0.85);
+  max-width: 52ch;
+}
+
+.dlr__submit {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--dao-red);
+  border: none;
+  color: var(--dao-paper);
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  padding: 16px 26px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+:lang(ka) .dlr__submit {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dlr__submit svg {
+  color: var(--dao-paper);
+}
+
+.dlr__error {
+  margin: 0;
+  border: 1px solid var(--dao-red);
+  padding: 14px 16px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 1.9;
+  color: #a3301c;
+}
+
+:lang(ka) .dlr__error {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.05em;
+}
+
+.dlr__done {
+  gap: 22px;
+  padding-top: 6px;
+}
+
+.dlr__donetitle {
+  font-family: var(--dao-f-display);
+  font-size: clamp(30px, 3.4vw, 50px);
+  line-height: 1;
+}
+
+:lang(ka) .dlr__donetitle {
+  font-family: var(--dao-f-ka-display);
+}
+
+.dlr__donetitle:focus-visible {
+  outline: 2px solid var(--dao-ink);
+  outline-offset: 4px;
+}
+
+.dlr__donecopy {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: rgb(19 18 16 / 0.9);
+  max-width: 46ch;
+}
+
+.dlr__back {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid rgb(19 18 16 / 0.7);
+  color: var(--dao-ink);
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.28em;
+  padding: 15px 24px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+:lang(ka) .dlr__back {
+  font-family: var(--dao-f-ka);
+  letter-spacing: 0.08em;
+}
+
+.dlr__back:hover,
+.dlr__back:focus-visible {
+  background: rgb(19 18 16 / 0.08);
+}
+
+/* the file fills the phone: at this width a centred sheet with air around it
+   wastes the only space the form has */
+@media (max-width: 560px) {
+  .dlr__sheetwrap {
+    padding: 0;
+  }
+
+  .dlr__sheet {
+    min-height: 100%;
+    width: 100%;
+  }
+
+  .dlr__foot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dlr__submit {
+    justify-content: center;
+  }
 }
 
 /* ============================================================
