@@ -604,6 +604,15 @@ test.describe("§08/§11 the expanded profile", () => {
       const r = document.querySelector(".dtm__morph")!.getBoundingClientRect();
       return { w: Math.round(r.width), h: Math.round(r.height) };
     });
+    // the tallest roster card - the size the sheet must never shrink back to
+    const cardH = await page.evaluate(() =>
+      Math.max(
+        ...[...document.querySelectorAll(".dtm__person")].map((el) =>
+          Math.round(el.getBoundingClientRect().height),
+        ),
+      ),
+    );
+
     await page.locator(".dtm__nav .dtm__tcta").nth(1).click();
     // sampled immediately: the sheet must not shrink towards a card at any point
     for (let i = 0; i < 6; i++) {
@@ -620,7 +629,12 @@ test.describe("§08/§11 the expanded profile", () => {
       expect(now, "sample " + i).not.toBeNull();
       expect(now!.phase, "sample " + i).toBe("open");
       expect(now!.w, "sample " + i).toBe(before.w);
-      expect(now!.h, "sample " + i).toBe(before.h);
+      // The sheet is sized by its content, and two people do not carry the same
+      // content - one may have a portfolio action the other does not - so the
+      // height legitimately differs between them. What this guards is the bug
+      // it was written for: the sheet snapping back towards a roster card
+      // mid-step. It stays open, at full width, and far above card height.
+      expect(now!.h, "sample " + i).toBeGreaterThan(cardH);
       await page.waitForTimeout(60);
     }
   });
@@ -1090,8 +1104,11 @@ test.describe("§02 the portrait footprint is reduced", () => {
 test.describe("§03-§12 the profile collapses and expands with its content", () => {
   test("a reserved seat shows no empty blocks and stays short", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await gotoRoute(page, "/team");
-    await openFirst(page);
+    // Deep-linked at a person with nothing external rather than at the first
+    // card: the roster now opens on a co-founder who HAS a portfolio, and this
+    // test is about the profile that carries no confirmed blocks at all.
+    await gotoRoute(page, "/team?person=keto-kiladze");
+    await expect(page.locator(".dtm__dossier")).toHaveCount(1);
     // the sheet must have SETTLED before it is measured: mid-travel the dossier
     // is deliberately larger than the box clipping it
     await expect(page.locator('.dtm__stage[data-dtm-phase="open"]')).toHaveCount(1);
@@ -1134,27 +1151,77 @@ test.describe("§03-§12 the profile collapses and expands with its content", ()
 
 test.describe("§23-§29 the external portfolio CTA", () => {
   /**
-   * The site's data carries no confirmed portfolio URL, and must not gain a fake
-   * one, so what is asserted here is the ABSENT branch against real data plus the
-   * non-interference contract. The present branch is rendered and asserted in
-   * tests/unit/team-portfolio-cta.test.ts, which builds a synthetic card.
+   * The studio has now supplied two real portfolio URLs - the two co-founders -
+   * so BOTH branches are asserted against real data: the CTA is present, and
+   * correct, for the two who have a site, and entirely absent for everyone who
+   * does not. Nobody else gains one, and no URL is written into the UI.
    */
-  for (const [label, route] of [
-    ["EN", "/team"],
-    ["KA", "/ka/team"],
+  const WITH_PORTFOLIO: Record<string, string> = {
+    "mariam-kandiashvili": "https://www.mariamkandiashvili.com",
+    "beka-jokharidze": "https://www.bekassio.com/",
+  };
+
+  for (const [label, prefix] of [
+    ["EN", ""],
+    ["KA", "/ka"],
   ] as const) {
-    test(`renders nothing at all when no portfolio exists (${label})`, async ({ page }) => {
-      await gotoRoute(page, route);
-      await openFirst(page);
-      expect(await page.locator(".dtm__portfolio").count()).toBe(0);
+    for (const [slug, href] of Object.entries(WITH_PORTFOLIO)) {
+      test(`opens ${slug}'s own site, safely, in a new tab (${label})`, async ({ page }) => {
+        await gotoRoute(page, `${prefix}/team?person=${slug}`);
+        const cta = page.locator(".dtm__dossier .dtm__portfolio");
+        await expect(cta).toHaveCount(1);
+        // the exact URL the studio supplied, and the two attributes that make
+        // opening someone else's site in a new tab safe
+        await expect(cta).toHaveAttribute("href", href);
+        await expect(cta).toHaveAttribute("target", "_blank");
+        await expect(cta).toHaveAttribute("rel", "noopener noreferrer");
+        // a real anchor, never a button or a dead "#"
+        expect(await cta.evaluate((el) => el.tagName)).toBe("A");
+        // and its accessible name says it leaves the site
+        const label2 = await cta.getAttribute("aria-label");
+        expect(label2).toBeTruthy();
+        expect(label2!.length).toBeGreaterThan(10);
+      });
+    }
+
+    test(`renders nothing at all for a person with no portfolio (${label})`, async ({ page }) => {
+      // a reserved seat: no portfolio, no LinkedIn, no contact
+      await gotoRoute(page, `${prefix}/team?person=keto-kiladze`);
+      await expect(page.locator(".dtm__dossier")).toHaveCount(1);
+      expect(await page.locator(".dtm__dossier .dtm__portfolio").count()).toBe(0);
+      expect(await page.locator(".dtm__dossier .dtm__linkedin").count()).toBe(0);
       const text = await page.locator(".dtm__dossier").innerText();
       // no stand-in, no dead link, no "pending" label
       expect(text).not.toMatch(/portfolio/i);
       expect(await page.locator('.dtm__dossier a[href="#"]').count()).toBe(0);
       // and the sheet closes up rather than leaving a gap where it would sit
-      expect(await page.locator(".dtm__actions").count()).toBe(0);
+      expect(await page.locator(".dtm__dossier .dtm__actions").count()).toBe(0);
     });
   }
+
+  test("nobody gains a portfolio the studio has not supplied", async ({ page }) => {
+    // the guard that used to be "nobody has one at all": the CTA appears on
+    // exactly the people whose record carries a URL, and on no one else
+    const slugs = await page
+      .goto("/team")
+      .then(() => page.locator(".dtm__person").evaluateAll((els) => els.length));
+    expect(slugs).toBeGreaterThan(2);
+    let found = 0;
+    for (const slug of Object.keys(WITH_PORTFOLIO)) {
+      await gotoRoute(page, `/team?person=${slug}`);
+      found += await page.locator(".dtm__dossier .dtm__portfolio").count();
+    }
+    expect(found).toBe(Object.keys(WITH_PORTFOLIO).length);
+  });
+
+  test("no LinkedIn action anywhere, because no LinkedIn URL is set", async ({ page }) => {
+    // the footer branch exists and is exercised in the unit suite; the DATA
+    // must stay empty until the studio supplies real profile URLs
+    for (const slug of [...Object.keys(WITH_PORTFOLIO), "keto-kiladze"]) {
+      await gotoRoute(page, `/team?person=${slug}`);
+      expect(await page.locator(".dtm__linkedin").count(), slug).toBe(0);
+    }
+  });
 
   test("its absence does not disturb close, previous or next", async ({ page }) => {
     await gotoRoute(page, "/team");
@@ -1199,7 +1266,13 @@ test.describe("§23-§29 the external portfolio CTA", () => {
         () => document.documentElement.scrollWidth - window.innerWidth,
       );
       expect(over).toBeLessThanOrEqual(0);
-      expect(await page.locator(".dtm__portfolio").count()).toBe(0);
+      // the first person now HAS a portfolio, so the slot is occupied - and it
+      // still has to clear the touch floor rather than sit as a thin rule
+      const cta = page.locator(".dtm__dossier .dtm__portfolio");
+      await expect(cta).toHaveCount(1);
+      expect(await cta.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(
+        44,
+      );
       // close is still the reachable control on mobile
       const close = page.locator(".dtm__dossier .dtm__tcta").last();
       expect(

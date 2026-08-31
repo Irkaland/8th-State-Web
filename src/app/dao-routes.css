@@ -6135,6 +6135,7 @@ html:has(.dsc) {
 /* §10: VIEW PORTFOLIO is the one emphasised control in the sheet - it leaves the
    site, so it is deliberately not styled like the internal Work links. */
 .dtm__portfolio,
+.dtm__linkedin,
 .dtm__jump {
   position: relative;
   font-family: var(--dao-f-ui);
@@ -6151,6 +6152,7 @@ html:has(.dsc) {
   color: rgba(19, 18, 16, 0.62);
 }
 .dtm__portfolio::after,
+.dtm__linkedin::after,
 .dtm__jump::after {
   content: "";
   position: absolute;
@@ -6165,7 +6167,8 @@ html:has(.dsc) {
 }
 /* the portfolio rule is drawn at rest, so the one outbound action reads as the
    emphasis of the sheet; everything else draws its rule on interaction */
-.dtm__portfolio::after {
+.dtm__portfolio::after,
+.dtm__linkedin::after {
   clip-path: inset(0 0 0 0);
   background: var(--dao-red);
 }
@@ -6177,6 +6180,7 @@ html:has(.dsc) {
   clip-path: inset(0 0 0 0);
 }
 .dtm__portfolio:focus-visible,
+.dtm__linkedin:focus-visible,
 .dtm__jump:focus-visible {
   outline: 2px solid var(--dao-red);
   outline-offset: 4px;
@@ -6499,6 +6503,7 @@ html:has(.dsc) {
   }
   .dtm__nav .dtm__tcta,
   .dtm__portfolio,
+  .dtm__linkedin,
   .dtm__jump,
   .dtm__contact a,
   .dtm__links a {

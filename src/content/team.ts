@@ -97,6 +97,11 @@ export const TEAM: TeamMember[] = [
     credits: [],
     education: [],
     languages: [],
+    /* Supplied by the studio. A person's OWN site, off 8th State - rendered as
+       VIEW PORTFOLIO in the profile footer, opened in a new tab, and never
+       confused with a /work credit. Only set where the studio has given a real
+       URL: an absent value renders nothing at all. */
+    portfolioUrl: "https://www.mariamkandiashvili.com",
     order: 1,
     featured: true,
   },
@@ -125,6 +130,7 @@ export const TEAM: TeamMember[] = [
     credits: [],
     education: [],
     languages: [],
+    portfolioUrl: "https://www.bekassio.com/",
     order: 2,
     featured: true,
   },

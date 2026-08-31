@@ -430,6 +430,7 @@ const ka: Messages = {
       contact: "კონტაქტი",
       links: "პროფესიული ბმულები",
       viewPortfolio: "იხილეთ პორტფოლიო",
+      viewLinkedin: "LinkedIn პროფილი",
       opensExternal: "იხსნება გარე საიტი ახალ ჩანართში",
       selectedWorkNote: "8th State-ის პროექტები, სადაც ეს ადამიანი კრედიტშია.",
       profilePending:

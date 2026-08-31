@@ -58,6 +58,8 @@ export type TeamCard = {
   phone?: string;
   /** the person's own site, off 8th State. Rendered as VIEW PORTFOLIO. */
   portfolioUrl?: string;
+  /** rendered as LINKEDIN PROFILE beside it, and never also in the links row */
+  linkedinUrl?: string;
   /** vimeo / instagram / linkedin / imdb - the professional link row */
   links: { key: string; label: string; href: string }[];
 };
@@ -851,9 +853,13 @@ export function TeamContactSheet({
                   a column of empty labelled blocks. */}
                 {!hasContent(card) && <p className="dtm__awaiting">{R.profilePending}</p>}
 
-                {(card.portfolioUrl || hasContact) && (
+                {/* §10: THE PROFILE FOOTER - external actions, per person.
+                    Every action here is driven by a URL on the person's own
+                    record; nothing is hardcoded, and a person with no URLs
+                    renders no row at all rather than an empty one. */}
+                {(card.portfolioUrl || card.linkedinUrl || hasContact) && (
                   <span className="dtm__actions">
-                    {/* §10: the person's OWN external site. Never /work. */}
+                    {/* the person's OWN external site. Never /work. */}
                     {card.portfolioUrl && (
                       <a
                         className="dtm__portfolio"
@@ -863,6 +869,17 @@ export function TeamContactSheet({
                         aria-label={`${R.viewPortfolio} - ${card.name ?? R.namePending} (${R.opensExternal})`}
                       >
                         {up(R.viewPortfolio)} <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                    {card.linkedinUrl && (
+                      <a
+                        className="dtm__linkedin"
+                        href={card.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${R.viewLinkedin} - ${card.name ?? R.namePending} (${R.opensExternal})`}
+                      >
+                        {up(R.viewLinkedin)} <span aria-hidden="true">↗</span>
                       </a>
                     )}
                     {hasContact && (

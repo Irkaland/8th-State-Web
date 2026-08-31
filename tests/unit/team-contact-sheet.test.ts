@@ -612,12 +612,15 @@ describe("every profile block is conditional", () => {
 
   it("builds the professional link row only from the platforms a person has", () => {
     const page = read("src/app/[locale]/team/page.tsx");
-    for (const k of ["vimeoUrl", "instagramUrl", "linkedinUrl", "imdbUrl"]) {
+    for (const k of ["vimeoUrl", "instagramUrl", "imdbUrl"]) {
       expect(page, k).toContain(`if (p.${k})`);
     }
-    // §09/§10: the portfolio and the email are deliberately NOT in that row -
-    // the portfolio is its own CTA and the email belongs to CONTACT, so neither
-    // is duplicated. They are passed straight through instead.
+    // §09/§10: the portfolio, LinkedIn and the email are deliberately NOT in
+    // that row - the portfolio and LinkedIn are their own profile-footer
+    // actions and the email belongs to CONTACT, so none is duplicated. They
+    // are passed straight through instead.
+    expect(page).not.toContain("if (p.linkedinUrl)");
+    expect(page).toContain("linkedinUrl: p.linkedinUrl");
     expect(page).toContain("portfolioUrl: p.portfolioUrl");
     expect(page).toContain("email: p.email");
     expect(page).toContain("phone: p.phone");

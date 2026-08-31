@@ -441,6 +441,7 @@ const en = {
       contact: "Contact",
       links: "Professional links",
       viewPortfolio: "View portfolio",
+      viewLinkedin: "LinkedIn profile",
       opensExternal: "opens an external site in a new tab",
       selectedWorkNote: "8th State projects this person is credited on.",
       profilePending:

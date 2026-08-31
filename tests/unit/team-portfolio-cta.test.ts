@@ -122,17 +122,20 @@ describe("§27 the portfolio and the professional links are separate fields", ()
     // the CTA is fed by portfolioUrl alone
     expect(page).toContain("portfolioUrl: p.portfolioUrl");
     expect(page).not.toMatch(/portfolioUrl:\s*p\.(instagram|linkedin|vimeo|imdb|behance)Url/);
-    // and each platform goes to the link row under its own name
+    // and each platform goes to the link row under its own name. LinkedIn is
+    // NOT among them: like the portfolio it is its own profile-footer action,
+    // and listing it in both places would give one person two links to the
+    // same page in one profile.
     for (const [field, label] of [
       ["vimeoUrl", "Vimeo"],
       ["instagramUrl", "Instagram"],
-      ["linkedinUrl", "LinkedIn"],
       ["imdbUrl", "IMDb"],
       ["behanceUrl", "Behance"],
     ]) {
       expect(page, field).toContain(`if (p.${field})`);
       expect(page, label).toContain(`label: "${label}"`);
     }
+    expect(page).not.toContain(`label: "LinkedIn"`);
   });
 });
 
@@ -169,18 +172,21 @@ describe("§24/§26 placement and external behaviour", () => {
 
   it("is styled in the editorial CTA language, not a rounded button", () => {
     const css = readSrc("src/app/dao-routes.css");
-    const rule = css.match(/\.dtm__portfolio,\s*\.dtm__jump \{[\s\S]*?\n\}/)![0];
+    // the LinkedIn action is a peer of the portfolio and shares its rule
+    const rule = css.match(/\.dtm__portfolio,\s*\.dtm__linkedin,\s*\.dtm__jump \{[\s\S]*?\n\}/)![0];
     expect(rule).toContain("var(--dao-f-ui)");
     expect(rule).toContain("text-transform: uppercase");
     expect(rule).not.toContain("border-radius");
     expect(rule).not.toContain("background:");
     // the pencil mask is on the rule shared with the secondary jump link...
-    const shared = css.match(/\.dtm__portfolio::after,\s*\.dtm__jump::after \{[\s\S]*?\n\}/)![0];
+    const shared = css.match(
+      /\.dtm__portfolio::after,\s*\.dtm__linkedin::after,\s*\.dtm__jump::after \{[\s\S]*?\n\}/,
+    )![0];
     expect(shared).toContain("pencil-rule-h.webp");
     expect(shared).toContain("height: 2px");
     // ...and the portfolio overrides it to sit drawn, in red, at rest - which is
     // what makes it read as the primary CTA rather than a hover affordance
-    const drawn = css.match(/\.dtm__portfolio::after \{[\s\S]*?\n\}/)![0];
+    const drawn = css.match(/\.dtm__portfolio::after,\s*\.dtm__linkedin::after \{[\s\S]*?\n\}/)![0];
     expect(drawn).toContain("clip-path: inset(0 0 0 0)");
     expect(drawn).toContain("var(--dao-red)");
   });

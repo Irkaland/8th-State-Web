@@ -98,7 +98,10 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
       if (p.vimeoUrl) links.push({ key: "vimeo", label: "Vimeo", href: p.vimeoUrl });
       if (p.instagramUrl)
         links.push({ key: "instagram", label: "Instagram", href: p.instagramUrl });
-      if (p.linkedinUrl) links.push({ key: "linkedin", label: "LinkedIn", href: p.linkedinUrl });
+      // LinkedIn is deliberately NOT in this row: it is its own LINKEDIN
+      // PROFILE action in the profile footer, beside VIEW PORTFOLIO, for the
+      // same reason the portfolio is - listing it in both places would give one
+      // person two links to the same page in one profile.
       if (p.imdbUrl) links.push({ key: "imdb", label: "IMDb", href: p.imdbUrl });
       if (p.behanceUrl) links.push({ key: "behance", label: "Behance", href: p.behanceUrl });
 
@@ -134,6 +137,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
         email: p.email,
         phone: p.phone,
         portfolioUrl: p.portfolioUrl,
+        linkedinUrl: p.linkedinUrl,
         links,
       };
     }),
