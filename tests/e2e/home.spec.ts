@@ -87,9 +87,15 @@ test.describe("Homepage - One Continuous Take", () => {
     await gotoRoute(page, "/services");
     await page.mouse.move(300, 400);
     await expect(page.locator(".dao-chrome")).toHaveClass(/dao-chrome--light/);
-    await page
-      .locator('.dsvc__chapter[data-surface="ink"]')
-      .evaluate((el) => el.scrollIntoView({ block: "start" }));
+    // The chrome asks which section covers its own line at y=56, so the dark
+    // chapter has to be scrolled ACROSS that line rather than merely into view:
+    // scrollIntoView honours the chapter's 152px scroll-margin and parks its top
+    // below the probe, where the ground genuinely still is the paper chapter
+    // above it - and a light chrome there is correct, not a contrast failure.
+    await page.locator('.dsvc__chapter[data-surface="ink"]').evaluate((el) => {
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: top + 200, behavior: "instant" });
+    });
     await page.mouse.move(320, 420);
     await expect(page.locator(".dao-chrome")).not.toHaveClass(/dao-chrome--light/, {
       timeout: 4_000,
