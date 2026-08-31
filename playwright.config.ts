@@ -27,8 +27,11 @@ export default defineConfig({
     {
       name: "chromium",
       // The mobile lifecycle suite has to run WITHOUT the autoplay override
-      // below and on real device profiles, so it gets its own projects.
-      testIgnore: /mobile-lifecycle.spec.ts/,
+      // below and on real device profiles, so it gets its own projects, and
+      // webkit-journeys goes with them: it taps, it reads the phone
+      // composition, and its comments claim things about WebKit that a
+      // desktop Chromium run would not be testing.
+      testIgnore: /(?:mobile-lifecycle|webkit-journeys).spec.ts/,
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
@@ -46,7 +49,13 @@ export default defineConfig({
     // the §14 locale handoff are exercised the way a phone exercises them.
     {
       name: "mobile-safari",
-      testMatch: /(?:mobile-lifecycle|webkit-media-capability)\.spec\.ts/,
+      // webkit-journeys joins the two lifecycle suites here because WebKit was
+      // an unvalidated engine until its browser binary could be installed
+      // locally: everything the FINAL UX pass introduced - the contextual
+      // backs, the Work return context, the routed personnel file, direct
+      // fragment entry, the motion families - had never run on it once. This
+      // is added COVERAGE, not a way to make anything pass.
+      testMatch: /(?:mobile-lifecycle|webkit-media-capability|webkit-journeys)\.spec\.ts/,
       use: { ...devices["iPhone 14"] },
     },
     {
