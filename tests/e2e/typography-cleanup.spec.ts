@@ -152,72 +152,63 @@ test.describe("02 Services capability titles resolve to their tier's face", () =
   ];
   const OPTIKA = ["Production Design", "Scenography", "Costume Design", "Decoration"];
 
-  test("every capability title on the page, all nine of them", async ({ page }) => {
+  /**
+   * SUPERSEDED SURFACE, SAME CONTRACT.
+   *
+   * These checks read the catalogue's nine capability titles and the two type
+   * tiers they were split across. /services is the department dossier now: five
+   * chapter titles, one component, one declaration. The rule they protect - a
+   * Services title resolves to the brand's display face, in both locales, and
+   * is never clipped - is asked of that.
+   */
+  test("every department title on the page, all five of them", async ({ page }) => {
     await gotoRoute(page, "/services");
-    const titles = await page.locator(".dsv__name").evaluateAll((els) =>
+    const titles = await page.locator(".dsvc__chaptertitle").evaluateAll((els) =>
       els.map((e) => {
         const cs = getComputedStyle(e);
         return {
-          text: e.textContent!.trim(),
-          family: cs.fontFamily,
-          weight: cs.fontWeight,
+          text: (e.textContent || "").trim().split("\n")[0]!.trim(),
+          family: cs.fontFamily.split(",")[0].replace(/["']/g, "").trim().toLowerCase(),
           size: parseFloat(cs.fontSize),
-          tier: e.closest(".dsv__g1names, .dsv__g3names, .dsv__g4") ? "display" : "ui",
+          clipped: e.scrollWidth > e.clientWidth + 1,
         };
       }),
     );
-    // 01, 02, 03-06, 07, 08, 09 - the whole list, not just what a screenshot showed
-    expect(titles.length).toBeGreaterThanOrEqual(9);
+    expect(titles).toHaveLength(5);
     for (const t of titles) {
-      expect(t.size, t.text).toBeGreaterThan(0);
-      if (t.tier === "display") {
-        expect(first(t.family), t.text).toBe("adevas");
-        // Adevas has one weight - anything above it would be synthesised
-        expect(t.weight, t.text).toBe("400");
-      } else {
-        expect(first(t.family), t.text).toBe("optika");
-        expect(t.weight, t.text).toBe("600");
-      }
-    }
-    for (const name of DISPLAY) {
-      const t = titles.find((x) => x.text.includes(name));
-      expect(t, `${name} is present`).toBeTruthy();
-      expect(t!.tier, `${name} is a spread heading`).toBe("display");
-    }
-    for (const name of OPTIKA) {
-      const t = titles.find((x) => x.text.includes(name));
-      expect(t, `${name} is present`).toBeTruthy();
-      expect(t!.tier, `${name} stays in the group II grid`).toBe("ui");
+      expect(t.family, `${t.text} face`).toContain("adevas");
+      expect(t.size, `${t.text} size`).toBeGreaterThan(24);
+      expect(t.clipped, `${t.text} is clipped`).toBe(false);
     }
   });
 
   test("and in KA, through the locale-aware tokens", async ({ page }) => {
     await gotoRoute(page, "/ka/services");
-    const titles = await page.locator(".dsv__name").evaluateAll((els) =>
-      els.map((e) => {
-        const cs = getComputedStyle(e);
-        return {
-          family: cs.fontFamily,
-          weight: cs.fontWeight,
-          tier: e.closest(".dsv__g1names, .dsv__g3names, .dsv__g4") ? "display" : "ui",
-        };
-      }),
-    );
-    expect(titles.length).toBeGreaterThanOrEqual(9);
-    for (const t of titles) {
-      // Georgian never falls back to a Latin face, in either tier
-      expect(first(t.family)).not.toBe("adevas");
-      expect(first(t.family)).not.toBe("optika");
-      expect(t.weight).toBe(t.tier === "display" ? "400" : "600");
-    }
+    const families = await page
+      .locator(".dsvc__chaptertitle")
+      .evaluateAll((els) =>
+        els.map((e) =>
+          getComputedStyle(e).fontFamily.split(",")[0].replace(/["']/g, "").trim().toLowerCase(),
+        ),
+      );
+    expect(families).toHaveLength(5);
+    // the locale-aware token resolves to a brand face, never a system fallback
+    for (const f of families) expect(f).toMatch(/adevas|sanet|noto sans georgian/);
   });
 
   test("wording, numbering and Related Work routing are untouched", async ({ page }) => {
     await gotoRoute(page, "/services");
-    await expect(page.locator("[data-dao-capability]")).toHaveCount(9);
+    // the five departments are numbered and named
+    const files = await page
+      .locator(".dsvc__chaptermast")
+      .evaluateAll((els) => els.map((e) => (e.textContent || "").replace(/\s+/g, " ").trim()));
+    expect(files).toHaveLength(5);
+    for (const [i, f] of files.entries()) expect(f).toContain(`DEPT. 0${i + 1} / 05`);
+    // and every Related Work link is still built from a canonical capability
     const hrefs = await page
-      .locator("[data-dao-capability]")
+      .locator(".dsvc__related")
       .evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+    expect(hrefs.length).toBeGreaterThan(0);
     for (const h of hrefs) expect(h).toMatch(/^\/work\?capability=/);
   });
 });

@@ -362,10 +362,12 @@ test.describe("§12 GEORGIA PRODUCTION sits on the shared title scale", () => {
       };
       const gp = await sizeOf("/georgia-production");
       const studio = await sizeOf("/studio");
-      const services = await sizeOf("/services");
-      // it used to be smaller at every width purely because the words are longer
-      expect(gp, `${width}: gp=${gp} studio=${studio} services=${services}`).toBe(studio);
-      expect(gp).toBe(services);
+      // it used to be smaller at every width purely because the words are longer.
+      // /services is no longer part of this comparison: the approved dossier
+      // opens on its own editorial scale rather than the shared cover title, so
+      // measuring it here would assert a scale the design does not use. Its own
+      // title is covered by typography-cleanup and services-dossier.
+      expect(gp, `${width}: gp=${gp} studio=${studio}`).toBe(studio);
     });
   }
 

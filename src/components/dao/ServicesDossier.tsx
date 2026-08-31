@@ -109,6 +109,10 @@ function Chapter({ d, locale, index }: { d: Department; locale: Locale; index: n
         id={d.anchor}
         data-dept={d.n}
         data-surface={d.surface}
+        // the chrome reads the ground it is over: the blue and ink chapters are
+        // dark grounds, and without this the chrome keeps its paper variant and
+        // prints dark text on them
+        data-dao-scene={d.surface === "paper" ? "light" : "dark"}
         className="dsvc__chapter"
         style={{ ["--accent" as string]: d.accent }}
         aria-labelledby={`dept-${d.anchor}`}
@@ -368,7 +372,12 @@ export function ServicesDossier({ locale }: { locale: Locale }) {
       </Reveal>
 
       {/* ===== CLOSING ===== */}
-      <Reveal as="section" className="dsvc__close" aria-labelledby="services-close">
+      <Reveal
+        as="section"
+        className="dsvc__close"
+        data-dao-scene="dark"
+        aria-labelledby="services-close"
+      >
         <div className="dao-weave" aria-hidden="true" />
         <svg className="dsvc__closemark" viewBox="0 0 34 34" aria-hidden="true">
           <path

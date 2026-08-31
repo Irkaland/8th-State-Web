@@ -24,7 +24,7 @@ const BRAND = /^(Adevas|Optika|Glacier|ALK Sanet|Noto Sans Georgian)/;
  * behave identically in English, and there is no brand file to put them in - so
  * they are excluded by name rather than silently tolerated.
  */
-const SYMBOL_ONLY = ["✓", "※"];
+const SYMBOL_ONLY = ["✓", "※", "→"];
 
 const firstFamily = async (page: Page, selector: string) =>
   page.evaluate((s) => {

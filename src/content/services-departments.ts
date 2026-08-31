@@ -128,15 +128,15 @@ export const DEPARTMENTS: Department[] = [
     service: byId("audiovisual-production"),
     short: pending("AUDIOVISUAL"),
     tag: pending("DEVELOPMENT → DELIVERY"),
-    file: pending("FILE 01 — FULL SERVICE"),
+    file: pending("FILE 01 - FULL SERVICE"),
     surface: "blue",
     accent: YELLOW,
     registerColor: BLUE,
     swatch: BLUE,
     desc: pending(
-      "Full-service audiovisual production — development and planning through shooting, post-production and final delivery. The broadest department: it can carry a commercial, film, documentary, music or television project end to end, or supply any single stage.",
+      "Full-service audiovisual production - development and planning through shooting, post-production and final delivery. The broadest department: it can carry a commercial, film, documentary, music or television project end to end, or supply any single stage.",
     ),
-    groupCount: pending("12 GROUPS — FULLY INDEXED"),
+    groupCount: pending("12 GROUPS - FULLY INDEXED"),
     groups: [
       g(
         "CREATIVE DEVELOPMENT",
@@ -171,7 +171,7 @@ export const DEPARTMENTS: Department[] = [
       g(
         "CREW & CAMERA",
         "CRW",
-        "All departments — production, direction, camera, lighting, grip, sound, art, costume, HMU, styling, locations, transport · DoP, operators, ACs, DIT, video assist · Steadicam, gimbal, drone, specialty camera & lenses",
+        "All departments - production, direction, camera, lighting, grip, sound, art, costume, HMU, styling, locations, transport · DoP, operators, ACs, DIT, video assist · Steadicam, gimbal, drone, specialty camera & lenses",
       ),
       g(
         "LIGHTING · GRIP · SOUND",
@@ -181,7 +181,7 @@ export const DEPARTMENTS: Department[] = [
       g(
         "ART DEPARTMENT ON SET",
         "ART",
-        "Production design · Set design & construction · Scenography · Decoration & set dressing · Props & graphic props · Costume · HMU · Scenic painting — connects to Dept. 02",
+        "Production design · Set design & construction · Scenography · Decoration & set dressing · Props & graphic props · Costume · HMU · Scenic painting - connects to Dept. 02",
       ),
       g(
         "SHOOTING & ON-SET SERVICES",
@@ -209,13 +209,13 @@ export const DEPARTMENTS: Department[] = [
     service: byId("production-design"),
     short: pending("PROD. DESIGN"),
     tag: pending("WORLD · SPACE · OBJECT · CHARACTER"),
-    file: pending("FILE 02 — WORLD · SPACE · OBJECT · CHARACTER · ATMOSPHERE"),
+    file: pending("FILE 02 - WORLD · SPACE · OBJECT · CHARACTER · ATMOSPHERE"),
     surface: "paper",
     accent: ORANGE,
     registerColor: ORANGE,
     swatch: PAPER,
     desc: pending(
-      "The department that builds worlds — from visual research and concept art to standing sets, decorated locations, props, costume and character. It works as the art department inside an 8th State production or as an independent design commission.",
+      "The department that builds worlds - from visual research and concept art to standing sets, decorated locations, props, costume and character. It works as the art department inside an 8th State production or as an independent design commission.",
     ),
     groupCount: pending("9 GROUPS"),
     groups: [
@@ -275,13 +275,13 @@ export const DEPARTMENTS: Department[] = [
     service: byId("photography"),
     short: pending("PHOTOGRAPHY"),
     tag: pending("COMMISSION → PRINT"),
-    file: pending("FILE 03 — COMMISSION TO PRINT"),
+    file: pending("FILE 03 - COMMISSION TO PRINT"),
     surface: "paper",
     accent: BLUE,
     registerColor: BLUE,
     swatch: PAPER,
     desc: pending(
-      "A complete photography service — commercial, fashion, portrait, product, architecture, music, documentary and art photography — with its own creative services, production and post. Sellable as a single shoot or a full campaign.",
+      "A complete photography service - commercial, fashion, portrait, product, architecture, music, documentary and art photography - with its own creative services, production and post. Sellable as a single shoot or a full campaign.",
     ),
     groupCount: pending("9 GROUPS"),
     groups: [
@@ -348,13 +348,13 @@ export const DEPARTMENTS: Department[] = [
     service: byId("creative-art-direction"),
     short: pending("DIRECTION"),
     tag: pending("UPSTREAM OF EVERYTHING"),
-    file: pending("FILE 04 — UPSTREAM OF EVERYTHING"),
+    file: pending("FILE 04 - UPSTREAM OF EVERYTHING"),
     surface: "ink",
     accent: RED,
     registerColor: INK,
     swatch: INK,
     desc: pending(
-      "The strategic department. It defines what the work becomes before execution begins — concept, campaign, visual language, research — then directs photography, film, fashion, music and graphic work through the other four departments.",
+      "The strategic department. It defines what the work becomes before execution begins - concept, campaign, visual language, research - then directs photography, film, fashion, music and graphic work through the other four departments.",
     ),
     groupCount: pending("6 GROUPS"),
     groups: [
@@ -399,13 +399,13 @@ export const DEPARTMENTS: Department[] = [
     service: byId("graphic-broadcast-design"),
     short: pending("GRAPHICS"),
     tag: pending("SYSTEMS · IMAGE · TYPE · MOTION"),
-    file: pending("FILE 05 — SYSTEMS · IMAGE · TYPE · MOTION"),
+    file: pending("FILE 05 - SYSTEMS · IMAGE · TYPE · MOTION"),
     surface: "paper",
     accent: RED,
     registerColor: RED,
     swatch: PAPER,
     desc: pending(
-      "Identity systems, printed matter, film graphics and on-air design — the department where systems, image, typography and movement work together, from a logo system to a complete broadcast package.",
+      "Identity systems, printed matter, film graphics and on-air design - the department where systems, image, typography and movement work together, from a logo system to a complete broadcast package.",
     ),
     groupCount: pending("10 GROUPS"),
     groups: [
@@ -486,23 +486,23 @@ export const SERVICES_COPY = {
   dossier: pending("DEPARTMENT DOSSIER · COMPLETE FILE"),
   title: pending("SERVICES"),
   intro: pending(
-    "Five departments. One production system. 8th State can lead the complete process from development to delivery — or join a project through a single discipline.",
+    "Five departments. One production system. 8th State can lead the complete process from development to delivery - or join a project through a single discipline.",
   ),
   statement: pending("A PROJECT MAY ENTER AT ANY DEPARTMENT AND MOVE THROUGH THE REST."),
   registerTitle: pending("DEPARTMENT REGISTER"),
-  registerContents: pending("CONTENTS — 01–05"),
+  registerContents: pending("CONTENTS - 01-05"),
   capabilityRegister: pending("CAPABILITY REGISTER"),
   worksWith: pending("WORKS WITH"),
   relatedWork: pending("VIEW RELATED WORK"),
-  mapTitle: pending("ONE PRODUCTION LINE — TYPICAL ROUTES THROUGH THE SYSTEM"),
+  mapTitle: pending("ONE PRODUCTION LINE - TYPICAL ROUTES THROUGH THE SYSTEM"),
   mapNote: pending(
-    "A project can enter through any department. Direction can hand to photography, photography to graphics, design to the shoot — without leaving the studio.",
+    "A project can enter through any department. Direction can hand to photography, photography to graphics, design to the shoot - without leaving the studio.",
   ),
   closing: pending(
     "One brief. Five departments. A single production line from first idea to final delivery.",
   ),
   cta: pending("START A PROJECT"),
   contactSheet: pending("CONTACT SHEET"),
-  selectedFrame: pending("FR. 12 — SELECTED"),
+  selectedFrame: pending("FR. 12 - SELECTED"),
   departments: pending("Departments"),
 } as const;

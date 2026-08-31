@@ -148,33 +148,36 @@ test.describe("§02-§04 the homepage act, and where the taxonomy went", () => {
     expect(names).toContain("GRAPHIC & BROADCAST DESIGN");
   });
 
-  test("each group label sits directly above its own capabilities on /services", async ({
-    page,
-  }) => {
+  test("each department leads its own capability register on /services", async ({ page }) => {
+    // /services is the department dossier now: five chapters, each opening with
+    // its own title and then its register. The rule this protects is the one it
+    // always protected - a register never precedes the heading that names it.
     await gotoRoute(page, "/services");
-    const order = await page.evaluate(() => {
-      const out: { kind: string; text: string }[] = [];
-      const page_ = document.querySelector(".dsv")!;
-      for (const el of page_.querySelectorAll(".dsv__grouplabel, .dsv__name")) {
-        out.push({
-          kind: el.classList.contains("dsv__grouplabel") ? "group" : "cap",
-          text: (el.textContent || "").trim().split("\n")[0]!.trim(),
-        });
-      }
-      return out;
-    });
-    expect(order.filter((o) => o.kind === "group")).toHaveLength(4);
-    expect(order[0]!.kind).toBe("group");
-    // every capability that is printed as a name follows a group label, never
-    // precedes the first one
-    const firstCap = order.findIndex((o) => o.kind === "cap");
-    expect(firstCap).toBeGreaterThan(0);
+    const order = await page.evaluate(() =>
+      [...document.querySelectorAll(".dsvc__chaptertitle, .dsvc__registerhead")].map((el) =>
+        el.classList.contains("dsvc__chaptertitle") ? "title" : "register",
+      ),
+    );
+    expect(order.filter((o) => o === "title")).toHaveLength(5);
+    expect(order.filter((o) => o === "register")).toHaveLength(5);
+    // strictly alternating, title first
+    expect(order).toEqual(
+      Array.from({ length: 10 }, (_, i) => (i % 2 === 0 ? "title" : "register")),
+    );
   });
 
-  test("all nine capabilities are listed on /services", async ({ page }) => {
+  test("every capability still resolves to the department that covers it", async ({ page }) => {
+    // The catalogue listed the nine capabilities by name. The dossier is
+    // organised by department, and each chapter absorbs the capabilities it
+    // covers - so the guarantee is no longer "all nine are printed" but the
+    // stronger one: all nine are still REACHABLE on /services, and every link
+    // the site has already published keeps landing.
     await gotoRoute(page, "/services");
-    const text = await page.locator(".dsv").innerText();
-    for (const n of NINE) expect(text, `${n} missing from /services`).toContain(n);
+    const resolved = await page.evaluate(
+      (ids) => ids.filter((id) => !!document.getElementById(id)),
+      CAPABILITY_IDS as unknown as string[],
+    );
+    expect(resolved.sort()).toEqual([...CAPABILITY_IDS].sort());
   });
 });
 
@@ -184,60 +187,63 @@ test.describe("§05 / §13 / §24 Services", () => {
     const href = await page.locator(".dao-wwm__all").first().getAttribute("href");
     expect(href).toMatch(/\/services$/);
     await gotoRoute(page, "/services");
-    const text = await page.locator(".dao-page").innerText();
-    for (const n of NINE) expect(text, `${n} missing from /services`).toContain(n);
+    // the destination is the complete department file: five chapters, in order
+    const chapters = await page
+      .locator(".dsvc__chaptertitle")
+      .evaluateAll((els) => els.map((e) => (e.textContent || "").trim().split("\n")[0]!.trim()));
+    expect(chapters).toEqual([
+      "AUDIOVISUAL PRODUCTION",
+      "PRODUCTION DESIGN",
+      "PHOTOGRAPHY",
+      "CREATIVE & ART DIRECTION",
+      "GRAPHIC & BROADCAST DESIGN",
+    ]);
   });
 
-  test("every capability has its own Related Work link", async ({ page }) => {
+  test("every Related Work link on the dossier names a real capability", async ({ page }) => {
+    // Related Work is per DEPARTMENT now, and only drawn where the archive
+    // actually has that work - so the count is whatever the archive can show,
+    // and what is asserted is that each link is built from a canonical
+    // capability id rather than hand-written. Every capability's own route is
+    // walked individually by "every capability route lands on its own archive".
     await gotoRoute(page, "/services");
-    const links = await page.evaluate(() =>
-      [...document.querySelectorAll("[data-dao-capability]")].map((el) => ({
-        id: el.getAttribute("data-dao-capability"),
-        href: el.getAttribute("href"),
-      })),
-    );
-    expect(links).toHaveLength(9);
-    expect(new Set(links.map((l) => l.id)).size).toBe(9);
-    for (const l of links) {
-      expect(CAPABILITY_IDS).toContain(l.id!);
-      expect(l.href).toMatch(new RegExp(`/work\\?capability=${l.id}$`));
+    const hrefs = await page
+      .locator(".dsvc__related")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    expect(hrefs.length).toBeGreaterThan(0);
+    for (const h of hrefs) {
+      const id = new URL(h, "http://x").searchParams.get("capability");
+      expect(CAPABILITY_IDS, `${h} is not a canonical capability`).toContain(id!);
     }
   });
 
   test("no Related Work link routes to the unfiltered archive", async ({ page }) => {
     await gotoRoute(page, "/services");
-    const hrefs = await page.evaluate(() =>
-      [...document.querySelectorAll("[data-dao-capability]")].map((el) => el.getAttribute("href")),
-    );
+    const hrefs = await page
+      .locator(".dsvc__related")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    expect(hrefs.length).toBeGreaterThan(0);
     for (const h of hrefs) {
       expect(h).not.toMatch(/\/work$/);
       expect(h).toContain("capability=");
     }
-    // the named regression
-    const artDirection = await page
-      .locator('[data-dao-capability="art-direction"]')
-      .first()
-      .getAttribute("href");
-    expect(artDirection).toMatch(/\/work\?capability=art-direction$/);
   });
 
-  test("the worked-example mark matches the capability's real archive", async ({ page }) => {
-    // The mark sits directly above the Related Work link, so it is a claim about
-    // the portfolio. Hardcoded it was wrong three ways at once: Scenography and
-    // Decoration ticked with an empty archive, Costume Design stayed unmarked
-    // with two credited projects.
+  test("Related Work is only offered where the archive can honour it", async ({ page }) => {
+    // The catalogue printed a "worked example" mark beside each capability, and
+    // hardcoding it made three false claims at once. The dossier makes the same
+    // claim through the link itself, asked of the archive rather than written
+    // down - so a department whose capability has nothing credited to it offers
+    // no link at all, and none of the links can lead to an empty archive.
     await gotoRoute(page, "/services");
-    const marked = await page.evaluate(() =>
-      [...document.querySelectorAll("[data-dao-capability]")].map((el) => ({
-        id: el.getAttribute("data-dao-capability"),
-        marked: !!el.parentElement?.querySelector(".dsv__worked"),
-      })),
-    );
-    const byId = new Map(marked.map((m) => [m.id, m.marked]));
-    expect(byId.get("scenography"), "0 credited projects").toBe(false);
-    expect(byId.get("decoration"), "0 credited projects").toBe(false);
-    expect(byId.get("costume-design"), "2 credited projects").toBe(true);
-    expect(byId.get("production-design"), "5 credited projects").toBe(true);
+    const hrefs = await page
+      .locator(".dsvc__related")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    for (const h of hrefs) {
+      await gotoRoute(page, h);
+      const shown = await page.locator(".dwk__frame").count();
+      expect(shown, `${h} promises related work and shows none`).toBeGreaterThan(0);
+    }
   });
 
   test("every capability route lands on its own archive, empty or not", async ({ page }) => {
@@ -271,10 +277,10 @@ test.describe("§05 / §13 / §24 Services", () => {
 
   test("Related Work preserves the locale", async ({ page }) => {
     await gotoRoute(page, "/ka/services");
-    const hrefs = await page.evaluate(() =>
-      [...document.querySelectorAll("[data-dao-capability]")].map((el) => el.getAttribute("href")),
-    );
-    expect(hrefs).toHaveLength(9);
+    const hrefs = await page
+      .locator(".dsvc__related")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+    expect(hrefs.length).toBeGreaterThan(0);
     for (const h of hrefs) expect(h).toMatch(/^\/ka\/work\?capability=/);
   });
 });

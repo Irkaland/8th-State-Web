@@ -81,12 +81,15 @@ test.describe("Homepage - One Continuous Take", () => {
     await page.mouse.move(300, 400);
     await expect(page.locator(".dao-chrome")).toHaveClass(/dao-chrome--light/);
 
-    // /services: the dark made-world band passes under the chrome line ->
-    // the chrome returns to its paper variant while over it
+    // /services: a dark chapter passes under the chrome line -> the chrome
+    // returns to its paper variant while over it. The dossier's dark ground is
+    // now department 04, printed on ink; the assertion is unchanged.
     await gotoRoute(page, "/services");
     await page.mouse.move(300, 400);
     await expect(page.locator(".dao-chrome")).toHaveClass(/dao-chrome--light/);
-    await page.locator(".dsv__g2").evaluate((el) => el.scrollIntoView({ block: "start" }));
+    await page
+      .locator('.dsvc__chapter[data-surface="ink"]')
+      .evaluate((el) => el.scrollIntoView({ block: "start" }));
     await page.mouse.move(320, 420);
     await expect(page.locator(".dao-chrome")).not.toHaveClass(/dao-chrome--light/, {
       timeout: 4_000,

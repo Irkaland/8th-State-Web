@@ -103,12 +103,14 @@ test.describe("WebKit: the home dossier", () => {
     await enter(page);
     const rows = page.locator(".dao-wwm__row");
     await expect(rows).toHaveCount(5);
+    // every row names a department of the dossier now; row 05 used to route to
+    // the bare catalogue because it had no capability to anchor to
     expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute("href")))).toEqual([
-      "/services#film-video-production",
+      "/services#audiovisual-production",
       "/services#production-design",
       "/services#photography",
       "/services#creative-direction",
-      "/services",
+      "/services#graphic-broadcast-design",
     ]);
     // the phone composition: short keyword run, no plates
     expect(

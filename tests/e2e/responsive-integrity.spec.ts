@@ -146,14 +146,18 @@ test.describe("§P5 Georgia - the index descriptions survive on mobile", () => {
   });
 });
 
-test.describe("§P5 Services - the off-frame carousel control stays operable", () => {
-  test("every carousel control is hit-testable from 430px down to 320px", async ({ page }) => {
+test.describe("§P5 Services - the off-frame folio control stays operable", () => {
+  // The catalogue s film carousel is gone with the redesign. The dossier has
+  // its own horizontally scrolling control at these widths - the running
+  // department folio - and the rule this protects is the same one: a control
+  // that runs off the frame must still be reachable, not merely present.
+  test("every folio control is hit-testable from 430px down to 320px", async ({ page }) => {
     await open(page, "/services");
     for (const w of MOBILE) {
       await atWidth(page, w);
       const controls = await page.evaluate(() => {
         const vw = document.documentElement.clientWidth;
-        return [...document.querySelectorAll(".dsv__filmframe, .dsv__name")].map((el) => {
+        return [...document.querySelectorAll(".dsvc__foliolink")].map((el) => {
           el.scrollIntoView({ block: "center", behavior: "instant" });
           const r = el.getBoundingClientRect();
           const visL = Math.max(r.left, 0),

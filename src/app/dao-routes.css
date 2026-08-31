@@ -6435,6 +6435,9 @@ html:has(.dtm) {
 }
 .dsvc__intro {
   margin: 0;
+  /* strong Optika, like every other route s medium editorial statement -
+     .dst__statement and .dpr__practicetext carry the same token */
+  font-weight: var(--dao-w-editorial);
   font-size: clamp(13.5px, 1.05vw, 16px);
   line-height: 1.7;
   color: rgba(19, 18, 16, 0.84);

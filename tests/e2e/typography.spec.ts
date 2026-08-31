@@ -70,7 +70,7 @@ test.describe("Typography system - Latin", () => {
     expect(Number(st.weight), "must read as bold/strong Optika").toBeGreaterThanOrEqual(600);
 
     for (const [route, sel] of [
-      ["/services", ".dsv__intro"],
+      ["/services", ".dsvc__intro"],
       ["/studio", ".dst__statement"],
       ["/process", ".dpr__practicetext"],
     ] as const) {

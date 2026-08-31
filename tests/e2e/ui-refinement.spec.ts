@@ -264,7 +264,7 @@ test("03/09 the Start a Project bird is never drawn past its own source", async 
 
 /* ------------------------------------------- 04 the three service titles -- */
 
-test("04 the three major service headings are the display face", async ({ page }) => {
+test("04 the department headings are the display face", async ({ page }) => {
   for (const w of [1440, 1024, 390, 320]) {
     await page.setViewportSize({ width: w, height: 900 });
     await gotoRoute(page, "/services");
@@ -281,12 +281,10 @@ test("04 the three major service headings are the display face", async ({ page }
           };
         });
       return {
-        display: [
-          ...of(".dsv__g1names .dsv__name"),
-          ...of(".dsv__g3names .dsv__name"),
-          ...of(".dsv__g4 .dsv__name"),
-        ],
-        grid: of(".dsv__g2grid .dsv__name"),
+        // the dossier prints one title per department, all in the display face
+        display: of(".dsvc__chaptertitle"),
+        // the register beneath each one is the other tier, and keeps its face
+        grid: of(".dsvc__grouptitle"),
         vw: window.innerWidth,
       };
     });
@@ -299,8 +297,8 @@ test("04 the three major service headings are the display face", async ({ page }
       expect(t.clipped, `@${w} ${t.text} clipped`).toBe(false);
       expect(t.right, `@${w} ${t.text} inside the viewport`).toBeLessThanOrEqual(m.vw + 1);
     }
-    // the group II grid is a different tier and deliberately keeps its face
-    expect(m.grid.length, `@${w}`).toBe(4);
+    // the capability register is a different tier and deliberately keeps its face
+    expect(m.grid.length, `@${w}`).toBeGreaterThan(20);
     for (const t of m.grid) expect(t.family, `@${w} ${t.text}`).toBe("optika");
   }
 });

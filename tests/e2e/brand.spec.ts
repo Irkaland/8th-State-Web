@@ -628,9 +628,16 @@ const FORMER_TEARS: { route: string; sel: string; edge: "top" | "bottom"; was: s
   },
   { route: "/work/aom-summer-collection", sel: ".dpj__credits", edge: "top", was: "paper cut" },
   { route: "/work/aom-summer-collection", sel: ".dpj__seq", edge: "top", was: "ink cut" },
-  { route: "/services", sel: ".dsv__g2", edge: "top", was: "paper cut" },
-  { route: "/services", sel: ".dsv__g3", edge: "top", was: "ink cut" },
-  { route: "/services", sel: ".dsv__g4", edge: "top", was: "blue cut" },
+  // the catalogue s four group spreads became the dossier s five department
+  // chapters, so the tears to check are the grounds where one chapter s
+  // material gives way to the next
+  // NOT chapter 01 s top: that edge sits directly under the running folio,
+  // whose rule is a navigation affordance the approved design draws, not a
+  // divider standing in for a tear. 02 s top is the same blue-to-paper change
+  // with nothing but the two materials meeting.
+  { route: "/services", sel: "#production-design", edge: "top", was: "blue cut" },
+  { route: "/services", sel: "#creative-direction", edge: "top", was: "ink cut" },
+  { route: "/services", sel: "#graphic-broadcast-design", edge: "top", was: "paper cut" },
   { route: "/studio", sel: ".dst__rooms", edge: "top", was: "paper cut" },
   { route: "/studio", sel: ".dst__handoff", edge: "top", was: "inverted ink cut" },
   // REMOVED: the Lab's green and paper cuts. The approved Studio Lab is one

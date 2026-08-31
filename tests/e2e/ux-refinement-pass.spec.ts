@@ -86,32 +86,30 @@ test.describe("§01 the four layer descriptors, and the hierarchy that carries t
    * label must lead its own capability names, at a wide width and at 360, where
    * the two used to be a pixel apart.
    */
-  test("all four layer descriptors are still rendered", async ({ page }) => {
+  test("all five department files are rendered", async ({ page }) => {
+    // The catalogue's four layer descriptors were its own organising device.
+    // /services is the department dossier now - five files, which is the
+    // structure the studio actually sells from. The four taxonomy groups remain
+    // canonical in content/dao-services.ts and are unit-tested there.
     await gotoRoute(page, "/services");
-    const labels = await page
-      .locator(".dsv__grouplabel")
+    const files = await page
+      .locator(".dsvc__chaptermast")
       .evaluateAll((els) => els.map((e) => e.textContent!.replace(/\s+/g, " ").trim()));
-    expect(labels).toHaveLength(4);
-    for (const [i, phrase] of [
-      "THE THINKING LAYER",
-      "THE MADE-WORLD LAYER",
-      "THE CAPTURE LAYER",
-      "THE COMPLETION LAYER",
-    ].entries()) {
-      expect(labels[i], `descriptor ${i + 1}`).toContain(phrase);
+    expect(files).toHaveLength(5);
+    for (const [i, phrase] of ["FILE 01", "FILE 02", "FILE 03", "FILE 04", "FILE 05"].entries()) {
+      expect(files[i], `file ${i + 1}`).toContain(phrase);
     }
   });
 
-  test("the group heading leads its own capabilities", async ({ page }) => {
+  test("the department heading leads its own register", async ({ page }) => {
     await gotoRoute(page, "/services");
     const sizes = await page.evaluate(() => {
       const px = (s: string) => parseFloat(getComputedStyle(document.querySelector(s)!).fontSize);
-      return { group: px(".dsv__grouplabel"), cap: px(".dsv__name") };
+      return { register: px(".dsvc__registerhead"), title: px(".dsvc__chaptertitle") };
     });
-    // the capability NAME is the primary navigation on the catalogue and is set
-    // larger than the label above it, which is the group's quiet register - the
-    // hierarchy this route has always used
-    expect(sizes.cap).toBeGreaterThan(sizes.group);
+    // the department NAME is the primary navigation on the dossier and is set
+    // larger than the register beneath it - the same hierarchy, one level up
+    expect(sizes.title).toBeGreaterThan(sizes.register);
   });
 
   test("and the dossier's own hierarchy holds at 360", async ({ page }) => {
@@ -141,19 +139,21 @@ test.describe("§02 every capability is an entry point into its own archive", ()
    * This block used to exercise the homepage capability act: an expanding row,
    * a worked-example still, an inert closed body. The approved What We Make
    * dossier replaced that act, and the capability -> archive route it protected
-   * now lives on the catalogue, where all nine capabilities carry their own
-   * Related Work link. The guarantees are unchanged and are checked here; the
-   * dossier's own behaviour is covered in what-we-make.spec.ts.
+   * now lives on the Services dossier, where each DEPARTMENT carries a Related
+   * Work link built from a canonical capability id - and only where the archive
+   * has that work, so the set is smaller than nine and grows as work is
+   * published. Every capability route is still walked individually by
+   * content-taxonomy.spec.ts.
    */
-  test("every capability links to its own filter, never to ALL", async ({ page }) => {
+  test("every Related Work link goes to its own filter, never to ALL", async ({ page }) => {
     await gotoRoute(page, "/services");
-    const links = await page.locator("[data-dao-capability]").evaluateAll((els) =>
+    const links = await page.locator(".dsvc__related").evaluateAll((els) =>
       els.map((e) => ({
-        id: e.getAttribute("data-dao-capability"),
+        id: new URL(e.getAttribute("href")!, "http://x").searchParams.get("capability"),
         href: e.getAttribute("href"),
       })),
     );
-    expect(links).toHaveLength(9);
+    expect(links.length).toBeGreaterThan(0);
     for (const l of links) {
       expect(l.href, `${l.id} routes to its own filter`).toBe(`/work?capability=${l.id}`);
       expect(l.href, `${l.id} widened to the whole archive`).not.toBe("/work");
@@ -162,17 +162,21 @@ test.describe("§02 every capability is an entry point into its own archive", ()
 
   test("clicking one lands on that exact capability, not ALL", async ({ page }) => {
     await gotoRoute(page, "/services");
-    await page.locator('[data-dao-capability="film-video-production"]').click();
+    const link = page.locator("#audiovisual-production .dsvc__related");
+    await link.scrollIntoViewIfNeeded();
+    await link.click();
     await page.waitForURL(/\/work\?capability=film-video-production$/);
     await expect(page.locator(".dwk__frame")).toHaveCount(2);
     await expect(page.locator(".dwk__contextvalue")).toContainText("FILM & VIDEO");
   });
 
   test("a zero-result capability still routes there and says so honestly", async ({ page }) => {
-    await gotoRoute(page, "/services");
-    const link = page.locator('[data-dao-capability="scenography"]');
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
+    // The dossier does not OFFER a link to a capability with nothing credited
+    // to it - that is the point of gating Related Work on the archive. The
+    // guarantee this test exists for is about the destination, so it is asked
+    // of the route directly: a zero-result capability must stay at zero, keep
+    // its filter, and say so rather than quietly widening to ALL.
+    await gotoRoute(page, "/work?capability=scenography");
     await page.waitForURL(/\/work\?capability=scenography$/);
     await expect(page.locator(".dwk__frame")).toHaveCount(0);
     await expect(page.locator(".dwk__empty, .dwk__emptytitle").first()).toBeVisible();
@@ -198,7 +202,7 @@ test.describe("§02 every capability is an entry point into its own archive", ()
 
   test("every link is reachable by keyboard, so nothing here is hover-only", async ({ page }) => {
     await gotoRoute(page, "/services");
-    const link = page.locator('[data-dao-capability="photography"]');
+    const link = page.locator("#photography .dsvc__related");
     await link.scrollIntoViewIfNeeded();
     await link.focus();
     await expect(link).toBeFocused();
@@ -206,18 +210,18 @@ test.describe("§02 every capability is an entry point into its own archive", ()
 
   test("carries a meaningful accessible name", async ({ page }) => {
     await gotoRoute(page, "/services");
-    const link = page.locator('[data-dao-capability="production-design"]');
+    const link = page.locator("#photography .dsvc__related");
     // the label says what the destination IS, not "click here"
     expect((await link.innerText()).trim().length).toBeGreaterThan(4);
-    await expect(link).toHaveAttribute("href", "/work?capability=production-design");
+    await expect(link).toHaveAttribute("href", "/work?capability=photography");
   });
 
   test("and keeps the locale", async ({ page }) => {
     await gotoRoute(page, "/ka/services");
     const hrefs = await page
-      .locator("[data-dao-capability]")
+      .locator(".dsvc__related")
       .evaluateAll((els) => els.map((e) => e.getAttribute("href")));
-    expect(hrefs).toHaveLength(9);
+    expect(hrefs.length).toBeGreaterThan(0);
     for (const h of hrefs) expect(h).toMatch(/^\/ka\/work\?capability=/);
   });
 });
