@@ -6311,3 +6311,742 @@ html:has(.dtm) {
     transform: none;
   }
 }
+
+/* ============================================================
+   /services - THE DEPARTMENT DOSSIER (approved Services design)
+   ============================================================
+   Paper dominant, five chapters in the approved colour rhythm, and a running
+   folio. Every surface is expressed as a token set switched by [data-surface],
+   so a chapter changes ground by changing one attribute rather than by
+   restating forty declarations - and the blue, paper and ink chapters stay
+   provably the same composition on different paper.
+
+   Nothing here reads the viewport in JavaScript. Every responsive decision
+   below is a media query. */
+.dsvc {
+  --dsvc-paper: #f2ede3;
+  --dsvc-ink: #131210;
+  /* the clearance .dao-page already reserves for the fixed chrome, and the
+     folio that sits directly under it */
+  --dsvc-chrome: 104px;
+  --dsvc-folio: 48px;
+  position: relative;
+  background: var(--dsvc-paper);
+  color: var(--dsvc-ink);
+  overflow: clip;
+}
+
+/* ---------- surface token sets ---------- */
+.dsvc__chapter {
+  --ink: var(--dsvc-ink);
+  --body: rgba(19, 18, 16, 0.84);
+  --sub: rgba(19, 18, 16, 0.55);
+  --line: rgba(19, 18, 16, 0.35);
+  --linesoft: rgba(19, 18, 16, 0.18);
+  --ground: var(--dsvc-paper);
+  --weave-op: 0.16;
+  --weave-mode: multiply;
+}
+.dsvc__chapter[data-surface="blue"] {
+  --ground: var(--dao-blue);
+  --ink: var(--dsvc-paper);
+  --body: rgba(242, 237, 227, 0.86);
+  --sub: rgba(242, 237, 227, 0.6);
+  --line: rgba(242, 237, 227, 0.4);
+  --linesoft: rgba(242, 237, 227, 0.18);
+  --weave-op: 0.22;
+  --weave-mode: overlay;
+}
+.dsvc__chapter[data-surface="ink"] {
+  --ground: var(--dsvc-ink);
+  --ink: var(--dsvc-paper);
+  --body: rgba(242, 237, 227, 0.84);
+  --sub: rgba(242, 237, 227, 0.55);
+  --line: rgba(242, 237, 227, 0.38);
+  --linesoft: rgba(242, 237, 227, 0.16);
+  --weave-op: 0.18;
+  --weave-mode: overlay;
+}
+
+/* ---------- opening ---------- */
+.dsvc__open {
+  position: relative;
+  padding: clamp(56px, 9vh, 110px) var(--dao-gutter) 0;
+  background: var(--dsvc-paper);
+}
+.dsvc__crop {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  width: 26px;
+  height: 26px;
+  opacity: 0.2;
+}
+.dsvc__mast {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(9px, 0.8vw, 11.5px);
+  letter-spacing: 0.28em;
+  color: rgba(19, 18, 16, 0.6);
+}
+.dsvc__mastright {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.dsvc__mastcross {
+  width: 11px;
+  height: 11px;
+  opacity: 0.5;
+}
+.dsvc__mastrule {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 4px;
+}
+.dsvc__band {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+  flex-wrap: wrap;
+  padding: clamp(34px, 6vh, 66px) 0 clamp(30px, 5vh, 54px);
+}
+.dsvc__title {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(52px, 7vw, 112px);
+  line-height: 0.92;
+}
+.dsvc__lead {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+}
+.dsvc__intro {
+  margin: 0;
+  font-size: clamp(13.5px, 1.05vw, 16px);
+  line-height: 1.7;
+  color: rgba(19, 18, 16, 0.84);
+  text-wrap: pretty;
+}
+.dsvc__statement {
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(9.5px, 0.8vw, 11px);
+  letter-spacing: 0.26em;
+  line-height: 2;
+  color: rgba(19, 18, 16, 0.5);
+}
+
+/* ---------- department register ---------- */
+.dsvc__index {
+  position: relative;
+  border: 1px solid rgba(19, 18, 16, 0.35);
+}
+.dsvc__indexhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px clamp(16px, 2vw, 28px);
+  font-family: var(--dao-f-numeral);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: rgba(19, 18, 16, 0.55);
+  border-bottom: 1px solid rgba(19, 18, 16, 0.25);
+}
+.dsvc__indexcontents {
+  color: var(--dao-red);
+}
+.dsvc__row {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 36px);
+  padding: clamp(14px, 2.4vh, 22px) clamp(16px, 2vw, 28px);
+  border-bottom: 1px solid rgba(19, 18, 16, 0.16);
+  color: var(--dsvc-ink);
+  min-height: 44px;
+  transition:
+    background 220ms var(--dao-ease-micro),
+    padding-left 220ms var(--dao-ease-micro);
+}
+.dsvc__row:last-child {
+  border-bottom: 0;
+}
+.dsvc__swatch {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: var(--swatch);
+  outline: 1px solid rgba(19, 18, 16, 0.25);
+  outline-offset: 2px;
+}
+.dsvc__rown {
+  font-family: var(--dao-f-numeral);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--n);
+  min-width: 30px;
+  flex: none;
+}
+.dsvc__rowname {
+  font-family: var(--dao-f-display);
+  font-size: clamp(19px, 2.2vw, 34px);
+  line-height: 1.05;
+  flex: 1;
+  min-width: 180px;
+}
+.dsvc__rowtag {
+  font-family: var(--dao-f-numeral);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: rgba(19, 18, 16, 0.5);
+  text-align: right;
+}
+.dsvc__rowarrow {
+  width: 30px;
+  height: 10px;
+  opacity: 0.6;
+  flex: none;
+  color: var(--dsvc-ink);
+}
+@media (hover: hover) {
+  .dsvc__row:hover {
+    background: rgba(19, 18, 16, 0.045);
+    padding-left: clamp(26px, 3.2vw, 44px);
+  }
+}
+
+/* ---------- running folio ---------- */
+.dsvc__folio {
+  position: sticky;
+  top: var(--dsvc-chrome);
+  z-index: 12;
+  background: rgba(242, 237, 227, 0.94);
+  backdrop-filter: blur(3px);
+  border-block: 1px solid rgba(19, 18, 16, 0.3);
+  margin-top: clamp(36px, 6vh, 68px);
+}
+.dsvc__foliorail {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 clamp(12px, 2vw, 40px);
+}
+.dsvc__foliorail::-webkit-scrollbar {
+  display: none;
+}
+.dsvc__foliolink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px clamp(12px, 1.6vw, 24px);
+  font-family: var(--dao-f-numeral);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: rgba(19, 18, 16, 0.5);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  flex: none;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+/* the active chapter is named by weight and rule, never by colour alone */
+.dsvc__foliolink[data-active] {
+  color: var(--dsvc-ink);
+  border-bottom-color: currentColor;
+  font-weight: var(--dao-w-copy, 600);
+}
+.dsvc__foliocount {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--dao-f-numeral);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: rgba(19, 18, 16, 0.5);
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
+/* ---------- chapters ---------- */
+.dsvc__chapter {
+  position: relative;
+  padding: clamp(44px, 8vh, 92px) var(--dao-gutter) clamp(40px, 7vh, 80px);
+  /* clears the fixed chrome AND the folio that sits beneath it */
+  scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-folio));
+  background: var(--ground);
+  color: var(--ink);
+  overflow: clip;
+}
+.dsvc__chapter .dao-weave {
+  opacity: var(--weave-op);
+  mix-blend-mode: var(--weave-mode);
+}
+/* an absorbed capability id: an anchor and nothing else */
+.dsvc__alias {
+  display: block;
+  position: absolute;
+  inset-block-start: 0;
+  width: 0;
+  height: 0;
+  scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-folio));
+}
+.dsvc__numeral {
+  position: absolute;
+  right: -0.06em;
+  top: -0.14em;
+  font-family: var(--dao-f-display);
+  font-size: clamp(150px, 21vw, 320px);
+  line-height: 0.9;
+  color: var(--ink);
+  opacity: 0.06;
+  pointer-events: none;
+}
+.dsvc__chaptermast {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--dao-f-numeral);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: var(--sub);
+}
+.dsvc__file--accent {
+  color: var(--accent);
+}
+.dsvc__chaptertitle {
+  position: relative;
+  display: inline-block;
+  margin: clamp(16px, 2.6vh, 26px) 0 0;
+  font-family: var(--dao-f-display);
+  font-weight: 400;
+  font-size: clamp(34px, 4.6vw, 72px);
+  line-height: 0.96;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.dsvc__chapterrule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  width: 100%;
+  height: 5px;
+}
+.dsvc__lede {
+  position: relative;
+  display: flex;
+  gap: clamp(26px, 4vw, 70px);
+  flex-wrap: wrap;
+  margin-top: clamp(24px, 4vh, 40px);
+  align-items: flex-start;
+}
+.dsvc__desc {
+  margin: 0;
+  flex: 1;
+  min-width: min(100%, 300px);
+  max-width: 470px;
+  font-size: clamp(13.5px, 1.02vw, 15.5px);
+  line-height: 1.72;
+  color: var(--body);
+  text-wrap: pretty;
+}
+.dsvc__plate {
+  margin: 0;
+  flex: none;
+  width: clamp(220px, 24vw, 360px);
+}
+.dsvc__plateimg {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: rgba(19, 18, 16, 0.06);
+}
+.dsvc__platecap {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: var(--dao-f-numeral);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--sub);
+}
+
+/* ---------- photography evidence strip ---------- */
+.dsvc__evidence {
+  position: relative;
+  display: flex;
+  gap: clamp(14px, 2vw, 26px);
+  margin-top: clamp(26px, 4.5vh, 46px);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.dsvc__evmain {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 2;
+  min-width: min(100%, 340px);
+}
+.dsvc__evpair {
+  display: flex;
+  gap: clamp(14px, 2vw, 26px);
+  flex: 1;
+  min-width: 220px;
+}
+.dsvc__evframe {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: rgba(19, 18, 16, 0.06);
+}
+.dsvc__evframe--wide {
+  aspect-ratio: 21 / 10;
+}
+.dsvc__evframe--tall {
+  aspect-ratio: 4 / 5;
+  flex: 1;
+}
+.dsvc__evcap {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--dao-f-numeral);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--sub);
+}
+.dsvc__evcap--accent {
+  color: var(--accent);
+}
+
+/* ---------- capability register ---------- */
+.dsvc__register {
+  position: relative;
+  margin-top: clamp(30px, 5vh, 54px);
+  border-top: 1px solid var(--line);
+}
+.dsvc__registerhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  font-family: var(--dao-f-numeral);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  color: var(--sub);
+}
+.dsvc__groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 264px), 1fr));
+  gap: clamp(20px, 3vh, 34px) clamp(22px, 3vw, 48px);
+}
+.dsvc__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--linesoft);
+  padding-top: 12px;
+}
+.dsvc__grouphead {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+.dsvc__grouptitle {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--ink);
+}
+.dsvc__groupkey {
+  font-family: var(--dao-f-numeral);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+.dsvc__groupitems {
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(10px, 0.82vw, 11.5px);
+  letter-spacing: 0.14em;
+  line-height: 2;
+  color: var(--body);
+  text-wrap: pretty;
+}
+
+/* ---------- chapter foot ---------- */
+.dsvc__chapterfoot {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: clamp(30px, 5vh, 52px);
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.dsvc__works {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--dao-f-numeral);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--sub);
+}
+.dsvc__worksarrow {
+  width: 22px;
+  height: 8px;
+  opacity: 0.5;
+  flex: none;
+  color: var(--ink);
+}
+.dsvc__workslink {
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  letter-spacing: 0.24em;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.dsvc__related {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.3em;
+  padding: 12px 0 11px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  transition: gap 220ms var(--dao-ease-micro);
+}
+.dsvc__relatedarrow {
+  width: 40px;
+  height: 11px;
+  opacity: 0.8;
+  color: var(--ink);
+}
+@media (hover: hover) {
+  .dsvc__related:hover {
+    gap: 26px;
+  }
+}
+.dsvc__chapterbreak {
+  display: block;
+  width: 100%;
+  height: 4px;
+  background: var(--dsvc-paper);
+}
+
+/* ---------- system map ---------- */
+.dsvc__map {
+  position: relative;
+  padding: clamp(40px, 7vh, 80px) var(--dao-gutter);
+  background: var(--dsvc-paper);
+}
+.dsvc__maptitle {
+  position: relative;
+  margin: 0;
+  font-family: var(--dao-f-numeral);
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--dao-red);
+}
+.dsvc__routes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 24px;
+}
+.dsvc__route {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--dao-f-numeral);
+  font-size: clamp(10.5px, 0.9vw, 13px);
+  letter-spacing: 0.2em;
+  color: rgba(19, 18, 16, 0.82);
+}
+.dsvc__routekey {
+  font-size: 9.5px;
+  color: var(--dao-red);
+  min-width: 84px;
+}
+.dsvc__routepath {
+  line-height: 2.1;
+}
+.dsvc__mapnote {
+  position: relative;
+  margin: 26px 0 0;
+  max-width: 52ch;
+  font-size: clamp(12.5px, 0.95vw, 14.5px);
+  line-height: 1.7;
+  color: rgba(19, 18, 16, 0.7);
+  text-wrap: pretty;
+}
+
+/* ---------- closing ---------- */
+.dsvc__close {
+  position: relative;
+  padding: clamp(48px, 9vh, 100px) var(--dao-gutter) clamp(56px, 10vh, 110px);
+  background: var(--dao-red);
+  color: var(--dsvc-paper);
+  overflow: clip;
+}
+.dsvc__close .dao-weave {
+  opacity: 0.24;
+  mix-blend-mode: multiply;
+}
+.dsvc__closemark {
+  position: absolute;
+  right: clamp(18px, 3vw, 44px);
+  top: 30px;
+  width: 34px;
+  height: 34px;
+  opacity: 0.3;
+}
+.dsvc__closeband {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 60px);
+  flex-wrap: wrap;
+}
+.dsvc__closecopy {
+  margin: 0;
+  font-family: var(--dao-f-display);
+  font-size: clamp(26px, 3.4vw, 52px);
+  line-height: 1.1;
+  max-width: 15em;
+  text-wrap: balance;
+  color: var(--dsvc-paper);
+}
+.dsvc__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.32em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(242, 237, 227, 0.7);
+  color: var(--dsvc-paper);
+  min-height: 44px;
+  transition: gap 240ms var(--dao-ease-micro);
+}
+.dsvc__ctaarrow {
+  width: 46px;
+  height: 12px;
+  opacity: 0.9;
+}
+@media (hover: hover) {
+  .dsvc__cta:hover {
+    gap: 30px;
+  }
+}
+
+/* ---------- focus, on all four grounds ---------- */
+.dsvc__row:focus-visible,
+.dsvc__foliolink:focus-visible,
+.dsvc__workslink:focus-visible,
+.dsvc__related:focus-visible,
+.dsvc__cta:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* ---------- tablet ---------- */
+@media (max-width: 960px) {
+  .dsvc__rowtag {
+    display: none;
+  }
+  .dsvc__plate {
+    width: min(100%, 320px);
+  }
+}
+
+/* ---------- phone ---------- */
+@media (max-width: 760px) {
+  .dsvc {
+    --dsvc-folio: 44px;
+  }
+  .dsvc__mastmid {
+    display: none;
+  }
+  .dsvc__band {
+    align-items: flex-start;
+  }
+  .dsvc__lead {
+    max-width: none;
+  }
+  .dsvc__rowname {
+    min-width: 0;
+    font-size: clamp(17px, 5vw, 22px);
+  }
+  .dsvc__rowarrow {
+    width: 22px;
+  }
+  /* the plate is a wide-composition device; the phone keeps the reading */
+  .dsvc__plate {
+    display: none;
+  }
+  .dsvc__folioshort {
+    display: none;
+  }
+  .dsvc__foliolink {
+    padding-inline: 14px;
+  }
+  .dsvc__evpair {
+    min-width: 0;
+  }
+  .dsvc__chapterfoot {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dsvc__index {
+    /* the register keeps its rules but loses the box at the smallest widths,
+       so the rows are not squeezed between two borders */
+    border-inline: 0;
+  }
+  .dsvc__row {
+    gap: 12px;
+    padding-inline: 4px;
+  }
+  .dsvc__indexhead {
+    padding-inline: 4px;
+  }
+  .dsvc__swatch {
+    width: 10px;
+    height: 10px;
+  }
+}

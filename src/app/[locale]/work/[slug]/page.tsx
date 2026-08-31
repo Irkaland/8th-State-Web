@@ -7,6 +7,7 @@ import { getMessages, format } from "@/i18n";
 import { routeAlternates, routeOpenGraph } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { getProject, projectSlugs, projectsSorted } from "@/content/projects";
+import { CAPABILITY_HOME } from "@/content/services-departments";
 import { disciplineOf, disciplineLabel } from "@/content/dao-work";
 import { capabilitiesOfProject } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
@@ -170,7 +171,16 @@ export default async function ProjectPage({
                 <dd>
                   {primaryCapability ? (
                     <Link
-                      href={localeHref(locale, `/services#${primaryCapability}`)}
+                      href={localeHref(
+                        locale,
+                        // the dossier is organised by department now, so a
+                        // discipline points at the chapter that covers it. The
+                        // capability id still resolves on its own (each chapter
+                        // carries the ids it absorbs), so this is about sending
+                        // the reader somewhere named rather than about keeping
+                        // the old link alive.
+                        `/services#${CAPABILITY_HOME.get(primaryCapability) ?? primaryCapability}`,
+                      )}
                       className="dpj__disciplinelink"
                     >
                       {disciplineText}
