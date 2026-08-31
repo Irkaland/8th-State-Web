@@ -122,12 +122,17 @@ describe("§02 capability preview routes truthfully", () => {
     // now owned by the catalogue page. The rule this was written to protect -
     // a capability never borrows another capability's photograph, and its link
     // is built from the canonical id - is unchanged and still checked.
-    const src = read("src/app/[locale]/services/page.tsx");
+    // /services is the department dossier now, so the capability -> archive
+    // route lives in ServicesDossier. The rule this protects is unchanged: the
+    // link is built from the canonical capability id, never hand-written, and
+    // it is only drawn where the archive actually has that work.
+    const src = read("src/components/dao/ServicesDossier.tsx");
     expect(src).not.toContain("const FRAGMENTS");
-    expect(src).toContain("CapabilityWorkLink");
-    const link = read("src/components/dao/CapabilityWorkLink.tsx");
-    expect(link).toContain("capabilityWorkHref");
-    expect(link).toContain("data-dao-capability");
+    expect(src).toContain("capabilityHasWork");
+    expect(src).toMatch(/\/work\?capability=\$\{related\}/);
+    // and the departments name capabilities, not hand-written query strings
+    const data = read("src/content/services-departments.ts");
+    expect(data).toContain("relatedWork: CapabilityId | null");
   });
 });
 
@@ -493,16 +498,14 @@ describe("typography cleanup - Optika at real weights only", () => {
   }
 
   it("sets the Services capability face once, not per instance", () => {
-    // all nine titles share .dsv__name; only the sizes are context-scoped
-    const page = read("src/app/[locale]/services/page.tsx");
-    const carousel = read("src/components/dao/ServicesFilmCarousel.tsx");
-    expect((page.match(/dsv__name/g) || []).length).toBe(4); // 01, 02, 03-06 map, 09
-    expect(carousel).toContain("dsv__name"); // 07, 08
-    // no one-off font declarations on those instances
-    expect(page).not.toMatch(/dsv__name[\s\S]{0,200}fontFamily/);
-    for (const scope of [".dsv__g1names", ".dsv__g2grid", ".dsv__g3names", ".dsv__g4"]) {
-      expect(routes, `${scope} keeps its own size`).toContain(`${scope} .dsv__name`);
-    }
+    // The dossier states its faces once, in CSS, for all five chapters - the
+    // successor to the same rule the old catalogue was held to. Every chapter
+    // is one component, so there is no per-instance styling to drift.
+    const dossier = read("src/components/dao/ServicesDossier.tsx");
+    expect((dossier.match(/dsvc__chaptertitle/g) || []).length).toBe(1);
+    expect(dossier).not.toMatch(/fontFamily/);
+    expect(routes).toContain(".dsvc__chaptertitle {");
+    expect(routes).toContain("font-family: var(--dao-f-display)");
   });
 
   it("moves the Studio Lab card copy off an inline style onto a class", () => {

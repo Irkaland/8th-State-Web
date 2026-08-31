@@ -11,7 +11,7 @@ import {
   serviceHref,
   whatWeMakeCapabilitiesAreCanonical,
 } from "@/content/what-we-make";
-import { DAO_SERVICES, isCapabilityId } from "@/content/dao-services";
+import { isCapabilityId } from "@/content/dao-services";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
 import { readSource } from "./read-source";
@@ -312,28 +312,40 @@ describe("§28 the five top-level services", () => {
     }
   });
 
-  it("anchors four rows on a real capability and is honest about the fifth", () => {
-    const anchored = WHAT_WE_MAKE.filter((s) => s.capability);
-    expect(anchored).toHaveLength(4);
-    // GRAPHIC & BROADCAST DESIGN has no capability in the approved nine, and
-    // /services is out of scope for redesign - so it routes to the catalogue
-    // rather than to an anchor that would have to be invented
-    const unanchored = WHAT_WE_MAKE.filter((s) => !s.capability);
-    expect(unanchored.map((s) => s.id)).toEqual(["graphic-broadcast-design"]);
-    expect(serviceHref(unanchored[0])).toBe("/services");
+  it("sends every row to a department of its own", () => {
+    // The dossier gives all five departments a chapter, so every row names one.
+    // This used to be four: GRAPHIC & BROADCAST DESIGN has no capability in the
+    // canonical nine, and while the destination was derived from `capability`
+    // it had nothing to point at and fell back to the bare catalogue. The row
+    // now carries its anchor explicitly, which is what removed the fallback.
+    expect(WHAT_WE_MAKE.map((s) => serviceHref(s))).toEqual([
+      "/services#audiovisual-production",
+      "/services#production-design",
+      "/services#photography",
+      "/services#creative-direction",
+      "/services#graphic-broadcast-design",
+    ]);
+    // and the capability join survives for the questions that are genuinely
+    // about a discipline rather than a department
+    expect(WHAT_WE_MAKE.filter((s) => s.capability)).toHaveLength(4);
   });
 
   it("has a real anchor waiting on /services for every one it claims", () => {
-    const page = readSource("src/app/[locale]/services/page.tsx");
+    // the dossier renders the chapters, so that is where the anchors live
+    const dossier = readSource("src/components/dao/ServicesDossier.tsx");
+    const data = readSource("src/content/services-departments.ts");
     for (const s of WHAT_WE_MAKE) {
-      if (!s.capability) continue;
-      const cap = DAO_SERVICES.find((c) => c.id === s.capability)!;
-      // the anchors are rendered from the canonical id, so the page has to be
-      // emitting an id for the capability this row points at
-      expect(page, `no anchor rendered for ${cap.id}`).toMatch(/id=\{(svc\("\d+"\)|s|cap)\.id\}/);
+      const anchor = serviceHref(s).split("#")[1];
+      expect(data, `no chapter declared for ${anchor}`).toContain(`anchor: "${anchor}"`);
     }
-    // and the offset for the fixed chrome is declared once
-    expect(readSource("src/app/dao-routes.css")).toContain(".dsv [id] {");
+    // the chapter's id IS the anchor, and the capabilities it absorbs are
+    // emitted alongside it so published capability links keep resolving
+    expect(dossier).toContain("id={d.anchor}");
+    expect(dossier).toContain("<span key={c} id={c}");
+    // and the offset that clears the fixed chrome and the folio is declared once
+    expect(readSource("src/app/dao-routes.css")).toContain(
+      "scroll-margin-top: calc(var(--dsvc-chrome) + var(--dsvc-folio))",
+    );
   });
 
   it("uses real archive stills for its plates", () => {
