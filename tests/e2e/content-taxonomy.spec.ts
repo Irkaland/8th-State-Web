@@ -21,18 +21,6 @@ import { gotoRoute } from "./helpers";
  *  §18  /team loads in EN and KA
  */
 
-const NINE = [
-  "Creative Direction",
-  "Art Direction",
-  "Production Design",
-  "Scenography",
-  "Costume Design",
-  "Decoration",
-  "Film & Video Production",
-  "Photography",
-  "Post-Production",
-];
-
 const CAPABILITY_IDS = [
   "creative-direction",
   "art-direction",

@@ -143,15 +143,6 @@ test.describe("01 the Studio Lab flower is gone", () => {
  * kept in full and simply asked per tier.
  */
 test.describe("02 Services capability titles resolve to their tier's face", () => {
-  const DISPLAY = [
-    "Creative Direction",
-    "Art Direction",
-    "Film & Video Production",
-    "Photography",
-    "Post-Production",
-  ];
-  const OPTIKA = ["Production Design", "Scenography", "Costume Design", "Decoration"];
-
   /**
    * SUPERSEDED SURFACE, SAME CONTRACT.
    *
