@@ -29,11 +29,37 @@ import { type CapabilityId, isCapabilityId } from "./dao-services";
  * terminology from dao-services.ts wherever the same term already appears
  * there, so the two surfaces speak with one voice.
  */
+/**
+ * The five canonical Services anchors.
+ *
+ * These are the studio's published destinations. They are the ids the Services
+ * dossier prints its chapters with, the ids the homepage links to, and the ids
+ * shared links carry - so they are named once, here, and typed rather than
+ * spelled out at each call site.
+ */
+export type ServiceAnchor =
+  | "audiovisual-production"
+  | "production-design"
+  | "photography"
+  | "creative-direction"
+  | "graphic-broadcast-design";
+
 export type TopLevelService = {
   /** printed index, and the plate number */
   n: string;
   /** stable id - the test hook and the row's own anchor */
   id: string;
+  /**
+   * The chapter this row opens on /services.
+   *
+   * Carried explicitly rather than derived from `capability`, because the two
+   * answer different questions and only ever agreed by accident. The dossier
+   * has a chapter for all five departments; the capability taxonomy does not,
+   * which is why row 05 used to fall back to the catalogue with no anchor at
+   * all. `capability` stays for the joins that are genuinely about a
+   * discipline - Related Work, a person's practice.
+   */
+  anchor: ServiceAnchor;
   name: LocalizedText;
   /**
    * Where this row goes on /services.
@@ -57,6 +83,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
   {
     n: "01",
     id: "audiovisual-production",
+    anchor: "audiovisual-production",
     name: { en: "Audiovisual Production", ka: "აუდიოვიზუალური პროდაქშენი" },
     capability: "film-video-production",
     accent: "#fff9ab",
@@ -73,6 +100,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
   {
     n: "02",
     id: "production-design",
+    anchor: "production-design",
     name: { en: "Production Design", ka: "პროდაქშენ დიზაინი" },
     capability: "production-design",
     accent: "#f0ab11",
@@ -89,6 +117,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
   {
     n: "03",
     id: "photography",
+    anchor: "photography",
     name: { en: "Photography", ka: "ფოტოგრაფია" },
     capability: "photography",
     accent: "#7ad4c9",
@@ -105,6 +134,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
   {
     n: "04",
     id: "creative-art-direction",
+    anchor: "creative-direction",
     name: { en: "Creative & Art Direction", ka: "კრეატიული და არტ მიმართულება" },
     capability: "creative-direction",
     accent: "#f2ede3",
@@ -121,6 +151,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
   {
     n: "05",
     id: "graphic-broadcast-design",
+    anchor: "graphic-broadcast-design",
     name: { en: "Graphic & Broadcast Design", ka: "გრაფიკული და სამაუწყებლო დიზაინი" },
     // No capability in the approved nine names this work. The row therefore
     // routes to the catalogue itself rather than to a capability anchor that
@@ -152,7 +183,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
  * gains the capability, at which point this becomes a one-line data edit.
  */
 export function serviceHref(s: TopLevelService): string {
-  return s.capability ? `/services#${s.capability}` : "/services";
+  return `/services#${s.anchor}`;
 }
 
 /** Every capability a dossier row claims must be a real one. */
