@@ -78,13 +78,32 @@ async function expectShowreelStructure(page: Page) {
   expect(state.preload).toBe("metadata");
   expect(state.sourceType).toBe("video/mp4");
 
+  /**
+   * The poster covers the stage until real playback is CONFIRMED, and leaves
+   * only then - that is the contract, and which of its two states is correct
+   * depends on whether this runtime can actually decode the master.
+   *
+   * So the relationship is asserted rather than one of the two states. The
+   * caller's capability probe classifies the runtime once, up front, and under
+   * load that single sample can report a capable WebKit as incapable - at which
+   * point demanding the poster of a reel that is happily playing is asserting
+   * the wrong half of the contract. Reading it from the element itself cannot
+   * drift, and it is strictly MORE coverage: the old assertion never checked
+   * that the poster leaves.
+   */
   const poster = reelMedia.locator("img");
-  await expect(poster).toHaveCount(1);
-  await expect
-    .poll(() => poster.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), {
-      timeout: 15_000,
-    })
-    .toBe(true);
+  const advancing = await video.evaluate((v: HTMLVideoElement) => !v.paused && v.currentTime > 0.1);
+  if (advancing) {
+    await expect(poster, "a playing reel must not keep the poster over it").toHaveCount(0);
+  } else {
+    await expect(poster, "a reel that is not playing must keep its poster").toHaveCount(1);
+    await expect
+      .poll(
+        () => poster.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0),
+        { timeout: 15_000 },
+      )
+      .toBe(true);
+  }
 }
 
 /**

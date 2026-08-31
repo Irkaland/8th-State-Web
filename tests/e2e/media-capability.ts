@@ -30,110 +30,133 @@ export async function probeWebKitMediaCapability(page: Page): Promise<WebKitMedi
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  cachedCapability = await page.evaluate(async () => {
-    const src = new URL("/media/showreel.mp4", window.location.href).href;
-    const video = document.createElement("video");
-    const events: string[] = [];
+  const runProbe = () =>
+    page.evaluate(async () => {
+      const src = new URL("/media/showreel.mp4", window.location.href).href;
+      const video = document.createElement("video");
+      const events: string[] = [];
 
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
-    video.loop = true;
-    video.preload = "auto";
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.style.cssText =
-      "position:fixed;left:0;top:0;width:160px;height:90px;opacity:0.01;pointer-events:none;";
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.loop = true;
+      video.preload = "auto";
+      video.setAttribute("muted", "");
+      video.setAttribute("playsinline", "");
+      video.style.cssText =
+        "position:fixed;left:0;top:0;width:160px;height:90px;opacity:0.01;pointer-events:none;";
 
-    const snapshot = () => ({
-      src,
-      canPlayType: video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'),
-      readyState: video.readyState,
-      networkState: video.networkState,
-      currentTime: Number(video.currentTime.toFixed(3)),
-      paused: video.paused,
-      ended: video.ended,
-      errorCode: video.error?.code ?? null,
-      errorMessage: video.error?.message || null,
+      const snapshot = () => ({
+        src,
+        canPlayType: video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'),
+        readyState: video.readyState,
+        networkState: video.networkState,
+        currentTime: Number(video.currentTime.toFixed(3)),
+        paused: video.paused,
+        ended: video.ended,
+        errorCode: video.error?.code ?? null,
+        errorMessage: video.error?.message || null,
+      });
+
+      const eventNames = [
+        "loadstart",
+        "loadedmetadata",
+        "loadeddata",
+        "canplay",
+        "playing",
+        "timeupdate",
+        "error",
+        "stalled",
+      ] as const;
+      for (const eventName of eventNames) {
+        video.addEventListener(eventName, () => events.push(eventName));
+      }
+
+      document.body.append(video);
+
+      let playResolved = false;
+      let playRejected: string | null = null;
+
+      const done = await new Promise<WebKitMediaCapability>((resolve) => {
+        const startedAt = performance.now();
+        const timeoutMs = 8000;
+
+        const finish = (available: boolean, reason: string) => {
+          window.clearInterval(interval);
+          window.clearTimeout(timeout);
+          const details = { ...snapshot(), playResolved, playRejected, events: [...events] };
+          video.remove();
+          resolve({
+            available,
+            classification: available ? "available" : "webkit-media-runtime-unavailable",
+            reason,
+            details,
+          });
+        };
+
+        const check = () => {
+          if (video.error) {
+            finish(false, `media element failed with code ${video.error.code}`);
+            return;
+          }
+          if (
+            video.readyState > HTMLMediaElement.HAVE_NOTHING &&
+            video.currentTime > 0.1 &&
+            !video.paused &&
+            (playResolved || events.includes("playing"))
+          ) {
+            finish(true, "media element loaded, played, and advanced");
+          }
+        };
+
+        const interval = window.setInterval(check, 100);
+        const timeout = window.setTimeout(() => {
+          finish(false, `media element did not prove playback within ${timeoutMs}ms`);
+        }, timeoutMs);
+
+        video.addEventListener("error", check);
+        video.addEventListener("timeupdate", check);
+        video.addEventListener("playing", check);
+
+        video.src = src;
+        video.load();
+        void video
+          .play()
+          .then(() => {
+            playResolved = true;
+            check();
+          })
+          .catch((error: unknown) => {
+            const name = error instanceof DOMException ? error.name : "Error";
+            playRejected = `${name}: ${String(error)}`;
+            if (performance.now() - startedAt > 250) check();
+          });
+      });
+
+      return done;
     });
 
-    const eventNames = [
-      "loadstart",
-      "loadedmetadata",
-      "loadeddata",
-      "canplay",
-      "playing",
-      "timeupdate",
-      "error",
-      "stalled",
-    ] as const;
-    for (const eventName of eventNames) {
-      video.addEventListener(eventName, () => events.push(eventName));
-    }
-
-    document.body.append(video);
-
-    let playResolved = false;
-    let playRejected: string | null = null;
-
-    const done = await new Promise<WebKitMediaCapability>((resolve) => {
-      const startedAt = performance.now();
-      const timeoutMs = 8000;
-
-      const finish = (available: boolean, reason: string) => {
-        window.clearInterval(interval);
-        window.clearTimeout(timeout);
-        const details = { ...snapshot(), playResolved, playRejected, events: [...events] };
-        video.remove();
-        resolve({
-          available,
-          classification: available ? "available" : "webkit-media-runtime-unavailable",
-          reason,
-          details,
-        });
-      };
-
-      const check = () => {
-        if (video.error) {
-          finish(false, `media element failed with code ${video.error.code}`);
-          return;
-        }
-        if (
-          video.readyState > HTMLMediaElement.HAVE_NOTHING &&
-          video.currentTime > 0.1 &&
-          !video.paused &&
-          (playResolved || events.includes("playing"))
-        ) {
-          finish(true, "media element loaded, played, and advanced");
-        }
-      };
-
-      const interval = window.setInterval(check, 100);
-      const timeout = window.setTimeout(() => {
-        finish(false, `media element did not prove playback within ${timeoutMs}ms`);
-      }, timeoutMs);
-
-      video.addEventListener("error", check);
-      video.addEventListener("timeupdate", check);
-      video.addEventListener("playing", check);
-
-      video.src = src;
-      video.load();
-      void video
-        .play()
-        .then(() => {
-          playResolved = true;
-          check();
-        })
-        .catch((error: unknown) => {
-          const name = error instanceof DOMException ? error.name : "Error";
-          playRejected = `${name}: ${String(error)}`;
-          if (performance.now() - startedAt > 250) check();
-        });
-    });
-
-    return done;
-  });
+  /**
+   * Probed twice before concluding the runtime cannot decode.
+   *
+   * The window inside the probe is 8s, and the mobile-safari project runs
+   * several workers at once - each with its own cache, each probing on its
+   * own. A machine that decodes perfectly well can miss that window in one
+   * worker while making it in another, and because the strict-playback tests
+   * and the fallback test gate on OPPOSITE answers, a split verdict silently
+   * drops both of them: the journey goes uncovered while the run still
+   * reports green.
+   *
+   * A runtime that genuinely cannot decode says so with an error code,
+   * quickly and every time, and is not retried. Only the timeout - the one
+   * answer indistinguishable from "the machine was busy" - gets a second
+   * look.
+   */
+  let probed = await runProbe();
+  if (!probed.available && probed.details.errorCode === null) {
+    probed = await runProbe();
+  }
+  cachedCapability = probed;
 
   console.log(
     `WebKit media capability probe: ${cachedCapability.classification} ` +
