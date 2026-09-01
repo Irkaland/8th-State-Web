@@ -171,19 +171,22 @@ describe("§24/§26 placement and external behaviour", () => {
   });
 
   /**
-   * The three profile actions - portfolio, LinkedIn, resume - are ONE control
-   * system in the approved dossier: sharp bordered rectangles, Glacier, red
-   * label, no fill, no radius, no shadow. They were text CTAs carrying a drawn
-   * pencil rule; that rule belongs to the roster's inline links, and inside a
-   * box it drew a second line under the label. What is asserted is the system
-   * they now share, and that the rule is explicitly retired rather than merely
-   * unused.
+   * The profile actions - portfolio, LinkedIn, and now every document control -
+   * are ONE control system in the approved dossier: sharp bordered rectangles,
+   * Glacier, red label, no fill, no radius, no shadow. They were text CTAs
+   * carrying a drawn pencil rule; that rule belongs to the roster's inline
+   * links, and inside a box it drew a second line under the label. What is
+   * asserted is the system they share, and that the rule is explicitly retired
+   * rather than merely unused.
+   *
+   * The third selector was `.dtm__resume` when the resume was the only document
+   * and had its own class. It is `.dtm__doc` now - one class for RESUME,
+   * BIOGRAPHY and ARTIST STATEMENT alike, which is what keeps the four controls
+   * a single system rather than three that happen to look similar.
    */
   it("is styled in the editorial CTA language, not a rounded button", () => {
     const css = readSrc("src/app/dao-routes.css");
-    const rule = css.match(
-      /\.dtm__portfolio,\s*\.dtm__linkedin,\s*\.dtm__resume \{[\s\S]*?\n\}/,
-    )![0];
+    const rule = css.match(/\.dtm__portfolio,\s*\.dtm__linkedin,\s*\.dtm__doc \{[\s\S]*?\n\}/)![0];
     expect(rule).toContain("text-transform: uppercase");
     expect(rule).toContain("border: 1px solid");
     expect(rule).toContain("min-height: 44px");

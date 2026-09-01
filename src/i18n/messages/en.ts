@@ -448,9 +448,10 @@ const en = {
       viewPortfolio: "View portfolio",
       viewLinkedin: "LinkedIn profile",
       resume: "Resume",
-      chooseLanguage: "Choose a resume language",
-      resumeEnglish: "EN",
-      resumeSpanish: "ES",
+      // The document controls. `biography` is the section heading below, reused
+      // deliberately - one word, one string. There is no resume language menu
+      // any more: one English CV, one click.
+      artistStatement: "Artist Statement",
       resumeCannotDisplay: "This browser cannot display the document inline.",
       resumeOpenInTab: "Open the file",
       backToSheet: "Back to the sheet",

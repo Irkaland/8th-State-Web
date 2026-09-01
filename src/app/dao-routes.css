@@ -4978,7 +4978,7 @@ html:has(.dsc) {
 
 .dtm__portfolio,
 .dtm__linkedin,
-.dtm__resume {
+.dtm__doc {
   display: inline-flex;
   align-items: center;
   gap: 11px;
@@ -5001,7 +5001,7 @@ html:has(.dsc) {
 
 :lang(ka) .dtm__portfolio,
 :lang(ka) .dtm__linkedin,
-:lang(ka) .dtm__resume {
+:lang(ka) .dtm__doc {
   font-family: var(--dao-f-ka);
   letter-spacing: 0.08em;
 }
@@ -5009,7 +5009,7 @@ html:has(.dsc) {
 @media (hover: hover) {
   .dtm__portfolio:hover,
   .dtm__linkedin:hover,
-  .dtm__resume:hover {
+  .dtm__doc:hover {
     background: rgb(19 18 16 / 0.05);
     border-color: var(--dao-ink);
   }
@@ -5017,7 +5017,7 @@ html:has(.dsc) {
 
 .dtm__portfolio:focus-visible,
 .dtm__linkedin:focus-visible,
-.dtm__resume:focus-visible {
+.dtm__doc:focus-visible {
   outline: 2px solid var(--dao-red);
   outline-offset: 3px;
 }
@@ -5029,57 +5029,213 @@ html:has(.dsc) {
   content: none;
 }
 
-/* ---- the resume menu -------------------------------------------------- */
+/* ============================================================
+   THE NATIVE DOCUMENT SHEET (.dtd)
+   ============================================================
+   A biography and an artist statement are prose, so they are drawn rather than
+   embedded: real type, real reflow, no megabytes, and a screen reader can read
+   them. What is reproduced here is each source sheet's ART DIRECTION - the two
+   are deliberately NOT the same document with different words in it.
 
-.dtm__resumewrap {
-  position: relative;
-  display: inline-flex;
+   Both share this skeleton; `data-design` supplies the identity below.
+
+   MOBILE. This stops pretending to be A4 on a phone. The identity of these
+   sheets is the ground colour, the type and the composition, not 595 x 842pt -
+   scaling the page down to 390px would keep the proportion and lose the
+   reading, which is the wrong half to keep. The measure narrows, the margins
+   tighten, the type stays legible; it still reads as the same document. */
+
+.dtd {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
-
-/* attached to its own control, opening upward: the actions sit at the foot of
-   the sheet, so a menu below them would fall outside the paper */
-.dtm__resumemenu {
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + 6px);
-  z-index: 5;
+.dtd__sheet {
+  position: relative;
+  min-height: 100%;
+  padding: clamp(34px, 6vw, 76px) clamp(22px, 6vw, 84px) clamp(60px, 12vh, 150px);
+  box-sizing: border-box;
+}
+/* the reading column. The source is a portrait sheet, so the prose keeps a
+   document measure rather than running the full width of a 1080px dialog. */
+.dtd__col {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.dtd__head {
   display: flex;
   flex-direction: column;
-  min-width: 100%;
-  background: var(--dao-paper);
-  border: 1px solid rgb(19 18 16 / 0.55);
+  gap: 6px;
+  margin-bottom: clamp(22px, 3.4vh, 38px);
 }
-
-.dtm__resumeitem {
+.dtd__body {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 44px;
-  padding: 0 18px;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--f-glacier), sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.26em;
-  color: var(--dao-ink);
-  white-space: nowrap;
+  flex-direction: column;
+  gap: clamp(14px, 2vh, 20px);
+  text-wrap: pretty;
+}
+.dtd__body p {
+  margin: 0;
 }
 
-.dtm__resumeitem + .dtm__resumeitem {
-  border-top: 1px solid rgb(19 18 16 / 0.28);
+/* ---- Bekassio: the burnt-orange field ----------------------------------
+   Source: "Bekassio Bio English" and "Bekassio Artist Statement". One flat
+   warm-orange page, the wordmark set in a heavy condensed face, the document
+   name under it in the same face at a fraction of the size, dark ink prose at
+   roughly three-quarters measure, and - on the artist statement only - his
+   black sun low on the page with a lot of air beneath it. The orange is
+   sampled from the supplied PDFs (#d37440). */
+.dtd[data-design="bekassio"] {
+  background: #d37440;
+  color: #2b2b2b;
+}
+/* The source sets BEKASSIO in a heavy condensed grotesque, not a display
+   serif - Adevas read as the wrong document entirely. Optika at its heaviest is
+   the brand's own Latin face and the closest thing the site already loads: set
+   large, uppercase and tracked tight, it carries the same blunt weight. No new
+   font is added for this. */
+.dtd[data-design="bekassio"] .dtd__wordmark {
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: clamp(31px, 5.6vw, 47px);
+  line-height: 0.94;
+  letter-spacing: -0.012em;
+  color: #1c1c1c;
+}
+.dtd[data-design="bekassio"] .dtd__title {
+  margin: 0;
+  font-family: var(--dao-f-ui);
+  font-weight: 600;
+  font-size: clamp(13px, 1.85vw, 16px);
+  letter-spacing: 0.055em;
+  color: #1c1c1c;
+}
+.dtd[data-design="bekassio"] .dtd__body {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: clamp(13.5px, 1.55vw, 15px);
+  line-height: 1.62;
+}
+/* the studio's own sun, painted through the existing mask architecture - the
+   same silhouette the source prints, and an asset the site already ships */
+.dtd__sun {
+  --m: url("/assets/graphics/bb-sun-symbol.webp");
+  display: block;
+  width: clamp(96px, 17vw, 132px);
+  aspect-ratio: 1400 / 1550;
+  margin: clamp(44px, 9vh, 96px) auto clamp(30px, 8vh, 90px);
+  background: #0a0a0a;
 }
 
-.dtm__resumeitem:hover,
-.dtm__resumeitem:focus-visible {
-  background: rgb(19 18 16 / 0.06);
-  color: var(--dao-red);
-  outline: none;
+/* ---- Mariam: warm paper -----------------------------------------------
+   Source: "Mariam Kandiashvili Biography English" and "... Artist Statement".
+   Warm off-white stock (#f5f4f0 sampled), a pale translucent wash drifting
+   through it, a bold grotesque title in true black, and long-form prose at a
+   wide editorial measure. The statement carries far more of that wash across
+   its lower half than the biography does, which is the difference between the
+   two source pages and is kept. */
+.dtd[data-design="mariam"] {
+  background: #f5f4f0;
+  color: #141414;
 }
-
-.dtm__resumeitem:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--dao-red);
+.dtd[data-design="mariam"] .dtd__title {
+  margin: 0;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-display, 700);
+  font-size: clamp(19px, 2.9vw, 27px);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  color: #000;
 }
+.dtd[data-design="mariam"] .dtd__body {
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: clamp(13.5px, 1.5vw, 15px);
+  line-height: 1.68;
+  color: #1a1a1a;
+}
+/* The wash. Two existing site textures at low opacity, weighted to the foot of
+   the sheet the way the source is - no new image is added to imitate paper.
+   Applied to the FIELD, not to the inner column: on the column the grain ended
+   where the measure ended and drew a visible seam down both sides of the page,
+   which the source does not have - its texture runs edge to edge. */
+.dtd[data-design="mariam"] .dtd__sheet::before,
+.dtd[data-design="mariam"] .dtd__sheet::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.dtd[data-design="mariam"] .dtd__sheet::before {
+  top: 0;
+  height: 100%;
+  background: url("/assets/textures/paper-grain.webp") center / 352px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+/* The cloudy grey wash across the lower half.
+   Drawn, not photographed. The source's mark is a soft diffuse cloud, and none
+   of the approved textures is that: the stains are too light to register under
+   multiply, and canvas-patch carries a torn edge and a weave that read as a
+   rectangle pasted onto the page. Three very soft radial pools do the job
+   exactly, cost no bytes at all, and cannot tile or seam. The paper grain above
+   still supplies the tooth. */
+.dtd[data-design="mariam"] .dtd__sheet::after {
+  bottom: 0;
+  height: 56%;
+  background:
+    radial-gradient(
+      62% 46% at 22% 88%,
+      rgb(120 120 116 / 0.22) 0%,
+      rgb(120 120 116 / 0.09) 46%,
+      transparent 74%
+    ),
+    radial-gradient(
+      54% 40% at 74% 96%,
+      rgb(120 120 116 / 0.18) 0%,
+      rgb(120 120 116 / 0.07) 50%,
+      transparent 78%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(120 120 116 / 0.05) 55%,
+      rgb(120 120 116 / 0.1) 100%
+    );
+}
+/* The statement carries far more of it than the biography, as printed - so it
+   gets its own deeper pools rather than an opacity multiplier, which would only
+   have clamped at 1 and changed nothing. */
+.dtd[data-doc="mariam-artist-statement"] .dtd__sheet::after {
+  height: 70%;
+  background:
+    radial-gradient(
+      66% 50% at 20% 90%,
+      rgb(116 116 112 / 0.34) 0%,
+      rgb(116 116 112 / 0.14) 46%,
+      transparent 76%
+    ),
+    radial-gradient(
+      58% 44% at 76% 97%,
+      rgb(116 116 112 / 0.28) 0%,
+      rgb(116 116 112 / 0.11) 50%,
+      transparent 80%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(116 116 112 / 0.08) 52%,
+      rgb(116 116 112 / 0.16) 100%
+    );
+}
+/* the prose sits above the wash via .dtd__col */
 
 /* ============================================================
    THE RESUME SHEET (.dtr) - a CV inside the studio's own file
@@ -6574,10 +6730,14 @@ html:has(.dsc) {
 }
 
 /* §04 the header actions: the person's own site, and a jump to CONTACT */
+/* PORTFOLIO · RESUME · BIOGRAPHY · ARTIST STATEMENT, plus the contact jump.
+   The 24px gap was set when there were two controls; at four bordered boxes it
+   pushed ARTIST STATEMENT onto its own ragged second line at 1440. Tighter, and
+   aligned to the top so a wrapped row does not shift its neighbours. */
 .dtm__actions {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  align-items: flex-start;
+  gap: 12px 14px;
   flex-wrap: wrap;
   padding-top: 6px;
 }
@@ -6980,6 +7140,30 @@ html:has(.dsc) {
     min-height: 44px;
     display: flex;
     align-items: center;
+  }
+  /* Four controls on a 390px sheet: a deliberate two-up grid rather than a
+     wrap that leaves one box stranded on its own line. Each cell centres its
+     label so the pairs read as a block, and ARTIST STATEMENT - the longest -
+     is allowed to take two lines inside its own box instead of overflowing. */
+  .dtm__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+  }
+  .dtm__doc,
+  .dtm__portfolio,
+  .dtm__linkedin {
+    justify-content: center;
+    text-align: center;
+    padding: 8px 10px;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    line-height: 1.35;
+  }
+  .dtm__jump {
+    grid-column: 1 / -1;
   }
   .dtm__workrow {
     grid-template-columns: minmax(0, 1fr);

@@ -85,9 +85,15 @@ export const TEAM: TeamMember[] = [
       { en: "Multimedia Artist", ka: "მულტიმედია არტისტი" },
       { en: "Graphic Designer", ka: "გრაფიკული დიზაინერი" },
     ],
+    /* Condensed from the studio's own "Mariam Kandiashvili Biography English",
+       which is the authoritative source and is available in full behind the
+       BIOGRAPHY control. This says who she is, what she practises and how she
+       relates to 8th State; the chronology, the schools and the exhibition
+       record deliberately stay in the Biography rather than being compressed
+       into a card. */
     shortStatement: {
-      en: "Leads creative direction, production design, art direction, concept development, visual development and graphic design.",
-      ka: "ხელმძღვანელობს კრეატიულ მიმართულებას, Production Design-ს, არტ დირექტინგს, კონცეფციების შექმნას, ვიზუალურ განვითარებასა და გრაფიკულ დიზაინს.",
+      en: "Georgian multimedia artist and production designer. Her practice moves between fine art, production design and scenography - a foundation in classical painting and illustration carried into costume, cinematic environments and constructed visual worlds. Co-founder of 8th State Production, working between Georgia and Europe.",
+      ka: "ქართველი მულტიმედია არტისტი და Production Designer. მისი პრაქტიკა მოძრაობს სახვით ხელოვნებას, Production Design-სა და სცენოგრაფიას შორის - კლასიკურ ფერწერასა და ილუსტრაციაში ჩამოყალიბებული საფუძველი გადადის კოსტიუმში, კინემატოგრაფიულ გარემოებსა და აგებულ ვიზუალურ სამყაროებში. 8th State Production-ის თანადამფუძნებელი, მუშაობს საქართველოსა და ევროპას შორის.",
     },
     expertise: [],
     experience: [],
@@ -102,9 +108,10 @@ export const TEAM: TeamMember[] = [
        confused with a /work credit. Only set where the studio has given a real
        URL: an absent value renders nothing at all. */
     portfolioUrl: "https://www.mariamkandiashvili.com",
-    resume: {
-      en: "/team/resumes/mariam-kandiashvili-en.pdf",
-      es: "/team/resumes/mariam-kandiashvili-es.pdf",
+    documents: {
+      resume: { src: "/team/resumes/mariam-kandiashvili.pdf" },
+      biography: { id: "mariam-biography" },
+      artistStatement: { id: "mariam-artist-statement" },
     },
     order: 1,
     featured: true,
@@ -122,9 +129,13 @@ export const TEAM: TeamMember[] = [
       { en: "Art Director", ka: "არტ დირექტორი" },
       { en: "Multimedia Artist", ka: "მულტიმედია არტისტი" },
     ],
+    /* Condensed from the studio's own "Bekassio Bio English", which is the
+       authoritative source and is available in full behind the BIOGRAPHY
+       control. The brands, the travel and the individual projects stay in the
+       Biography and the Resume - a card that lists them stops being a card. */
     shortStatement: {
-      en: "Leads photography and works as Director of Photography on film and audiovisual productions. Also works as Art Director and Artist, second in the Art Department after Mariam.",
-      ka: "ხელმძღვანელობს ფოტოგრაფიის მიმართულებას და კინოში მუშაობს როგორც Director of Photography. ასევე არის არტ დირექტორი და არტისტი, არტ დეპარტამენტში მარიამის შემდეგ მეორე პოზიციაზე.",
+      en: "Also works as Bekassio. A self-taught Georgian photographer and multimedia artist working across photography, cinematography, art direction and visual storytelling - documentary observation carried with a cinematic and editorial eye, and a practice that moves freely between the still and the moving image. Creative Director and co-founder of 8th State Production & Studio Lab.",
+      ka: "ასევე ცნობილია როგორც Bekassio. თვითნასწავლი ქართველი ფოტოგრაფი და მულტიმედია არტისტი, რომელიც მუშაობს ფოტოგრაფიაში, ოპერატორობაში, არტ დირექტინგსა და ვიზუალურ თხრობაში - დოკუმენტური დაკვირვება კინემატოგრაფიული და რედაქციული თვალით, პრაქტიკა კი თავისუფლად მოძრაობს სტატიკურ და მოძრავ გამოსახულებას შორის. 8th State Production & Studio Lab-ის კრეატიული დირექტორი და თანადამფუძნებელი.",
     },
     expertise: [],
     experience: [],
@@ -135,9 +146,10 @@ export const TEAM: TeamMember[] = [
     education: [],
     languages: [],
     portfolioUrl: "https://www.bekassio.com/",
-    resume: {
-      en: "/team/resumes/beka-jokharidze-en.pdf",
-      es: "/team/resumes/beka-jokharidze-es.pdf",
+    documents: {
+      resume: { src: "/team/resumes/beka-jokharidze.pdf" },
+      biography: { id: "beka-biography" },
+      artistStatement: { id: "beka-artist-statement" },
     },
     order: 2,
     featured: true,

@@ -146,6 +146,20 @@ export const teamExperienceSchema = z.object({
 });
 export type TeamExperience = z.infer<typeof teamExperienceSchema>;
 
+/**
+ * The documents a person's dossier can open.
+ *
+ * `resume` is a real file. `biography` and `artistStatement` are ids into
+ * TEAM_DOCUMENTS (content/team-documents.ts) - the studio's supplied prose,
+ * drawn as a native sheet rather than shipped as a PDF binary.
+ */
+export const teamDocumentsSchema = z.object({
+  resume: z.object({ src: z.string().startsWith("/team/resumes/") }).optional(),
+  biography: z.object({ id: z.string().min(1) }).optional(),
+  artistStatement: z.object({ id: z.string().min(1) }).optional(),
+});
+export type TeamDocuments = z.infer<typeof teamDocumentsSchema>;
+
 /** One credited project on a person's profile - joins to the Work archive. */
 export const teamCreditSchema = z.object({
   /** must be a real slug in content/projects.ts; the contract test enforces it */
@@ -192,19 +206,20 @@ export const teamMemberSchema = z.object({
   location: localizedTextSchema.optional(),
   portfolioUrl: z.string().url().optional(),
   /**
-   * The person's CV, as the studio supplied it, in each language it exists in.
+   * The professional documents a person has, and nothing more.
    *
-   * Paths under /team/resumes, never filenames spelled at a call site: the
-   * RESUME control reads this object, so a person with no entry renders no
-   * control and a language the studio has not supplied is simply not offered.
-   * The documents themselves are the originals, unedited.
+   * The dossier derives its controls from this object alone - no component
+   * asks who the person is - so a person with no documents renders no document
+   * controls and a person who gains one later needs no code change.
+   *
+   * A resume is a supplied PDF, held by path under /team/resumes and never
+   * spelled at a call site. A biography or artist statement is NOT a PDF: it
+   * is an id into TEAM_DOCUMENTS, where the studio's own text lives as content
+   * and is drawn as a native sheet. That asymmetry is deliberate - a CV is a
+   * laid-out artefact the studio owns, while long-form prose reads better,
+   * responds better and weighs nothing as real markup.
    */
-  resume: z
-    .object({
-      en: z.string().startsWith("/team/resumes/").optional(),
-      es: z.string().startsWith("/team/resumes/").optional(),
-    })
-    .optional(),
+  documents: teamDocumentsSchema.optional(),
   instagramUrl: z.string().url().optional(),
   vimeoUrl: z.string().url().optional(),
   linkedinUrl: z.string().url().optional(),

@@ -10,7 +10,8 @@ import { type Locale, localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
 import { IDENT_ATTR } from "@/lib/session-lifecycle";
 import { Reveal } from "./Reveal";
-import { TeamResume, type ResumeSet } from "./TeamResume";
+import { TeamDocumentControls } from "./TeamDocuments";
+import type { TeamDocument } from "@/content/team-documents";
 
 /** One project a person is credited on, resolved against the real Work archive. */
 export type TeamWorkCredit = {
@@ -63,8 +64,16 @@ export type TeamCard = {
   portfolioUrl?: string;
   /** rendered as LINKEDIN PROFILE beside it, and never also in the links row */
   linkedinUrl?: string;
-  /** the CV, per language, as supplied. Absent = no RESUME control at all. */
-  resume?: ResumeSet;
+  /**
+   * The documents this person actually has, already resolved on the server.
+   *
+   * The controls are derived from what is present here and nothing else - no
+   * component asks who the person is - so a colleague with no documents renders
+   * none of these controls at all.
+   */
+  resumeSrc?: string;
+  biography?: TeamDocument;
+  artistStatement?: TeamDocument;
   /** vimeo / instagram / linkedin / imdb - the professional link row */
   links: { key: string; label: string; href: string }[];
 };
@@ -923,7 +932,12 @@ export function TeamContactSheet({
                     nothing already says so, in its own line, above. */}
                 <span className="dtm__filenote">8TH STATE PRODUCTION · {up(R.city)}</span>
 
-                {(card.portfolioUrl || card.linkedinUrl || card.resume || hasContact) && (
+                {(card.portfolioUrl ||
+                  card.linkedinUrl ||
+                  card.resumeSrc ||
+                  card.biography ||
+                  card.artistStatement ||
+                  hasContact) && (
                   <span className="dtm__actions">
                     {/* the person's OWN external site. Never /work. */}
                     {card.portfolioUrl && (
@@ -948,24 +962,24 @@ export function TeamContactSheet({
                         {up(R.viewLinkedin)} <span aria-hidden="true">↗</span>
                       </a>
                     )}
-                    {/* ONE control, whatever number of editions exist behind it */}
-                    {card.resume && (
-                      <TeamResume
-                        name={card.name ?? R.namePending}
-                        resume={card.resume}
-                        className="dtm__resume"
-                        copy={{
-                          resume: R.resume,
-                          chooseLanguage: R.chooseLanguage,
-                          viewerKicker: R.resume,
-                          close: R.close,
-                          cannotDisplay: R.resumeCannotDisplay,
-                          openInTab: R.resumeOpenInTab,
-                          english: R.resumeEnglish,
-                          spanish: R.resumeSpanish,
-                        }}
-                      />
-                    )}
+                    {/* RESUME · BIOGRAPHY · ARTIST STATEMENT, each drawn only
+                        where the person actually has that document. One click
+                        each: the resume no longer asks which edition, because
+                        there is one. */}
+                    <TeamDocumentControls
+                      name={card.name ?? R.namePending}
+                      resumeSrc={card.resumeSrc}
+                      biography={card.biography}
+                      artistStatement={card.artistStatement}
+                      copy={{
+                        resume: R.resume,
+                        biography: R.biography,
+                        artistStatement: R.artistStatement,
+                        close: R.close,
+                        cannotDisplay: R.resumeCannotDisplay,
+                        openInTab: R.resumeOpenInTab,
+                      }}
+                    />
                     {hasContact && (
                       <a className="dtm__jump" href={`#contact-${card.slug}`}>
                         {up(R.contact)} <span aria-hidden="true">→</span>

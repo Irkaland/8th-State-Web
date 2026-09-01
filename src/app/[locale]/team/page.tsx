@@ -6,6 +6,7 @@ import { getMessages } from "@/i18n";
 import { routeAlternates } from "@/lib/route-metadata";
 import { t } from "@/content/localized";
 import { hasConfirmedTeam, teamByDepartment, teamInSectionOrder } from "@/content/team";
+import { teamDocument } from "@/content/team-documents";
 import { PROJECTS } from "@/content/projects";
 import { capabilityById, isCapabilityId } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
@@ -143,7 +144,13 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
         phone: p.phone,
         portfolioUrl: p.portfolioUrl,
         linkedinUrl: p.linkedinUrl,
-        resume: p.resume,
+        // resolved on the server so the client bundle never carries the
+        // document content layer; a person with no documents passes nothing
+        resumeSrc: p.documents?.resume?.src,
+        biography: p.documents?.biography ? teamDocument(p.documents.biography.id) : undefined,
+        artistStatement: p.documents?.artistStatement
+          ? teamDocument(p.documents.artistStatement.id)
+          : undefined,
         links,
       };
     }),
