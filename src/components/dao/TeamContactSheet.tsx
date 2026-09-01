@@ -202,6 +202,29 @@ function Frame({
 }
 
 /**
+ * The mark on a control that leaves the site.
+ *
+ * Drawn, not typed. This was U+2197 NORTH EAST ARROW, and a bare arrow
+ * codepoint is a coin toss: several mobile browsers resolve it from an emoji
+ * font and render a full-colour boxed glyph, which is what turned VIEW
+ * PORTFOLIO into a button with a cartoon arrow on a phone. An SVG cannot be
+ * substituted by a font, inherits currentColor, and scales with the label.
+ */
+function ExternalMark() {
+  return (
+    <svg className="dtm__extmark" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
+      <path
+        d="M2.4 7.6 L7.4 2.6 M4.1 2.4 H7.6 V5.9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/**
  * The dossier's ruled line - drawn, never a border.
  *
  * A personnel file is ruled by hand, so the divider under the file bar and the
@@ -897,11 +920,16 @@ export function TeamContactSheet({
                   </span>
                 </h2>
                 {card.role && <span className="dtm__role">{up(card.role)}</span>}
-                {card.secondaryRoles.map((r) => (
-                  <span key={r} className="dtm__role dtm__role--2">
-                    {up(r)}
+                {/* One editorial line, middle-dot separated - not one role per
+                    line. Four stacked roles cost ~230px of a phone screen and
+                    pushed the overview and the action row below the fold for no
+                    editorial gain. The primary role above keeps its own line,
+                    its red, and its drawn rule; this is the supporting run. */}
+                {card.secondaryRoles.length > 0 && (
+                  <span className="dtm__role dtm__role--2">
+                    {up(card.secondaryRoles.join(" · "))}
                   </span>
-                ))}
+                )}
 
                 {/* §04: the short overview - a concise introduction, not the bio */}
                 {card.shortStatement && (
@@ -948,7 +976,7 @@ export function TeamContactSheet({
                         rel="noopener noreferrer"
                         aria-label={`${R.viewPortfolio} - ${card.name ?? R.namePending} (${R.opensExternal})`}
                       >
-                        {up(R.viewPortfolio)} <span aria-hidden="true">↗</span>
+                        {up(R.viewPortfolio)} <ExternalMark />
                       </a>
                     )}
                     {card.linkedinUrl && (
@@ -959,7 +987,7 @@ export function TeamContactSheet({
                         rel="noopener noreferrer"
                         aria-label={`${R.viewLinkedin} - ${card.name ?? R.namePending} (${R.opensExternal})`}
                       >
-                        {up(R.viewLinkedin)} <span aria-hidden="true">↗</span>
+                        {up(R.viewLinkedin)} <ExternalMark />
                       </a>
                     )}
                     {/* RESUME · BIOGRAPHY · ARTIST STATEMENT, each drawn only
@@ -1131,7 +1159,7 @@ export function TeamContactSheet({
                           rel="noopener noreferrer"
                           aria-label={`${l.label} (${R.opensExternal})`}
                         >
-                          {up(l.label)} <span aria-hidden="true">↗</span>
+                          {up(l.label)} <ExternalMark />
                         </a>
                       ))}
                     </span>

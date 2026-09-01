@@ -223,6 +223,36 @@ function DocumentSheet({
 }
 
 /**
+ * The layout width at which Chromium's embedded PDF viewer actually fits an A4
+ * page inside its own frame.
+ *
+ * MEASURED, NOT GUESSED, and the numbers were not what I expected. Given a
+ * frame narrower than it likes, the viewer does not scale the page down - it
+ * lays the page out at its own minimum and overflows, which is precisely the
+ * cropped right-hand column the phone was showing. `#view=FitH` makes it worse:
+ * it zooms IN. Sweeping the layout width at a fixed output width, 380px fits
+ * the page with its own small margin; 420px still clips.
+ *
+ * So the frame is given 380px to lay out in and the whole box is then scaled to
+ * the width actually available - 0.80 at 320px, 0.98 at 390px. Gentle enough
+ * that the type stays readable, and the document is still the real PDF with
+ * every page and native scrolling.
+ */
+const PDF_FIT_LAYOUT = 380;
+
+/**
+ * At or above this width the native frame behaves and is left alone - desktop
+ * and tablet keep exactly the viewer they had.
+ *
+ * Below it they do not. Measured across widths in a real browser: at 366px and
+ * at 420px the viewer lays the page out wider than the frame and crops the
+ * right-hand column; from about 520px it either fits or shows its thumbnail
+ * rail and still fits. The band in between is the broken one, so the fitted
+ * path covers everything under 520 rather than only phone widths.
+ */
+const PDF_SAFE_NATIVE = 520;
+
+/**
  * The CV, as the file it is.
  *
  * An <iframe> is the one method that needs no extra runtime and lets the
@@ -233,16 +263,57 @@ function DocumentSheet({
  * takes.
  */
 function ResumeBody({ src, name, copy }: { src: string; name: string; copy: ResumeCopy }) {
+  const area = useRef<HTMLDivElement | null>(null);
+  const [avail, setAvail] = useState<number | null>(null);
+
+  // Measured from the box the frame actually gets, not from the viewport: the
+  // sheet has its own padding and the bar above it, and a viewport-derived
+  // number would drift from both.
+  useEffect(() => {
+    const el = area.current;
+    if (!el) return;
+    const measure = () => setAvail(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const fitted = avail !== null && avail > 0 && avail < PDF_SAFE_NATIVE;
+  // Only ever scaled DOWN. Where the box is wider than the layout the frame is
+  // simply centred at its own width: upscaling a rendered page to fill a few
+  // extra pixels would soften the type for nothing.
+  const scale = fitted ? Math.min(1, (avail as number) / PDF_FIT_LAYOUT) : 1;
   return (
-    <>
-      <iframe className="dtr__frame" src={src} title={`${name} - ${copy.resume}`} />
+    <div
+      className="dtr__pdf"
+      ref={area}
+      data-fitted={fitted ? "" : undefined}
+      style={
+        fitted
+          ? ({ ["--dtr-pdf-scale" as string]: String(scale) } as React.CSSProperties)
+          : undefined
+      }
+    >
+      {/* toolbar=0 strips the viewer chrome. Two reasons, both measured:
+          #pagemode=none does NOT suppress the thumbnail rail - the rail appears
+          on frame HEIGHT, not width, so a tall phone frame brought it back and
+          it ate a third of the width the page needed. And the toolbar buttons,
+          scaled with the frame, land well under a usable touch target anyway.
+          Without it the document is three pages stacked in one scrolling
+          column at full width, which is what a phone actually wants. */}
+      <iframe
+        className="dtr__frame"
+        src={fitted ? `${src}#toolbar=0` : src}
+        title={`${name} - ${copy.resume}`}
+      />
       <p className="dtr__fallback">
         {copy.cannotDisplay}{" "}
         <a href={src} target="_blank" rel="noopener noreferrer">
           {up(copy.openInTab)}
         </a>
       </p>
-    </>
+    </div>
   );
 }
 

@@ -162,12 +162,53 @@ describe("§24/§26 placement and external behaviour", () => {
     expect(tag).not.toContain("<Link");
   });
 
-  it("carries the arrow and an accessible name that says it leaves the site", () => {
+  /**
+   * The external mark is DRAWN, and the accessible name still says the link
+   * leaves the site.
+   *
+   * This asserted the literal U+2197 character. A bare arrow codepoint is a
+   * coin toss: several mobile browsers resolve it from an emoji font and render
+   * a full-colour boxed glyph, which is what put a cartoon arrow inside VIEW
+   * PORTFOLIO on a phone. It is an inline SVG now - a font cannot substitute
+   * it, it inherits currentColor, and the mobile action grid hides it so the
+   * four controls read as one system. What the reader needs to know about
+   * leaving the site is in the aria-label, which is asserted here as before.
+   */
+  it("carries a drawn external mark, never a font glyph, plus an accessible name", () => {
     const cta = jsx.slice(jsx.indexOf('className="dtm__portfolio"'));
-    expect(cta.slice(0, 600)).toContain("↗");
+    expect(cta.slice(0, 600)).toContain("<ExternalMark />");
     expect(cta.slice(0, 600)).toContain("R.opensExternal");
     expect(en.daoRoutes.team.opensExternal).toMatch(/external/i);
     expect(ka.daoRoutes.team.opensExternal.length).toBeGreaterThan(5);
+    // the mark is an <svg>, and no arrow/emoji codepoint survives anywhere in
+    // the component
+    const mark = jsx.slice(jsx.indexOf("function ExternalMark"));
+    expect(mark.slice(0, 700)).toContain("<svg");
+    expect(mark.slice(0, 700)).toContain('aria-hidden="true"');
+    // No DIAGONAL arrow anywhere: those are the codepoints with emoji
+    // presentations, and U+2197 in this button is what a phone was drawing as a
+    // colour glyph. The horizontal arrows in "← BACK TO THE SHEET" and
+    // "NEXT PERSON →" are approved dossier furniture and stay - they are plain
+    // typographic marks in running text, not labels inside a bordered control.
+    expect(jsx, "no diagonal arrow codepoints").not.toMatch(/[↖↗↘↙⬀⬁⬂⬃⬄]/);
+    expect(jsx, "no emoji presentation selector").not.toMatch(/️/);
+    // and it is text-only inside the mobile action grid
+    const css = readSrc("src/app/dao-routes.css");
+    const m = css.slice(css.indexOf("@media (max-width: 720px)"));
+    expect(m).toMatch(/\.dtm__actions \.dtm__extmark \{\s*display: none;/);
+  });
+
+  /**
+   * The supporting roles are ONE middle-dot line, not one element per role.
+   * Four stacked roles cost about 230px of a phone screen and pushed the
+   * overview and the action row below the fold.
+   */
+  it("joins the secondary roles into a single middle-dot run", () => {
+    expect(jsx).toContain('card.secondaryRoles.join(" · ")');
+    // the old per-role map is gone, so nothing can stack them again
+    expect(jsx).not.toMatch(/card\.secondaryRoles\.map\(/);
+    // and it is rendered once, guarded on there being any
+    expect(jsx).toContain("card.secondaryRoles.length > 0");
   });
 
   /**

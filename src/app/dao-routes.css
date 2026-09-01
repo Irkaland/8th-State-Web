@@ -5029,6 +5029,15 @@ html:has(.dsc) {
   content: none;
 }
 
+/* The external-link mark. Sized from the label so it never dominates it, and
+   drawn from currentColor so it follows the control's own ink. */
+.dtm__extmark {
+  flex: none;
+  width: 0.85em;
+  height: 0.85em;
+  opacity: 0.85;
+}
+
 /* ============================================================
    THE NATIVE DOCUMENT SHEET (.dtd)
    ============================================================
@@ -5379,12 +5388,49 @@ html:has(.dsc) {
   background: rgb(19 18 16 / 0.06);
 }
 
+/* The region the PDF occupies. It is its own positioning and clipping context
+   so the fitted frame below can be laid out larger than the box and scaled
+   back into it. */
+.dtr__pdf {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .dtr__frame {
   position: relative;
   z-index: 1;
   flex: 1 1 auto;
   width: 100%;
+  height: 100%;
   border: 0;
+  display: block;
+}
+
+/* NARROW SCREENS: give the viewer a layout width it fits the page at, then
+   scale that box down into the space available.
+   See PDF_FIT_LAYOUT / PDF_SAFE_NATIVE in TeamDocuments.tsx for the measurements
+   - under ~520px the embedded viewer stops fitting the page to its frame and
+   overflows instead, which is what cropped the right-hand column of the CV. At
+   380px it fits, with its own margin. The frame is therefore laid out at 380
+   and scaled by the measured ratio, so the complete page width is visible from
+   the first paint. The factor comes from JS because CSS cannot divide a length
+   by a length to get the unitless number `scale()` needs.
+   Centred rather than pinned left: on a 430px phone the page is narrower than
+   the sheet and belongs in the middle of it. */
+.dtr__pdf[data-fitted] {
+  display: flex;
+  justify-content: center;
+}
+.dtr__pdf[data-fitted] .dtr__frame {
+  flex: none;
+  width: 380px;
+  height: calc(100% / var(--dtr-pdf-scale, 1));
+  transform: scale(var(--dtr-pdf-scale, 1));
+  transform-origin: 50% 0;
 }
 
 /* Behind the frame, so it is what a reader sees only when the frame draws
@@ -6295,11 +6341,20 @@ html:has(.dsc) {
   clip-path: inset(0 40% 0 0);
   transition: clip-path 340ms var(--dao-ease-editorial);
 }
+/* The supporting roles are ONE line, middle-dot separated. Tracking comes down
+   from 0.2em to 0.14em and the size a touch, which is what keeps four roles on
+   a single line at 1440 without shrinking the type to a whisper. It is allowed
+   to wrap - on a phone it takes two or three lines - but it never returns to
+   one role per line. */
 .dtm__role--2,
 .dtm__role--pending {
   color: rgba(19, 18, 16, 0.6);
   font-weight: var(--dao-w-copy);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.14em;
+  font-size: 9.5px;
+  line-height: 1.55;
+  align-self: stretch;
+  text-wrap: pretty;
 }
 .dtm__role--2::after,
 .dtm__role--pending::after {
@@ -7161,6 +7216,44 @@ html:has(.dsc) {
     font-size: 9px;
     letter-spacing: 0.16em;
     line-height: 1.35;
+  }
+  /* Text only in the action grid. The four controls are one 2x2 system on a
+     phone and they have to read as one - a mark on the first cell alone made
+     PORTFOLIO the odd one out and pushed its label off centre. The link still
+     announces that it leaves the site through its aria-label, which is where
+     that information actually belongs. */
+  .dtm__actions .dtm__extmark {
+    display: none;
+  }
+
+  /* The document sheet takes nearly the whole phone, and its bar gives the
+     document back the height it was spending on air. The name and the document
+     label sit on one line; OPEN THE FILE and CLOSE keep their 44px targets. */
+  .dtr__sheet {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 24px);
+  }
+  .dtr__bar {
+    padding: 8px 10px;
+    gap: 6px 10px;
+  }
+  .dtr__title {
+    gap: 2px 8px;
+  }
+  .dtr__name {
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+  }
+  .dtr__ed {
+    font-size: 8.5px;
+    letter-spacing: 0.2em;
+  }
+  .dtr__close,
+  .dtr__tab {
+    min-height: 44px;
+    padding: 0 11px;
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
   }
   .dtm__jump {
     grid-column: 1 / -1;

@@ -387,3 +387,173 @@ test.describe("F · responsive and quiet", () => {
     );
   });
 });
+
+/* ------------------------------------------------------------------ G --- */
+
+/**
+ * The three refinements: an inline role line, a text-only portfolio control on
+ * a phone, and a resume that opens fitted rather than cropped.
+ */
+test.describe("G · roles read as one line", () => {
+  const EXPECTED: Record<string, string> = {
+    "mariam-kandiashvili":
+      "CREATIVE DIRECTOR · HEAD OF ART DEPARTMENT · MULTIMEDIA ARTIST · GRAPHIC DESIGNER",
+    "beka-jokharidze": "DIRECTOR OF PHOTOGRAPHY · PHOTOGRAPHER · ART DIRECTOR · MULTIMEDIA ARTIST",
+  };
+
+  for (const [slug, expected] of Object.entries(EXPECTED)) {
+    test(`${slug}: one middle-dot run, not one role per line`, async ({ page }) => {
+      await openProfile(page, slug);
+      const roles = page.locator(".dtm__dossier .dtm__role--2");
+      // ONE element, not one per role - the stacking is what this replaced
+      await expect(roles).toHaveCount(1);
+      expect((await roles.innerText()).replace(/\s+/g, " ").trim()).toBe(expected);
+      // the separator is the middle dot, never a slash, comma or dash
+      const text = await roles.innerText();
+      expect((text.match(/·/g) ?? []).length).toBe(3);
+      expect(text).not.toMatch(/\s[/,]\s|\s-\s/);
+      // and the primary role is still its own line, in red
+      const primary = page.locator(".dtm__dossier .dtm__role").first();
+      expect((await primary.innerText()).trim()).toBe("CO-FOUNDER");
+      await expect(primary).toHaveCSS("color", "rgb(208, 62, 38)");
+    });
+  }
+
+  test("it holds one line at 1440 and wraps rather than stacking on a phone", async ({ page }) => {
+    const lines = async (width: number) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openProfile(page, "mariam-kandiashvili");
+      return page.locator(".dtm__dossier .dtm__role--2").evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return Math.round(el.getBoundingClientRect().height / parseFloat(cs.lineHeight));
+      });
+    };
+    expect(await lines(1440), "should be a single line on desktop").toBe(1);
+    const phone = await lines(390);
+    expect(phone, "should wrap on a phone").toBeGreaterThan(1);
+    // ...but never back to one role per line
+    expect(phone, "wrapping, not stacking").toBeLessThanOrEqual(3);
+  });
+});
+
+test.describe("G · the portfolio control is text only on a phone", () => {
+  /**
+   * Diagonal arrows and the emoji presentation selector - the codepoints with
+   * emoji renderings. The horizontal arrows the dossier uses in running text
+   * ("BACK TO THE SHEET", "NEXT PERSON") are approved furniture and are not
+   * what this guards against.
+   */
+  const GLYPHS = /[↖-↙⬀-⬄️]/;
+
+  test("no arrow, emoji or glyph in the mobile action grid", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openProfile(page, "mariam-kandiashvili");
+    const pf = page.locator(".dtm__actions .dtm__portfolio");
+    // the label is exactly the words, with no trailing character
+    expect((await pf.innerText()).replace(/\s+/g, " ").trim()).toBe("VIEW PORTFOLIO");
+    // the mark exists in the markup (it is an SVG, never a font glyph) but is
+    // not rendered at this width
+    await expect(pf.locator("svg.dtm__extmark")).toHaveCount(1);
+    await expect(pf.locator("svg.dtm__extmark")).toBeHidden();
+    // no arrow codepoint anywhere in the action row - a bare U+2197 is what
+    // several mobile browsers were resolving from an emoji font
+    expect(await page.locator(".dtm__actions").innerText()).not.toMatch(GLYPHS);
+  });
+
+  test("all four labels are centred and the cells match", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openProfile(page, "mariam-kandiashvili");
+    const cells = page.locator(".dtm__actions .dtm__portfolio, .dtm__actions .dtm__doc");
+    await expect(cells).toHaveCount(4);
+    const boxes = await cells.evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return {
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+          j: getComputedStyle(e).justifyContent,
+        };
+      }),
+    );
+    for (const b of boxes) {
+      expect(b.j, "labels centred").toBe("center");
+      expect(b.h, "touch floor").toBeGreaterThanOrEqual(44);
+      expect(b.w, "equal cells").toBe(boxes[0]!.w);
+    }
+  });
+
+  test("desktop keeps a drawn external mark, and it is never a font glyph", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 950 });
+    await openProfile(page, "mariam-kandiashvili");
+    await expect(page.locator(".dtm__actions .dtm__portfolio svg.dtm__extmark")).toBeVisible();
+    expect(await page.locator(".dtm__actions").innerText()).not.toMatch(GLYPHS);
+  });
+});
+
+test.describe("G · the resume fits its frame on a phone", () => {
+  for (const width of [320, 375, 390, 430] as const) {
+    test(`at ${width} the page is fitted, not cropped`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await openProfile(page, "mariam-kandiashvili");
+      await openDoc(page, /^RESUME$/);
+      const m = await page.evaluate(() => {
+        const pdf = document.querySelector(".dtr__pdf")!;
+        const f = document.querySelector(".dtr__frame")!;
+        const pr = pdf.getBoundingClientRect();
+        const fr = f.getBoundingClientRect();
+        return {
+          fitted: pdf.hasAttribute("data-fitted"),
+          scale: Number((pdf as HTMLElement).style.getPropertyValue("--dtr-pdf-scale") || 1),
+          layoutW: Math.round(parseFloat(getComputedStyle(f).width)),
+          within: fr.left >= pr.left - 1 && fr.right <= pr.right + 1,
+          src: f.getAttribute("src") ?? "",
+        };
+      });
+      // the viewer is laid out at the width it fits a page at, then scaled in
+      expect(m.fitted, "must take the fitted path below the safe native width").toBe(true);
+      expect(m.layoutW, "laid out at the fitting width").toBe(380);
+      expect(m.scale, "only ever scaled down").toBeLessThanOrEqual(1);
+      expect(m.scale, "and never to illegibility").toBeGreaterThan(0.6);
+      expect(m.within, "the frame must sit inside its box, not overflow it").toBe(true);
+      // the viewer chrome is stripped: its rail reappears on frame HEIGHT and
+      // would eat the width the page needs
+      expect(m.src).toContain("#toolbar=0");
+      // and the site itself never gains a horizontal scrollbar
+      const ov = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(ov).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test("desktop is left on the native viewer, untouched", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 950 });
+    await openProfile(page, "mariam-kandiashvili");
+    await openDoc(page, /^RESUME$/);
+    const m = await page.evaluate(() => {
+      const pdf = document.querySelector(".dtr__pdf")!;
+      const f = document.querySelector(".dtr__frame")!;
+      return {
+        fitted: pdf.hasAttribute("data-fitted"),
+        transform: getComputedStyle(f).transform,
+        src: f.getAttribute("src") ?? "",
+      };
+    });
+    expect(m.fitted, "no fitting on desktop").toBe(false);
+    expect(m.transform === "none" || m.transform === "matrix(1, 0, 0, 1, 0, 0)").toBe(true);
+    expect(m.src, "no chrome stripping on desktop").not.toContain("#");
+  });
+
+  test("the native documents are untouched by the resume fit", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openProfile(page, "mariam-kandiashvili");
+    for (const name of [/BIOGRAPHY/, /ARTIST STATEMENT/] as const) {
+      await openDoc(page, name);
+      // still native markup, and never inside the PDF fitting wrapper
+      await expect(page.locator(".dtd")).toHaveCount(1);
+      await expect(page.locator(".dtr__pdf")).toHaveCount(0);
+      await expect(sheet(page).locator("iframe")).toHaveCount(0);
+      await page.keyboard.press("Escape");
+    }
+  });
+});
