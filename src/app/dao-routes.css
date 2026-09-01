@@ -29,11 +29,7 @@
   font-family: var(--dao-f-numeral);
   font-size: 8.5px;
   letter-spacing: 0.18em;
-  /* 5.4:1 on the board tone. The mark is small and set to be read, so it
-     carries real contrast rather than the 0.4 ink wash that measured 2.5:1 -
-     quiet is a matter of size, weight and placement here, not of fading the
-     type until it fails AA. */
-  color: #5c5851;
+  color: var(--dao-pending-ink);
   white-space: nowrap;
 }
 /* On ink-dark grounds the board tone would punch a hole in the page, so the
@@ -5976,7 +5972,10 @@ html:has(.dsc) {
   font-family: var(--dao-f-numeral);
   font-size: 8.5px;
   letter-spacing: 0.18em;
-  color: rgba(19, 18, 16, 0.4);
+  /* the shared pending mark - the same token MediaSlot prints, so a waiting
+     portrait and a waiting image read as one system. Was rgba(19,18,16,.4),
+     which composited to 2.48:1 on this frame's board tone. */
+  color: var(--dao-pending-ink);
 }
 
 /* ---------- roster ---------- */

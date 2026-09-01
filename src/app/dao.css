@@ -55,6 +55,14 @@
   --dao-brown: #6c3e13;
   --dao-ink: #131210;
   --dao-paper: #f2ede3;
+  /* The mark inside a media position the studio has not supplied a file for -
+     MediaSlot's "Image pending" and the TEAM sheet's "Portrait pending" are the
+     same gesture, so they are the same colour rather than two hand-picked
+     greys. 5.4:1 on the #e6e0d4 board tone both of them sit on. Both marks were
+     an ink wash at 0.4 alpha, which composited to #928e86 and measured 2.48:1;
+     these are small, letterspaced type set to be read, and quiet is a matter of
+     size, weight and placement rather than of fading them past AA. */
+  --dao-pending-ink: #5c5851;
 
   /* ---------- typography roles (brand book hierarchy) ----------
    Four semantic roles, each with a Latin and a Georgian resolution. Nothing

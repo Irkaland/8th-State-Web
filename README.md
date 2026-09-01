@@ -66,7 +66,7 @@ npm run start
 | `npm run test`                    | Vitest unit tests                                             |
 | `npm run test:e2e`                | Playwright e2e + axe (`npm run test:e2e:install` first, once) |
 
-Utility scripts: `node scripts/fetch-media.mjs` (re-download demo imagery), `node scripts/gen-media-doc.mjs` (rebuild `DEMO_MEDIA_SOURCES.md`), `node scripts/make-og.mjs` (rebuild `public/og.png`).
+Utility scripts: `node scripts/make-og.mjs` (rebuild `public/og.png`).
 
 ---
 
@@ -90,7 +90,7 @@ src/
   content/                # Typed content layer (projects, services, taxonomy, site config, flags…)
   i18n/                   # locales.ts + messages/{en,ka}.ts
   lib/                    # brief-schema, draft, reference, helpers
-public/media/             # Demo imagery (+ _sources.json)
+public/media/             # Showreel master + its poster (no photography ships yet)
 tests/unit/  tests/e2e/   # Vitest + Playwright
 _design-reference/        # Extracted Wireframe + UI Mockup (reference only)
 ```
@@ -136,14 +136,16 @@ Content is schema-validated (Zod) by `src/content/validate.ts`, exercised in `te
 
 EN is the default (unprefixed). KA lives under `/ka` via `src/proxy.ts` (a rewrite for EN, passthrough for KA). Add strings to **both** `en.ts` and `ka.ts` - the `Messages` type will fail the build if a key is missing. The language switcher (`LanguageSwitcher.tsx`) maps the current path to its equivalent in the other locale and preserves query params.
 
-### Replacing project / media
+### Filling an image slot
 
-All imagery is documented, license-clean **editorial placeholder** photography (see `DEMO_MEDIA_SOURCES.md`). To replace: drop a same-named file into `public/media/`, or edit the `src` path in the relevant content file. Nothing is hotlinked.
+**No photography ships.** Every image position on the site is an empty slot: the frame, its aspect ratio, its grid cell and the type around it are the approved composition and are held whether or not a file exists. `Media.src` is optional, and a slot with no `src` renders `MediaSlot` (`src/components/dao/MediaSlot.tsx`) - the site's own paper stock under one small `Image pending` mark, in the same language the TEAM sheet uses for a portrait it does not have yet.
+
+To fill one: drop the master into `public/media/` and add its `src` to the matching entry in the content layer (`projects.ts`, `what-we-make.ts`, `pathways.ts`, `team.ts`). That single key is the whole change - no layout, CSS or component edit, because the slot was already the right size in the right place. Nothing is hotlinked.
 
 ### Adding a case study
 
 1. Add a project object to `PROJECTS` in `src/content/projects.ts` (unique `slug`, `order`, bilingual fields, media, `relatedSlug`).
-2. Drop its imagery into `public/media/` and reference it.
+2. Optional: drop its imagery into `public/media/` and give each media entry a `src`. Without one the project's frames render as empty slots and the archive still lays out correctly.
 3. That's it - it appears on `/work` automatically, gets a static route at `/work/[slug]`, and (if `featured: true`) shows on the homepage grid.
 
 ---
@@ -170,7 +172,7 @@ To wire a real backend later, replace the simulated `onValid` handler in `src/co
 
 - Form submission, the credentials request, and file "uploads" are **simulated** (no backend).
 - Project names, clients, and credits are **provisional placeholders** (tracked in `DEMO_CONTENT_TODO.md`).
-- Imagery is **editorial placeholder** photography (tracked in `DEMO_MEDIA_SOURCES.md` / `FINAL_MEDIA_REQUIREMENTS.md`).
+- **No photography ships.** Every image position renders as an empty editorial slot awaiting the studio's own masters; only the Showreel and its poster are real media.
 - Contact email/phone and response-time commitment are unconfirmed and therefore **not shown**.
 - The brand mark is a documented temporary SVG/CSS approximation of the existing identity.
 
