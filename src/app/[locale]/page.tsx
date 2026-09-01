@@ -7,6 +7,7 @@ import { t } from "@/content/localized";
 import { featuredProjects } from "@/content/projects";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { Showreel } from "@/components/dao/Showreel";
+import { EndOfReel } from "@/components/dao/EndOfReel";
 import { StudioIntro } from "@/components/dao/StudioIntro";
 import { SelectedWork, type DaoWorkProject } from "@/components/dao/SelectedWork";
 import { WhatWeMake } from "@/components/dao/WhatWeMake";
@@ -49,10 +50,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <DaoShell locale={locale} messages={m} veil="none">
       <h1 className="sr-only">{m.meta.defaultTitle}</h1>
-      <Showreel
-        reel={reelMessages(m)}
-        hasReel={existsSync(join(process.cwd(), "public", "media", "showreel.mp4"))}
-      />
+      {/* the reel plays inside the tube; switching it off is what carries the
+          reader into the studio - see EndOfReel */}
+      <EndOfReel>
+        <Showreel
+          reel={reelMessages(m)}
+          hasReel={existsSync(join(process.cwd(), "public", "media", "showreel.mp4"))}
+        />
+      </EndOfReel>
       <StudioIntro locale={locale} intro={introMessages(m)} />
       <SelectedWork locale={locale} messages={selectedWorkMessages(m)} projects={projects} />
       <WhatWeMake locale={locale} messages={m} />

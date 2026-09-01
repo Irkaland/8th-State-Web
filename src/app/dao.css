@@ -3426,3 +3426,491 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   font-family: var(--dao-f-ka);
   --ls: 0.08em;
 }
+
+/* ============================================================
+   ACT 01b - THE END OF THE REEL
+   ============================================================
+   The showreel is not cut away from; the television it plays on is switched
+   off, and the paper title card emerges out of that darkness. Scrolling back
+   up runs the tube in reverse.
+
+   Every value here is scroll-driven through custom properties written by
+   EndOfReel.tsx. Nothing is time-based, so the whole act is reversible at any
+   point.
+
+   THE WAVER RULE. `eorWaver` animates OPACITY. It is therefore only ever put
+   on a CHILD of the element that carries `opacity: var(--beamO)` or
+   `var(--glowO)`. Putting it on the same element makes the animation win over
+   the variable, which is exactly how a white dot used to survive on top of the
+   restored showreel. */
+
+@keyframes eorWaver {
+  0%,
+  100% {
+    opacity: 0.86;
+  }
+  34% {
+    opacity: 1;
+  }
+  58% {
+    opacity: 0.8;
+  }
+  76% {
+    opacity: 0.95;
+  }
+}
+
+.dao-eor {
+  position: relative;
+  /* one viewport of stage plus the scroll the choreography is read from */
+  height: calc(100svh + 260vh);
+}
+
+.dao-eor__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #050505;
+}
+
+/* ---- layer 1: the real showreel, inside the tube ---- */
+
+.dao-eor__reel {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+/* the showreel keeps its own markup and its own CSS; the tube only squashes
+   and drains it through the variables written on the stage */
+.dao-eor__reel .dao-reel {
+  height: 100%;
+  min-height: 0;
+}
+.dao-eor__reel .dao-reel__media {
+  transform: scaleY(var(--squash, 1));
+  filter: grayscale(var(--mono, 0)) contrast(calc(1 + var(--mono, 0) * 0.12))
+    brightness(calc(1 + var(--beamO, 0) * 0.5));
+  will-change: transform, filter;
+}
+/* the reel's own caption line retires as the tube closes */
+.dao-eor__reel .dao-reel__meta {
+  opacity: var(--metaO, 1);
+}
+/* scanlines, only while the tube is collapsing */
+.dao-eor__reel .dao-reel__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: var(--scanO, 0);
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* ---- layer 2: the tube's darkness ---- */
+
+.dao-eor__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: calc(var(--barH, 0) * 1% + 1px);
+  background: #050505;
+}
+.dao-eor__bar--top {
+  top: -1px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+.dao-eor__bar--bottom {
+  bottom: -1px;
+  box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* ---- layer 3: the horizontal light ---- */
+
+.dao-eor__beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  z-index: 4;
+  height: 0;
+  opacity: var(--beamO, 0);
+  transform: scaleX(var(--beamW, 1));
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.dao-eor__beamcore {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1.5px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 250, 238, 0.55) 12%,
+    #fffaee 42%,
+    #ffffff 50%,
+    #fffaee 58%,
+    rgba(255, 250, 238, 0.55) 88%,
+    transparent 100%
+  );
+  animation: eorWaver 0.9s steps(3) infinite;
+}
+.dao-eor__beambloom {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 120vw;
+  height: 26vh;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(255, 247, 230, 0.5) 0%,
+    rgba(255, 247, 230, 0.14) 42%,
+    transparent 70%
+  );
+}
+.dao-eor__beamhot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 30vw;
+  height: 10vh;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(255, 255, 252, 0.9) 0%,
+    rgba(255, 250, 238, 0.3) 55%,
+    transparent 75%
+  );
+}
+
+/* ---- layer 3b: the last light in the tube ---- */
+
+.dao-eor__glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  width: 14vmin;
+  height: 14vmin;
+  transform: translate(-50%, -50%) scale(var(--glowS, 1));
+  opacity: var(--glowO, 0);
+  pointer-events: none;
+}
+.dao-eor__glowin {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle,
+    #ffffff 0%,
+    rgba(255, 250, 238, 0.75) 22%,
+    rgba(255, 244, 220, 0.2) 52%,
+    transparent 72%
+  );
+  animation: eorWaver 1.1s steps(3) infinite;
+}
+
+/* ---- layer 4: the paper title card ---- */
+
+.dao-eor__paper {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--dao-paper);
+  /* the card is printed ink on paper. Without this it inherits the reel's own
+     light-on-dark colour from the act above and the title washes out. */
+  color: var(--dao-ink);
+  opacity: var(--paperO, 0);
+  pointer-events: none;
+}
+
+/* The studio's own serpent - the same serpent-mark.webp the burger sheet
+   draws - entering from the LEFT, mirrored, and revealed by a mask that
+   travels with --snake so it is drawn on rather than faded in. It sits low and
+   is cropped by the frame, so it never reaches the centred type. */
+.dao-eor__snake {
+  position: absolute;
+  left: -16vw;
+  bottom: 4vh;
+  width: min(1160px, 96vw);
+  aspect-ratio: 360 / 116;
+  transform: translateX(calc((1 - var(--snake, 0)) * -9vw)) rotate(-6deg);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(var(--snake, 0) * 130% - 24%),
+    rgba(0, 0, 0, 0.3) calc(var(--snake, 0) * 130% - 8%),
+    transparent calc(var(--snake, 0) * 130% + 4%)
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 calc(var(--snake, 0) * 130% - 24%),
+    rgba(0, 0, 0, 0.3) calc(var(--snake, 0) * 130% - 8%),
+    transparent calc(var(--snake, 0) * 130% + 4%)
+  );
+  mix-blend-mode: multiply;
+}
+.dao-eor__snakeink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--dao-red);
+  opacity: 0.92;
+  transform: scaleX(-1);
+  -webkit-mask: url("/assets/graphics/serpent-mark.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/serpent-mark.webp") center / contain no-repeat;
+}
+
+.dao-eor__sun {
+  position: absolute;
+  left: 50%;
+  top: 10vh;
+  width: clamp(72px, 8vw, 116px);
+  aspect-ratio: 1;
+  transform: translate(-50%, calc((1 - var(--sunA, 0)) * -18px));
+  opacity: var(--sunA, 0);
+  background: var(--dao-red);
+  -webkit-mask: url("/assets/graphics/sun.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/sun.webp") center / contain no-repeat;
+}
+
+.dao-eor__bird {
+  position: absolute;
+  aspect-ratio: 1;
+  background: var(--dao-ink);
+}
+.dao-eor__bird--l {
+  left: clamp(16px, 8vw, 150px);
+  top: 13vh;
+  width: clamp(52px, 5.5vw, 88px);
+  transform: translate(calc((1 - var(--birdA, 0)) * -14px), calc((1 - var(--birdA, 0)) * 8px))
+    rotate(-8deg);
+  opacity: calc(var(--birdA, 0) * 0.62);
+  -webkit-mask: url("/assets/graphics/swallow.svg") center / contain no-repeat;
+  mask: url("/assets/graphics/swallow.svg") center / contain no-repeat;
+}
+.dao-eor__bird--r {
+  right: clamp(12px, 6vw, 120px);
+  top: 19vh;
+  width: clamp(58px, 6.5vw, 104px);
+  transform: translate(calc((1 - var(--birdA, 0)) * 14px), calc((1 - var(--birdA, 0)) * -6px))
+    rotate(6deg);
+  opacity: calc(var(--birdA, 0) * 0.5);
+  -webkit-mask: url("/assets/graphics/bb-bird-open.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/bb-bird-open.webp") center / contain no-repeat;
+}
+
+.dao-eor__star {
+  position: absolute;
+  aspect-ratio: 1;
+  background: var(--dao-ink);
+}
+.dao-eor__star--a {
+  left: 24vw;
+  top: 8vh;
+  width: 30px;
+  opacity: calc(var(--starA, 0) * 0.85);
+  -webkit-mask: url("/assets/graphics/star-4.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/star-4.webp") center / contain no-repeat;
+}
+.dao-eor__star--b {
+  left: 66vw;
+  top: 6vh;
+  width: 40px;
+  opacity: calc(var(--starA, 0) * 0.55 * (1 - var(--mob, 0)));
+  -webkit-mask: url("/assets/graphics/star-pair.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/star-pair.webp") center / contain no-repeat;
+}
+.dao-eor__star--c {
+  right: 15vw;
+  top: 33vh;
+  width: 20px;
+  opacity: calc(var(--starA, 0) * 0.45);
+  -webkit-mask: url("/assets/graphics/star.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/star.webp") center / contain no-repeat;
+}
+.dao-eor__star--d {
+  left: 11vw;
+  top: 40vh;
+  width: 16px;
+  opacity: calc(var(--starA, 0) * 0.38 * (1 - var(--mob, 0)));
+  -webkit-mask: url("/assets/graphics/star-solid.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/star-solid.webp") center / contain no-repeat;
+}
+.dao-eor__star--e {
+  right: 27vw;
+  top: 12vh;
+  width: 12px;
+  opacity: calc(var(--starA, 0) * 0.6);
+  -webkit-mask: url("/assets/graphics/star-solid.webp") center / contain no-repeat;
+  mask: url("/assets/graphics/star-solid.webp") center / contain no-repeat;
+}
+
+/* the centred type. Each line rises out of its own overflow mask, which is
+   what makes it read as a title card being set rather than text fading in. */
+.dao-eor__card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2.2vh, 26px);
+  text-align: center;
+  padding: 0 24px;
+}
+.dao-eor__line {
+  display: block;
+  overflow: hidden;
+}
+.dao-eor__t1 {
+  display: block;
+  font-family: var(--dao-f-display);
+  font-size: clamp(56px, 10.5vw, 164px);
+  line-height: 0.94;
+  letter-spacing: 0.01em;
+  transform: translate3d(0, calc((1 - var(--t1, 0)) * 108%), 0);
+}
+.dao-eor__t2 {
+  display: block;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-editorial);
+  font-size: clamp(19px, 2.6vw, 38px);
+  letter-spacing: 0.34em;
+  padding-left: 0.34em;
+  transform: translate3d(0, calc((1 - var(--t2, 0)) * 112%), 0);
+}
+.dao-eor__t3 {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 28px);
+  margin-top: clamp(6px, 1.2vh, 16px);
+  opacity: var(--t3, 0);
+}
+.dao-eor__rule {
+  display: block;
+  width: clamp(40px, 7vw, 96px);
+  height: 1px;
+  background: var(--dao-ink);
+  opacity: 0.5;
+}
+.dao-eor__presents {
+  font-family: var(--f-glacier), sans-serif;
+  font-size: clamp(11px, 1.15vw, 16px);
+  letter-spacing: 0.44em;
+  padding-left: 0.44em;
+}
+
+.dao-eor__foot {
+  position: absolute;
+  bottom: 26px;
+  opacity: calc(var(--t3, 0) * 0.55);
+}
+.dao-eor__foot--l {
+  left: 32px;
+  font-family: var(--dao-f-ui);
+  font-weight: var(--dao-w-copy);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+}
+.dao-eor__foot--r {
+  right: 32px;
+  font-family: var(--f-glacier), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+
+@media (max-width: 720px) {
+  .dao-eor__foot--l,
+  .dao-eor__foot--r {
+    bottom: 18px;
+    font-size: 9px;
+  }
+  .dao-eor__foot--l {
+    left: 18px;
+  }
+  .dao-eor__foot--r {
+    right: 18px;
+  }
+}
+
+/* Reduced motion: no tube, no scroll choreography. The stage stops being
+   sticky and the card simply follows the reel as two plain screens. */
+@media (prefers-reduced-motion: reduce) {
+  .dao-eor {
+    height: auto;
+  }
+  .dao-eor__stage {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    background: transparent;
+  }
+  .dao-eor__reel {
+    position: relative;
+    inset: auto;
+  }
+  .dao-eor__reel .dao-reel {
+    height: 100svh;
+    min-height: 560px;
+  }
+  .dao-eor__reel .dao-reel__media {
+    transform: none;
+    filter: none;
+  }
+  .dao-eor__bar,
+  .dao-eor__beam,
+  .dao-eor__glow {
+    display: none;
+  }
+  .dao-eor__paper {
+    position: relative;
+    inset: auto;
+    height: 100svh;
+    min-height: 520px;
+    opacity: 1;
+  }
+  .dao-eor__snake {
+    transform: rotate(-6deg);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .dao-eor__sun,
+  .dao-eor__bird--l,
+  .dao-eor__bird--r,
+  .dao-eor__star {
+    opacity: 1;
+  }
+  .dao-eor__sun {
+    transform: translateX(-50%);
+  }
+  .dao-eor__bird--l {
+    transform: rotate(-8deg);
+    opacity: 0.62;
+  }
+  .dao-eor__bird--r {
+    transform: rotate(6deg);
+    opacity: 0.5;
+  }
+  .dao-eor__t1,
+  .dao-eor__t2 {
+    transform: none;
+  }
+  .dao-eor__t3,
+  .dao-eor__foot {
+    opacity: 1;
+  }
+  .dao-eor__foot {
+    opacity: 0.55;
+  }
+}
