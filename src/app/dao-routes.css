@@ -6356,6 +6356,15 @@ html:has(.dsc) {
   align-self: stretch;
   text-wrap: pretty;
 }
+/* Georgian sets wider than Latin, and the same four roles ran 4-26px past the
+   column on /ka - one line in English, two in Georgian. This is the tracking
+   the rest of the site already gives Georgian (the same 0.08em the portfolio
+   and document controls use); the size is untouched, so it is the established
+   convention rather than shrinking the type to force a fit. */
+:lang(ka) .dtm__role--2,
+:lang(ka) .dtm__role--pending {
+  letter-spacing: 0.08em;
+}
 .dtm__role--2::after,
 .dtm__role--pending::after {
   display: none;

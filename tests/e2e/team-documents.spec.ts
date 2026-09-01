@@ -434,6 +434,35 @@ test.describe("G · roles read as one line", () => {
     // ...but never back to one role per line
     expect(phone, "wrapping, not stacking").toBeLessThanOrEqual(3);
   });
+
+  /**
+   * Georgian sets wider than Latin, and the same four roles ran past the column
+   * on /ka - one line in English, two in Georgian. It takes the tracking the
+   * rest of the site already gives Georgian, at the same size, so the desktop
+   * line holds in both locales.
+   */
+  test("it holds one line at 1440 on the Georgian site too", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    for (const slug of ["mariam-kandiashvili", "beka-jokharidze"]) {
+      await gotoRoute(page, `/ka/team?person=${slug}`);
+      await expect(page.locator(".dtm__dossier")).toHaveCount(1);
+      const el = page.locator(".dtm__dossier .dtm__role--2");
+      const m = await el.evaluate((e) => {
+        const cs = getComputedStyle(e);
+        return {
+          lines: Math.round(e.getBoundingClientRect().height / parseFloat(cs.lineHeight)),
+          ls: cs.letterSpacing,
+          fs: cs.fontSize,
+        };
+      });
+      expect(m.lines, `${slug} should be one line on /ka`).toBe(1);
+      // tracked tighter for Georgian, but NOT shrunk
+      expect(parseFloat(m.ls)).toBeLessThan(1);
+      expect(m.fs, "the size is untouched").toBe("9.5px");
+      // and the separators survive
+      expect((await el.innerText()).match(/·/g) ?? []).toHaveLength(3);
+    }
+  });
 });
 
 test.describe("G · the portfolio control is text only on a phone", () => {
