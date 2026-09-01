@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import type { SelectedWorkMessages } from "@/i18n/slices";
 import type { Locale } from "@/i18n/locales";
@@ -16,7 +16,8 @@ export type DaoWorkProject = {
   role: string;
   client: string;
   year: string;
-  cover: string;
+  /** absent until the studio supplies the master; the frame stays either way */
+  cover?: string;
   alt: string;
 };
 
@@ -236,12 +237,11 @@ export function SelectedWork({
                 <div className="dao-weave" />
               </div>
               <div className="dao-work__frame">
-                <Image
+                <MediaSlot
                   src={p.cover}
                   alt={rel === 0 ? p.alt : ""}
-                  fill
+                  mark={m.imagePending}
                   sizes="(max-width: 720px) 90vw, 820px"
-                  className="object-cover"
                 />
                 <span className="dao-work__badge">{up(m.caseStudy)}</span>
                 {rel === 0 ? (

@@ -163,6 +163,7 @@ describe("§05 each slice carries what its component renders, and no more", () =
     // inside the chrome's own legitimate "START A PROJECT", so a value probe
     // reports a leak that is not there.
     expect(Object.keys(c).sort()).toEqual([
+      "imagePending",
       "menu",
       "nav",
       "primary",

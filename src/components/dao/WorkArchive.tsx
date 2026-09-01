@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { WorkArchiveMessages } from "@/i18n/slices";
@@ -15,7 +15,8 @@ import { WK_CTX_KEY, parseWorkContext } from "@/lib/work-context";
 export type ArchiveItem = {
   slug: string;
   title: string;
-  cover: string;
+  /** absent until the studio supplies the master; the frame stays either way */
+  cover?: string;
   alt: string;
   discipline: string; // localized label, uppercase
   disciplineId: string;
@@ -293,6 +294,7 @@ export function WorkArchive({
               <Frame
                 p={p}
                 locale={locale}
+                mark={m.imagePending}
                 big
                 badge={m.caseStudy}
                 n={`PRJ-${pad(n)}`}
@@ -311,7 +313,13 @@ export function WorkArchive({
           frameIndex += 1;
           return (
             <InView key={p.slug} className="dwk__row--center">
-              <Frame p={p} locale={locale} n={`PRJ-${pad(frameIndex)}`} onOpen={stamp} />
+              <Frame
+                p={p}
+                locale={locale}
+                mark={m.imagePending}
+                n={`PRJ-${pad(frameIndex)}`}
+                onOpen={stamp}
+              />
             </InView>
           );
         }
@@ -333,12 +341,26 @@ export function WorkArchive({
                     <div className="dwk__greenpaper" aria-hidden="true">
                       <div className="dao-grain--strong" style={{ opacity: 0.45 }} />
                     </div>
-                    <Frame p={p} locale={locale} n={`PRJ-${pad(n)}`} lab onOpen={stamp} />
+                    <Frame
+                      p={p}
+                      locale={locale}
+                      mark={m.imagePending}
+                      n={`PRJ-${pad(n)}`}
+                      lab
+                      onOpen={stamp}
+                    />
                   </div>
                 );
               }
               return (
-                <Frame key={p.slug} p={p} locale={locale} n={`PRJ-${pad(n)}`} onOpen={stamp} />
+                <Frame
+                  key={p.slug}
+                  p={p}
+                  locale={locale}
+                  mark={m.imagePending}
+                  n={`PRJ-${pad(n)}`}
+                  onOpen={stamp}
+                />
               );
             })}
           </InView>
@@ -367,6 +389,7 @@ function Frame({
   p,
   locale,
   n,
+  mark,
   big,
   lab,
   badge,
@@ -377,6 +400,8 @@ function Frame({
   p: ArchiveItem;
   locale: Locale;
   n: string;
+  /** the shared mark a frame prints while its cover is pending */
+  mark: string;
   big?: boolean;
   lab?: boolean;
   badge?: string;
@@ -393,13 +418,12 @@ function Frame({
       data-dao-card={p.slug}
       onClick={() => onOpen?.(p.slug)}
     >
-      <Image
+      <MediaSlot
         src={p.cover}
         alt={p.alt}
-        fill
+        mark={mark}
         sizes={big ? "100vw" : "(max-width: 720px) 100vw, 60vw"}
         priority={priority}
-        className="object-cover"
       />
       {badge ? (
         <span className="dwk__badge mo-d">

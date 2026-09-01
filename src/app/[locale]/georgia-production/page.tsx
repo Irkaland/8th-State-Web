@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
@@ -182,12 +183,11 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
             </div>
 
             <div className="dgp__platemain dao-fade">
-              <Image
+              <MediaSlot
                 src={plate1.src}
                 alt={t(plate1.alt, locale)}
-                fill
+                mark={m.common.imagePending}
                 sizes="100vw"
-                className="object-cover"
               />
               {/* the drawn registration frame - a plate is marked up, not framed
                   in a border */}
@@ -215,16 +215,15 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
             <div className="dgp__platerow">
               {plates.map((p, i) => (
                 <div
-                  key={p.src}
+                  key={p.label.en}
                   className="dao-fade"
                   style={{ ["--d" as string]: `${(i + 1) * 120}ms` }}
                 >
-                  <Image
+                  <MediaSlot
                     src={p.src}
                     alt={t(p.alt, locale)}
-                    fill
+                    mark={m.common.imagePending}
                     sizes="(max-width:720px) 78vw, 50vw"
-                    className="object-cover"
                   />
                   <div className="dgp__platetag dgp__platetag--sm">
                     <span className="dgp__platenum">

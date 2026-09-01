@@ -127,8 +127,6 @@ export type Department = {
    * yet never sends a reader to an empty page.
    */
   relatedWork: CapabilityId | null;
-  /** the image-led evidence strip - Photography only, per the approved design */
-  gallery?: { src: string; alt: LocalizedText }[];
 };
 
 const byId = (id: string): TopLevelService => {
@@ -360,13 +358,6 @@ export const DEPARTMENTS: Department[] = [
     worksWith: ["creative-direction", "production-design"],
     absorbs: ["photography"],
     relatedWork: "photography",
-    // the approved image-led breathing point: one selected frame and two frames
-    // from the sheet beside it
-    gallery: [
-      { src: "/media/berlin-editorial.jpg", alt: pending("Editorial photograph, selected frame") },
-      { src: "/media/bts-set.jpg", alt: pending("Behind the scenes on set") },
-      { src: "/media/pure-royal.jpg", alt: pending("Campaign photograph") },
-    ],
   },
   {
     n: "04",
@@ -597,6 +588,7 @@ export const SERVICES_COPY = {
     "One brief. Five departments. A single production line from first idea to final delivery.",
   ),
   cta: pending("START A PROJECT"),
-  contactSheet: pending("CONTACT SHEET"),
-  selectedFrame: pending("FR. 12 - SELECTED"),
+  /* the mark inside a plate whose master has not been supplied yet. Approved
+     Georgian, not pending(): it is the same line the rest of the site prints. */
+  imagePending: { en: "Image pending", ka: "სურათი მოსამზადებელია" },
 } as const;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
@@ -141,13 +141,7 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
               </div>
             </div>
             <div className="dpr__bts dao-fade" style={{ ["--d" as string]: "180ms" }}>
-              <Image
-                src="/media/bts-camera.jpg"
-                alt=""
-                fill
-                sizes="(max-width:720px) 100vw, 30vw"
-                className="object-cover"
-              />
+              <MediaSlot mark={m.common.imagePending} sizes="(max-width:720px) 100vw, 30vw" />
             </div>
           </div>
         </InView>

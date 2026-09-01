@@ -2,38 +2,41 @@ import { expect, test, type Page } from "@playwright/test";
 import { gotoRoute } from "./helpers";
 
 /**
- * The two images that once had to bypass the image optimizer.
+ * The brand logo must reach the page through the image optimizer.
  *
- * SUPERSEDED CONTRACT. This file used to assert that the brand logo and the AOM
- * cover were served as DIRECT asset URLs - `unoptimized` - because a spell of
- * unstable Netlify image derivatives was rendering them broken. That workaround
- * long outlived its cause and became the single most expensive thing on the
- * site: the 5000x5000 logo master shipped whole (1,331,304 bytes) to fill a
- * 128px chip, and the 2400x3600 AOM cover (481,538 bytes) to fill a 200px
- * still - a 19-53x and 5.9-9.8x oversample respectively.
+ * HISTORY. This file first asserted that the brand logo and the AOM cover were
+ * served as DIRECT asset URLs - `unoptimized` - because a spell of unstable
+ * Netlify image derivatives was rendering them broken. That workaround outlived
+ * its cause and became the most expensive thing on the site: the 5000x5000 logo
+ * master shipped whole (1,331,304 bytes) to fill a 128px chip. The bypass was
+ * removed and this file was inverted to protect the opposite outcome - that the
+ * masters go THROUGH the optimizer, at a width matching their render, so the
+ * bypass cannot quietly return and nobody has to rediscover a 1.3 MB logo by
+ * measuring it.
  *
- * The optimizer is verified working, so the bypass is gone. What this file
- * protects now is BOTH halves of the outcome:
+ * WHAT CHANGED. The photography half of that contract has no subject any more.
+ * The demo imagery - Pexels editorial placeholders, per public/media - was
+ * removed from the whole site: every image POSITION survives as an empty
+ * editorial slot, but no photograph is served. So the AOM cover and the
+ * production plate assertions are retired, not weakened: the files they
+ * measured are deleted, and the burger preview they followed now holds a plate
+ * rather than eight photographs.
  *
- *   1. the original protection - these two images must actually render, and
- *      must never answer 5xx. That is the real bug the old test was guarding.
- *   2. the new one - they must go THROUGH the optimizer at a sane width, so the
- *      bypass cannot quietly return and nobody has to rediscover the 1.3 MB
- *      logo by measuring it.
+ * The logo half is untouched and still runs. It is the half that was actually
+ * load-bearing - a brand asset, present on every route, and the one that was
+ * shipping a megabyte - and it keeps the whole guarantee: rendered, never 5xx,
+ * never a raw master, and requested at a width that matches the chip. When the
+ * studio's own photography lands, the second half is worth restoring against a
+ * real master.
  */
 
-const AOM_COVER = "aom-cover";
-/** the first production plate in the What We Make dossier */
-const PLATE = "aom-film-still";
 const BRAND_LOGO = "8th-state-logo.png";
 
-/** Every request touching either asset, plus any server error on them. */
+/** Every request touching the logo, plus any server error on it. */
 function collectImageRequests(page: Page) {
   const requests: string[] = [];
   const failed: string[] = [];
-  const match = (url: string) =>
-    (url.includes(AOM_COVER) || url.includes(PLATE) || url.includes(BRAND_LOGO)) &&
-    !url.includes("logo-mark");
+  const match = (url: string) => url.includes(BRAND_LOGO) && !url.includes("logo-mark");
 
   page.on("request", (req) => {
     const url = req.url();
@@ -67,38 +70,21 @@ function widthsOf(requests: string[], asset: string): number[] {
     .filter((n) => Number.isFinite(n) && n > 0);
 }
 
-test("the brand logo and AOM cover render through the optimizer, not as raw masters", async ({
-  page,
-}) => {
+test("the brand logo renders through the optimizer, not as a raw master", async ({ page }) => {
   const seen = collectImageRequests(page);
   await gotoRoute(page, "/");
-
-  // The AOM COVER used to be the worked-example still on a What We Make row.
-  // The approved dossier prints its own production plates instead, and outside
-  // this section the archive shows each project's HERO rather than its cover -
-  // so on the homepage the cover now renders only inside the nav preview, which
-  // the second test in this file already follows. The claim being made here -
-  // a large master reaches the page through the optimizer, at a width that
-  // matches its render, never as a raw file - is asked of the plate that took
-  // its place in that composition.
-  await page.locator(".dao-wwm").scrollIntoViewIfNeeded();
-  await expectLoaded(page, `img[src*="${PLATE}"]`);
 
   // the logo is the chip on the closing production card
   await page.locator(".dao-contact").scrollIntoViewIfNeeded();
   await expectLoaded(page, `img[src*="${BRAND_LOGO}"]`);
 
-  // 1. both now go through the optimizer
-  expect(
-    seen.requests.some((u) => u.includes("/_next/image") && u.includes(PLATE)),
-    "the production plate should be optimized",
-  ).toBe(true);
+  // 1. it goes through the optimizer
   expect(
     seen.requests.some((u) => u.includes("/_next/image") && u.includes("8th-state-logo")),
     "the brand logo should be optimized",
   ).toBe(true);
 
-  // 2. and the raw masters are never fetched directly again
+  // 2. and the raw master is never fetched directly again
   expect(
     seen.requests.filter((u) => !u.includes("/_next/image")),
     "no direct request for a raw master",
@@ -112,31 +98,44 @@ test("the brand logo and AOM cover render through the optimizer, not as raw mast
     `the logo chip is at most 128px wide; requested w=${logoWidths.join(",")}`,
   ).toBeLessThanOrEqual(384);
 
-  const plateWidths = widthsOf(seen.requests, "/media/aom-film-still.jpg");
-  expect(plateWidths.length).toBeGreaterThan(0);
-  expect(
-    Math.max(...plateWidths),
-    `the production plate renders at most 230px wide; requested w=${plateWidths.join(",")}`,
-  ).toBeLessThanOrEqual(640);
-
-  expect(seen.failed, "neither asset may error").toEqual([]);
+  expect(seen.failed, "the logo may not error").toEqual([]);
 });
 
-test("the burger preview loads the AOM cover through the optimizer", async ({ page }) => {
-  const seen = collectImageRequests(page);
-  await gotoRoute(page, "/");
+/**
+ * The nav preview is a surface now, not a gallery.
+ *
+ * It used to crossfade eight demo photographs, one per destination, and this
+ * test measured the width the AOM cover was requested at. The photographs are
+ * gone; the framed plate that travels with the hovered row is not. What is
+ * asserted here is the part that still has to be true: the composition survives
+ * the imagery being removed, and it serves no photograph at all.
+ */
+test("the burger preview keeps its plate and serves no photography", async ({ page }) => {
+  const media: string[] = [];
+  page.on("request", (req) => {
+    const u = req.url();
+    // public/media only. Next serves its font bundle from /_next/static/media,
+    // which is not photography and must not be caught here.
+    const direct = /\/media\/[^/]+$/.test(new URL(u).pathname) && !u.includes("/_next/static/");
+    const optimized = u.includes("/_next/image") && u.includes(encodeURIComponent("/media/"));
+    if ((direct || optimized) && !u.includes("showreel")) media.push(u);
+  });
 
+  await gotoRoute(page, "/");
   await page.mouse.move(600, 400);
   await page.locator(".dao-burger").click();
   await page.getByLabel("Primary").getByRole("link", { name: "WORK", exact: true }).hover();
-  await expectLoaded(page, `.dao-nav__preview img[src*="${AOM_COVER}"]`);
 
-  expect(
-    seen.requests.some((u) => u.includes("/_next/image") && u.includes("aom-cover")),
-    "the preview should be optimized",
-  ).toBe(true);
-  // the preview box is 300px wide (dao.css), so nothing near the master
-  const widths = widthsOf(seen.requests, "/media/aom-cover.jpg");
-  expect(Math.max(...widths), `requested w=${widths.join(",")}`).toBeLessThanOrEqual(640);
-  expect(seen.failed).toEqual([]);
+  const plate = page.locator(".dao-nav__preview");
+  await expect(plate).toHaveClass(/is-live/);
+  // the panel still has its box - the composition did not collapse with the
+  // photographs
+  const box = await plate.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThan(100);
+  expect(box?.height ?? 0).toBeGreaterThan(60);
+  // and it holds the waiting mark rather than an <img>
+  await expect(plate.locator(".dms")).toBeVisible();
+  expect(await plate.locator("img").count()).toBe(0);
+
+  expect(media, "the nav must request no demo photography").toEqual([]);
 });

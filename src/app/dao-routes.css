@@ -10,6 +10,76 @@
 
 /* ---------- shared route scaffolding ---------- */
 
+/* An image slot the studio has not supplied a master for yet.
+   Fills whatever frame the caller already has - it never sets its own size,
+   ratio or position, so the approved composition survives the picture being
+   absent. Board tone rather than grey, and one small mark in the numeral face
+   set low and quiet: the same gesture TEAM uses for a pending portrait. A
+   prepared plate, not a missing asset. */
+.dms {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: #e6e0d4;
+}
+.dms__mark {
+  position: absolute;
+  left: 11px;
+  bottom: 9px;
+  font-family: var(--dao-f-numeral);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  /* 5.4:1 on the board tone. The mark is small and set to be read, so it
+     carries real contrast rather than the 0.4 ink wash that measured 2.5:1 -
+     quiet is a matter of size, weight and placement here, not of fading the
+     type until it fails AA. */
+  color: #5c5851;
+  white-space: nowrap;
+}
+/* On ink-dark grounds the board tone would punch a hole in the page, so the
+   slot reads as a slightly lifted panel instead.
+   The archive frames are here for a second reason: they carry the project
+   title and its metadata OVER the image, in cream, under a scrim built for a
+   dark photograph. On a light board that type became cream-on-cream. The dark
+   panel keeps the overlay readable while the frame waits, and the composition
+   is unchanged the day a real photograph lands in it. */
+.dsv--dark .dms,
+.dao-ink .dms,
+.dgp__cover .dms,
+.dwk__frame .dms,
+.dao-work__frame .dms {
+  background: rgba(242, 237, 227, 0.09);
+}
+.dsv--dark .dms__mark,
+.dao-ink .dms__mark,
+.dgp__cover .dms__mark,
+.dwk__frame .dms__mark,
+.dao-work__frame .dms__mark {
+  /* 5.9:1 on that lifted panel */
+  color: rgba(242, 237, 227, 0.62);
+}
+/* Some frames already print their own furniture in the bottom-left corner -
+   Georgia's PLATE nn tag, the archive hero's title and metadata - so the mark
+   moves to the opposite corner rather than sitting under them. */
+.dgp__platemain .dms__mark,
+.dgp__platerow .dms__mark,
+.dwk__frame .dms__mark {
+  left: auto;
+  bottom: auto;
+  right: 12px;
+  top: 11px;
+}
+/* the printed stock multiplies, which does nothing on a dark panel and only
+   muddies it */
+.dsv--dark .dms .dao-grain,
+.dao-ink .dms .dao-grain,
+.dgp__cover .dms .dao-grain,
+.dwk__frame .dms .dao-grain,
+.dao-work__frame .dms .dao-grain {
+  mix-blend-mode: screen;
+  opacity: 0.06;
+}
+
 /* §13/§14: the canvas behind the document (what rubber-band overscroll
    exposes) follows each route's own ground. The global default is ink
    (globals.css); routes whose final section is paper or the lab olive
@@ -7915,53 +7985,6 @@ html:has(.dtm) {
   color: var(--sub);
 }
 
-/* ---------- photography evidence strip ---------- */
-.dsvc__evidence {
-  position: relative;
-  display: flex;
-  gap: clamp(14px, 2vw, 26px);
-  margin-top: clamp(26px, 4.5vh, 46px);
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-.dsvc__evmain {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 2;
-  min-width: min(100%, 340px);
-}
-.dsvc__evpair {
-  display: flex;
-  gap: clamp(14px, 2vw, 26px);
-  flex: 1;
-  min-width: 220px;
-}
-.dsvc__evframe {
-  display: block;
-  position: relative;
-  overflow: hidden;
-  background: rgba(19, 18, 16, 0.06);
-}
-.dsvc__evframe--wide {
-  aspect-ratio: 21 / 10;
-}
-.dsvc__evframe--tall {
-  aspect-ratio: 4 / 5;
-  flex: 1;
-}
-.dsvc__evcap {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--dao-f-numeral);
-  font-size: 9px;
-  letter-spacing: 0.24em;
-  color: var(--sub);
-}
-.dsvc__evcap--accent {
-  color: var(--accent);
-}
-
 /* ---------- capability register ---------- */
 .dsvc__register {
   position: relative;
@@ -8424,9 +8447,6 @@ html:has(.dtm) {
   /* the plate is a wide-composition device; the phone keeps the reading */
   .dsvc__plate {
     display: none;
-  }
-  .dsvc__evpair {
-    min-width: 0;
   }
   .dsvc__chapterfoot {
     align-items: flex-start;

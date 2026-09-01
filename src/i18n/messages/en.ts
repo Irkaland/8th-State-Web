@@ -27,6 +27,11 @@ const en = {
     switchToGeorgian: "Switch to Georgian",
     switchToEnglish: "Switch to English",
     instagram: "Instagram",
+    // the mark inside an image slot the studio has not supplied a master for.
+    // One string for the whole site: the waiting state is the same editorial
+    // gesture wherever it appears, and TEAM's own "Portrait pending" is the
+    // pattern it follows.
+    imagePending: "Image pending",
   },
   home: {
     hero: {
@@ -213,7 +218,7 @@ const en = {
     buildBody:
       "High-fidelity interactive demo built with Next.js, React and TypeScript. Form submission is simulated; no production infrastructure is included in this phase.",
     imageryBody:
-      "Editorial placeholder photography sourced from Pexels (Pexels License) and clearly documented in DEMO_MEDIA_SOURCES.md. All imagery is provisional and will be replaced with 8th State studio masters.",
+      "No photography ships in this phase. Every image position is an empty editorial slot held at its final size and place, ready for 8th State studio masters; the demo imagery that previously stood in for them has been removed.",
   },
   // "One Continuous Take" - approved Digital Art Object homepage (Direction 01).
   dao: {

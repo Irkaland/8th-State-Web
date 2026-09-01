@@ -113,7 +113,12 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
         departmentName: t(g.name, locale),
         role: p.role ? t(p.role, locale) : undefined,
         secondaryRoles: p.secondaryRoles.map((r) => t(r, locale)),
-        portrait: p.portrait ? { src: p.portrait.src, alt: t(p.portrait.alt, locale) } : undefined,
+        // a portrait entry with no file yet is the same thing as no portrait:
+        // the sheet draws its initials-and-pending frame either way, and this
+        // keeps it from ever being handed an empty src
+        portrait: p.portrait?.src
+          ? { src: p.portrait.src, alt: t(p.portrait.alt, locale) }
+          : undefined,
         shortStatement: p.shortStatement ? t(p.shortStatement, locale) : undefined,
         bio: p.bio ? t(p.bio, locale) : undefined,
         // practice speaks the Services vocabulary wherever the id is canonical

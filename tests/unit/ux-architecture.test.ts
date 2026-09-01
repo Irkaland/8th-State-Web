@@ -350,9 +350,21 @@ describe("§28 the five top-level services", () => {
     );
   });
 
-  it("uses real archive stills for its plates", () => {
+  /**
+   * This used to assert that every plate pointed at a real archive still.
+   * That contract is deliberately reversed: the demo photography was removed
+   * site-wide, so a plate that still carried a `src` would be exactly the
+   * thing the cleanup deleted. What has to hold now is the part that was
+   * always the point - each of the five services has ONE plate position, and
+   * that position keeps its printed caption so the frame stays captioned and
+   * sized while it waits for the studio's own still.
+   */
+  it("gives every service exactly one plate position, and no stand-in photograph", () => {
     for (const s of WHAT_WE_MAKE) {
-      expect(s.plate.src, `${s.id} plate`).toMatch(/^\/media\/[a-z0-9-]+\.jpg$/);
+      expect(s.plate, `${s.id} plate`).toBeTruthy();
+      expect(s.plate.src, `${s.id} must ship no stand-in photograph`).toBeUndefined();
+      expect(s.plate.label.en.length, `${s.id} plate caption`).toBeGreaterThan(0);
+      expect(s.plate.label.ka.length, `${s.id} plate caption (ka)`).toBeGreaterThan(0);
     }
   });
 });

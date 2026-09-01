@@ -5,11 +5,21 @@ import type { Media, Project } from "./types";
 // note on projectStatus in content/types.ts.
 //
 // NOTE: Titles/clients marked as provisional are placeholder/editorial demo content derived from
-// the approved mockup (which flagged them with *). Imagery is editorial placeholder (see
-// DEMO_MEDIA_SOURCES.md). None of this implies a real completed 8th State client engagement.
+// the approved mockup (which flagged them with *). NO imagery ships: the demo photography that
+// used to stand in for the studio's masters has been removed, and every image position renders as
+// an empty editorial slot. None of this implies a real completed 8th State client engagement.
 
-const img = (src: string, en: string, ka: string, extra: Partial<Media> = {}): Media => ({
-  src,
+/**
+ * One image position in the archive.
+ *
+ * There is no `src`: the studio's own masters have not been delivered, and the
+ * demo photography that used to stand in for them has been removed rather than
+ * left to read as finished work. What survives is the description of what
+ * belongs in each position - which is the part that is actually editorial - so
+ * a slot arrives already captioned and already sized, and the file is a one-key
+ * addition later.
+ */
+const img = (en: string, ka: string, extra: Partial<Media> = {}): Media => ({
   alt: { en, ka },
   ...extra,
 });
@@ -54,29 +64,21 @@ export const PROJECTS: Project[] = [
     },
     usage: { en: "Social, e-commerce, OOH", ka: "სოციალური, ელკომერცია, OOH" },
     cover: img(
-      "/media/aom-cover.jpg",
       "AOM summer campaign - bold styling under saturated red light",
       "AOM საზაფხულო კამპანია - თამამი სტილინგი გაჯერებულ წითელ შუქზე",
     ),
     hero: img(
-      "/media/aom-hero.jpg",
       "AOM campaign hero - model in a red-lit studio scene",
       "AOM კამპანიის ჰერო - მოდელი წითლად განათებულ სცენაზე",
     ),
     gallery: [
       img(
-        "/media/aom-gallery-1.jpg",
         "Model in colourful conceptual fashion, full-bleed",
         "მოდელი ფერად კონცეპტუალურ მოდაში, სრული კადრი",
       ),
+      img("Warm-toned studio portrait", "თბილტონიანი სტუდიური პორტრეტი"),
+      img("Studio portrait with motion", "სტუდიური პორტრეტი მოძრაობით"),
       img(
-        "/media/aom-gallery-2.jpg",
-        "Warm-toned studio portrait",
-        "თბილტონიანი სტუდიური პორტრეტი",
-      ),
-      img("/media/aom-gallery-3.jpg", "Studio portrait with motion", "სტუდიური პორტრეტი მოძრაობით"),
-      img(
-        "/media/aom-film-still.jpg",
         "Film still - figure inside a car under coloured light",
         "ფილმის კადრი - ფიგურა მანქანაში ფერად შუქზე",
         {
@@ -88,7 +90,6 @@ export const PROJECTS: Project[] = [
         },
       ),
       img(
-        "/media/aom-detail.jpg",
         "Detail crop - black satin and leather gloves",
         "დეტალის კროპი - შავი სატინი და ტყავის ხელთათმანები",
         { kind: "detail" },
@@ -96,13 +97,11 @@ export const PROJECTS: Project[] = [
     ],
     bts: [
       img(
-        "/media/bts-camera.jpg",
         "Crew with a camera on set under red lighting",
         "ჯგუფი კამერით გადაღებაზე წითელ განათებაზე",
         { kind: "bts" },
       ),
       img(
-        "/media/bts-set.jpg",
         "Set prep - lighting equipment being arranged",
         "დეკორის მომზადება - განათების აღჭურვილობის განლაგება",
         { kind: "bts" },
@@ -161,7 +160,6 @@ export const PROJECTS: Project[] = [
       ka: "სტუდიური აწყობა მოძიებული ბუნებრივი რეკვიზიტით; ერთსესიური გადაღება ჰერო და ელკომერციის ფორმატებისთვის.",
     },
     cover: img(
-      "/media/bal-dafrique.jpg",
       "Bal d'Afrique fragrance styled with cotton blooms on warm sand tones",
       "Bal d'Afrique სუნამო ბამბის ყვავილებით თბილ ქვიშისფერ ტონებზე",
     ),
@@ -206,7 +204,6 @@ export const PROJECTS: Project[] = [
       ka: "სწრაფი მაგიდის გადაღება კონდენსატის შესანარჩუნებლად; ფერგაწონასწორებული ფონი და კონტროლირებული მკვეთრი შუქი.",
     },
     cover: img(
-      "/media/meama-iced.jpg",
       "Iced coffee in a textured glass with a straw against green",
       "ცივი ყავა ტექსტურირებულ ჭიქაში ჩხირით მწვანე ფონზე",
     ),
@@ -257,7 +254,6 @@ export const PROJECTS: Project[] = [
       ka: "ზედა რიგი, ბუნებრივი ფანჯრის შუქი, საკვები დასტილული როგორც მიმდინარე ნამდვილი კვება.",
     },
     cover: img(
-      "/media/gastronome-kitchen.jpg",
       "Overhead table with khachapuri, wine and salads",
       "ზემოდან ხედი მაგიდაზე ხაჭაპურით, ღვინითა და სალათებით",
     ),
@@ -305,7 +301,6 @@ export const PROJECTS: Project[] = [
       ka: "ღამის ლოკაციის მოძიება, თვალთვალის მანქანის რიგი, პრაქტიკული ნეონი და კომპაქტური ღამის ჯგუფი.",
     },
     cover: img(
-      "/media/volvo-film.jpg",
       "Film still - figure by a vintage car under neon light",
       "ფილმის კადრი - ფიგურა ვინტაჟურ მანქანასთან ნეონის შუქზე",
       { kind: "video" },
@@ -358,7 +353,6 @@ export const PROJECTS: Project[] = [
       ka: "მცირე მობილური ჯგუფი, არსებული შუქი, დამონტაჟებული რიტმზე და არა ნარატივზე.",
     },
     cover: img(
-      "/media/leghvi-culture.jpg",
       "Cinematic night scene in colourful neon",
       "კინემატოგრაფიული ღამის სცენა ფერად ნეონში",
     ),
@@ -403,7 +397,6 @@ export const PROJECTS: Project[] = [
       ka: "ერთლოკაციური გადაღება, ბუნებრივი + ფორმირებული შუქი, მინიმალური რეკვიზიტი.",
     },
     cover: img(
-      "/media/office-editorial.jpg",
       "Model in a black blazer in a stylised studio shot",
       "მოდელი შავ ბლეიზერში სტილიზებულ სტუდიურ კადრში",
     ),
@@ -448,7 +441,6 @@ export const PROJECTS: Project[] = [
       ka: "მაკროსთვის მოსახერხებელი მაგიდა, კონტროლირებული ანარეკლები, მიბმული გადაღება.",
     },
     cover: img(
-      "/media/chronograph.jpg",
       "Object in textured glass under warm directional light",
       "ობიექტი ტექსტურირებულ მინაში თბილ მიმართულ შუქზე",
     ),
@@ -493,7 +485,6 @@ export const PROJECTS: Project[] = [
       ka: "აგებული ფერადი დეკორი, კონტროლირებული შუქი, კომპოზიციაზე ორიენტირებული კადრირება.",
     },
     cover: img(
-      "/media/glass-interiors.jpg",
       "Green velvet chair in a striped coloured interior",
       "მწვანე ხავერდის სავარძელი ზოლიან ფერად ინტერიერში",
     ),
@@ -541,7 +532,6 @@ export const PROJECTS: Project[] = [
       ka: "ოქროს საათის არქიტექტურის გადაღება, მინიმალური მოდელი, ფერზე აგებული გრეიდი.",
     },
     cover: img(
-      "/media/florida-hospitality.jpg",
       "Building facade with red and blue mosaic tiling",
       "შენობის ფასადი წითელი და ლურჯი მოზაიკის ფილებით",
     ),
@@ -586,7 +576,6 @@ export const PROJECTS: Project[] = [
       ka: "უწყვეტი ფერადი ფონი, მკვეთრი შუქი, მიბმული პროდუქტის გადაღება.",
     },
     cover: img(
-      "/media/pure-royal.jpg",
       "Fragrance bottle on a vivid orange background",
       "სუნამოს ბოთლი ცოცხალ ნარინჯისფერ ფონზე",
     ),
@@ -628,7 +617,6 @@ export const PROJECTS: Project[] = [
       ka: "სწრაფი ლოკაციური პორტრეტი, მინიმალური ჯგუფი, ბუნებრივი შუქი.",
     },
     cover: img(
-      "/media/berlin-editorial.jpg",
       "Fashion model posed in a Berlin studio setting",
       "მოდის მოდელი ბერლინის სტუდიურ გარემოში",
     ),

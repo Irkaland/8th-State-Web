@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale } from "@/i18n/locales";
@@ -108,13 +108,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
           <InView className="dst__about" threshold={0.1}>
             <div className="dst__aboutmedia dao-fade">
               <div className="dsv__img">
-                <Image
-                  src="/media/bts-set.jpg"
-                  alt=""
-                  fill
-                  sizes="(max-width:720px) 100vw, 42vw"
-                  className="object-cover"
-                />
+                <MediaSlot mark={m.common.imagePending} sizes="(max-width:720px) 100vw, 42vw" />
               </div>
               <span className="dst__sun dao-mask" aria-hidden="true" />
             </div>

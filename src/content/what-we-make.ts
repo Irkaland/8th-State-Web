@@ -75,8 +75,13 @@ export type TopLevelService = {
   keywords: LocalizedText;
   /** the shortened run the phone composition carries */
   keywordsShort: LocalizedText;
-  /** the production plate - a real archive still, with its printed caption */
-  plate: { src: string; label: LocalizedText };
+  /**
+   * The production plate: one image position per service, with its printed
+   * caption. The caption is what the plate is FOR - it names the kind of frame
+   * that belongs there - so it stays whether or not the still has been
+   * supplied. `src` arrives when the studio delivers the master.
+   */
+  plate: { src?: string; label: LocalizedText };
 };
 
 export const WHAT_WE_MAKE: TopLevelService[] = [
@@ -95,7 +100,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
       en: "Development · Producing · Shooting · Post",
       ka: "განვითარება · პროდიუსინგი · გადაღება · პოსტი",
     },
-    plate: { src: "/media/aom-film-still.jpg", label: { en: "Film still", ka: "კადრი ფილმიდან" } },
+    plate: { label: { en: "Film still", ka: "კადრი ფილმიდან" } },
   },
   {
     n: "02",
@@ -112,7 +117,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
       en: "Set design · Scenography · Props · Costume",
       ka: "დეკორის დიზაინი · სცენოგრაფია · რეკვიზიტი · კოსტიუმი",
     },
-    plate: { src: "/media/georgia-set.jpg", label: { en: "On set", ka: "დეკორზე" } },
+    plate: { label: { en: "On set", ka: "დეკორზე" } },
   },
   {
     n: "03",
@@ -129,7 +134,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
       en: "Commercial · Fashion · Editorial · Documentary",
       ka: "კომერციული · მოდა · რედაქციული · დოკუმენტური",
     },
-    plate: { src: "/media/berlin-editorial.jpg", label: { en: "Editorial", ka: "რედაქციული" } },
+    plate: { label: { en: "Editorial", ka: "რედაქციული" } },
   },
   {
     n: "04",
@@ -146,7 +151,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
       en: "Campaigns · Visual research · Brand worlds",
       ka: "კამპანიები · ვიზუალური კვლევა · ბრენდის სამყაროები",
     },
-    plate: { src: "/media/pure-royal.jpg", label: { en: "Campaign", ka: "კამპანია" } },
+    plate: { label: { en: "Campaign", ka: "კამპანია" } },
   },
   {
     n: "05",
@@ -166,7 +171,7 @@ export const WHAT_WE_MAKE: TopLevelService[] = [
       en: "Identity · Packaging · Broadcast · Motion",
       ka: "იდენტობა · შეფუთვა · მაუწყებლობა · მოძრაობა",
     },
-    plate: { src: "/media/chronograph.jpg", label: { en: "Identity", ka: "იდენტობა" } },
+    plate: { label: { en: "Identity", ka: "იდენტობა" } },
   },
 ];
 

@@ -1,4 +1,4 @@
-import type { Pathway } from "./types";
+import type { LocalizedText, Pathway } from "./types";
 
 // Audience pathways. `href` deep-links into the brief with a prefilled project type
 // (?type=<PROJECT_TYPES id>) where relevant.
@@ -123,9 +123,15 @@ export const GEORGIA_SCOPE = [
   },
 ];
 
-export const GEORGIA_STILLS = [
+/**
+ * The three location plates.
+ *
+ * Each carries its printed label and its description; the file itself arrives
+ * when the studio delivers the plate, so `src` is optional and the frame holds
+ * its place in the meantime.
+ */
+export const GEORGIA_STILLS: { src?: string; label: LocalizedText; alt: LocalizedText }[] = [
   {
-    src: "/media/georgia-street.jpg",
     label: { en: "Street · Old Tbilisi", ka: "ქუჩა · ძველი თბილისი" },
     alt: {
       en: "Street production still beside a red car in the city",
@@ -133,7 +139,6 @@ export const GEORGIA_STILLS = [
     },
   },
   {
-    src: "/media/georgia-architecture.jpg",
     label: { en: "Location · Modernist", ka: "ლოკაცია · მოდერნისტული" },
     alt: {
       en: "Modernist concrete building used as a location",
@@ -141,7 +146,6 @@ export const GEORGIA_STILLS = [
     },
   },
   {
-    src: "/media/georgia-set.jpg",
     label: { en: "Set build · Studio", ka: "დეკორის აწყობა · სტუდია" },
     alt: {
       en: "Constructed set corner with red wall art and a green chair",

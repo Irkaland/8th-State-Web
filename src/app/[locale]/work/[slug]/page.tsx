@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type Locale, localeHref, isLocale, LOCALES } from "@/i18n/locales";
@@ -48,7 +48,14 @@ export async function generateMetadata({
       },
       {
         type: "article",
-        images: [{ url: (project.hero ?? project.cover).src }],
+        // A case study advertises its OWN cover only when it has one. While no
+        // master has been supplied the helper's shared /og.png stands - which is
+        // a brand card, not a photograph, and is exactly the right fallback.
+        // Passing an undefined url here would emit an empty og:image.
+        ...(() => {
+          const og = (project.hero ?? project.cover).src;
+          return og ? { images: [{ url: og }] } : {};
+        })(),
       },
     ),
   };
@@ -209,13 +216,12 @@ export default async function ProjectPage({
 
         {/* hero media */}
         <div className="dpj__hero">
-          <Image
+          <MediaSlot
             src={hero.src}
             alt={t(hero.alt, locale)}
-            fill
+            mark={m.common.imagePending}
             priority
             sizes="100vw"
-            className="object-cover"
           />
         </div>
 
@@ -263,12 +269,11 @@ export default async function ProjectPage({
             <InView className="dpj__diptych">
               {diptych.map((g) => (
                 <div key={g.src}>
-                  <Image
+                  <MediaSlot
                     src={g.src}
                     alt={t(g.alt, locale)}
-                    fill
+                    mark={m.common.imagePending}
                     sizes="(max-width:720px) 100vw, 50vw"
-                    className="object-cover"
                   />
                 </div>
               ))}
@@ -280,12 +285,11 @@ export default async function ProjectPage({
         {/* full bleed with paper caption */}
         {fullBleed && (
           <div className="dpj__full">
-            <Image
+            <MediaSlot
               src={fullBleed.src}
               alt={t(fullBleed.alt, locale)}
-              fill
+              mark={m.common.imagePending}
               sizes="100vw"
-              className="object-cover"
             />
             {project.usage && (
               <div className="dpj__papercap">
@@ -316,12 +320,11 @@ export default async function ProjectPage({
                     top: i % 2 ? 18 : 0,
                   }}
                 >
-                  <Image
+                  <MediaSlot
                     src={g.src}
                     alt={t(g.alt, locale)}
-                    fill
+                    mark={m.common.imagePending}
                     sizes="(max-width:960px) 50vw, 25vw"
-                    className="object-cover"
                   />
                 </div>
               ))}

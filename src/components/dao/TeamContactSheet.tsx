@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { format } from "@/i18n/format";
 import type { TeamSheetMessages } from "@/i18n/slices";
@@ -17,7 +18,8 @@ export type TeamWorkCredit = {
   title: string;
   client: string;
   year: string;
-  cover: string;
+  /** absent until the studio supplies the master; the frame stays either way */
+  cover?: string;
   alt: string;
   role?: string;
 };
@@ -1068,12 +1070,11 @@ export function TeamContactSheet({
                     >
                       <span className="dtm__wframe">
                         <span className="dtm__framein">
-                          <Image
+                          <MediaSlot
                             src={p.cover}
                             alt={p.alt}
-                            fill
+                            mark={R.imagePending}
                             sizes="(max-width: 720px) 40vw, 220px"
-                            className="object-cover"
                           />
                         </span>
                         <span className="dtm__wno" aria-hidden="true">

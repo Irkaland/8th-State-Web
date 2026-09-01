@@ -42,6 +42,8 @@ export type ChromeMessages = {
   primary: string;
   switchToEnglish: string;
   switchToGeorgian: string;
+  /** the mark the nav preview plate prints while it holds no photograph */
+  imagePending: string;
 };
 
 export const chromeMessages = (m: Messages): ChromeMessages => ({
@@ -50,6 +52,7 @@ export const chromeMessages = (m: Messages): ChromeMessages => ({
   primary: m.nav.primary,
   switchToEnglish: m.common.switchToEnglish,
   switchToGeorgian: m.common.switchToGeorgian,
+  imagePending: m.common.imagePending,
 });
 
 /** The Studio Ident, also on every route. Four strings. */
@@ -64,8 +67,12 @@ export const reelMessages = (m: Messages): ReelMessages => m.dao.reel;
 export type IntroMessages = Messages["dao"]["intro"];
 export const introMessages = (m: Messages): IntroMessages => m.dao.intro;
 
-export type SelectedWorkMessages = Messages["dao"]["work"];
-export const selectedWorkMessages = (m: Messages): SelectedWorkMessages => m.dao.work;
+/** the act plus the shared mark its frames print while a cover is pending */
+export type SelectedWorkMessages = Messages["dao"]["work"] & { imagePending: string };
+export const selectedWorkMessages = (m: Messages): SelectedWorkMessages => ({
+  ...m.dao.work,
+  imagePending: m.common.imagePending,
+});
 
 /* The What We Make dossier is a SERVER component - five links, no state, every
    responsive decision a media query - so it needs no slice at all. The
@@ -90,11 +97,19 @@ export const contactActMessages = (m: Messages): ContactActMessages => ({
 
 /* ---------------------------------------------------------- route-scoped --- */
 
-export type WorkArchiveMessages = Messages["daoRoutes"]["work"];
-export const workArchiveMessages = (m: Messages): WorkArchiveMessages => m.daoRoutes.work;
+/** the archive plus the shared mark a frame prints while its cover is pending */
+export type WorkArchiveMessages = Messages["daoRoutes"]["work"] & { imagePending: string };
+export const workArchiveMessages = (m: Messages): WorkArchiveMessages => ({
+  ...m.daoRoutes.work,
+  imagePending: m.common.imagePending,
+});
 
-export type TeamSheetMessages = Messages["daoRoutes"]["team"];
-export const teamSheetMessages = (m: Messages): TeamSheetMessages => m.daoRoutes.team;
+/** the sheet plus the same mark, for the credited work inside a profile */
+export type TeamSheetMessages = Messages["daoRoutes"]["team"] & { imagePending: string };
+export const teamSheetMessages = (m: Messages): TeamSheetMessages => ({
+  ...m.daoRoutes.team,
+  imagePending: m.common.imagePending,
+});
 
 /** The Lab field notes render the shared "Content required" marker alongside. */
 export type LabMessages = {

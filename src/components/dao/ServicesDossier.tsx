@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { t } from "@/content/localized";
@@ -172,12 +172,11 @@ function Chapter({ d, locale, index }: { d: Department; locale: Locale; index: n
           <p className="dsvc__desc mo-c">{t(d.desc, locale)}</p>
           <figure className="dsvc__plate">
             <span className="dsvc__plateimg">
-              <Image
+              <MediaSlot
                 src={d.service.plate.src}
                 alt={t(d.service.plate.label, locale)}
-                fill
+                mark={t(SERVICES_COPY.imagePending, locale)}
                 sizes="(max-width: 760px) 0px, 360px"
-                className="object-cover"
               />
               <span className="dao-grain" aria-hidden="true" />
             </span>
@@ -188,38 +187,10 @@ function Chapter({ d, locale, index }: { d: Department; locale: Locale; index: n
           </figure>
         </div>
 
-        {d.gallery ? (
-          <div className="dsvc__evidence">
-            <span className="dsvc__evmain">
-              <span className="dsvc__evframe dsvc__evframe--wide">
-                <Image
-                  src={d.gallery[0].src}
-                  alt={t(d.gallery[0].alt, locale)}
-                  fill
-                  sizes="(max-width: 760px) 100vw, 60vw"
-                  className="object-cover"
-                />
-              </span>
-              <span className="dsvc__evcap">
-                <span>{t(SERVICES_COPY.selectedFrame, locale)}</span>
-                <span className="dsvc__evcap--accent">{t(SERVICES_COPY.contactSheet, locale)}</span>
-              </span>
-            </span>
-            <span className="dsvc__evpair">
-              {d.gallery.slice(1).map((img) => (
-                <span key={img.src} className="dsvc__evframe dsvc__evframe--tall">
-                  <Image
-                    src={img.src}
-                    alt={t(img.alt, locale)}
-                    fill
-                    sizes="(max-width: 760px) 50vw, 20vw"
-                    className="object-cover"
-                  />
-                </span>
-              ))}
-            </span>
-          </div>
-        ) : null}
+        {/* No evidence strip. Photography used to carry three extra frames
+            here - one wide selected frame and two from the sheet beside it -
+            which made it the only department with four image positions while
+            01, 02, 04 and 05 each had one. One department, one plate. */}
 
         <div className="dsvc__register">
           <div className="dsvc__registerhead">

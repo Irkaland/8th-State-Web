@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ChromeMessages } from "@/i18n/slices";
 import { type Locale, localeHref, stripLocale, switchLocalePath } from "@/i18n/locales";
-import { cn } from "@/lib/cn";
+import { cn, up } from "@/lib/cn";
 import { focusableWithin, isFocusable } from "@/lib/focusable";
 import { NAV_OPEN_KEY, safeSession } from "@/lib/session-lifecycle";
 import { useLiveSearch } from "@/lib/use-live-search";
@@ -32,12 +31,6 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
   const [workOpen, setWorkOpen] = useState(false);
   const [light, setLight] = useState(false);
   const [preview, setPreview] = useState<{ key: string; top: number; rot: number } | null>(null);
-  // §Perf Phase 1: preview media mounts only once the sheet can actually
-  // display it (open on a ≥900px viewport - below that the preview is
-  // display:none, dao.css). Until then not a single preview byte is
-  // requested; once mounted the sources stay mounted so hover swaps remain
-  // instant for the rest of the page load.
-  const [previewsReady, setPreviewsReady] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
   // §02: opening the sheet moves focus to the first destination for the focus
@@ -81,10 +74,8 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
       /* private mode - the sheet simply opens closed */
     }
     if (!handoff) return;
-    const wide = window.matchMedia("(min-width: 900px)").matches;
     /* eslint-disable react-hooks/set-state-in-effect -- restoring state handed
        over by the previous locale's tree; see the note above */
-    setPreviewsReady(wide);
     setOpen(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -130,15 +121,10 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
     return () => document.documentElement.removeAttribute("data-dao-nav-open");
   }, [open]);
 
-  const armPreviews = useCallback(() => {
-    if (window.matchMedia("(min-width: 900px)").matches) setPreviewsReady(true);
-  }, []);
-
   const toggle = () => {
     if (open) {
       close();
     } else {
-      armPreviews();
       setOpen(true);
     }
   };
@@ -358,8 +344,6 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
   // always starts below the EN/KA + burger line with a deliberate gap.
   const PREVIEW_MIN_TOP = 112;
   const hoverPreview = (key: string, index: number) => (e: React.SyntheticEvent<HTMLElement>) => {
-    // covers the rare resize across 900px while the sheet is already open
-    armPreviews();
     const rect = e.currentTarget.getBoundingClientRect();
     setPreview({ key, top: rect.top + rect.height / 2, rot: index % 2 ? 1.5 : -1.5 });
   };
@@ -372,17 +356,6 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
   const focusPreview = (key: string, index: number) => (e: React.SyntheticEvent<HTMLElement>) => {
     if (!keyboardNav.current) return;
     hoverPreview(key, index)(e);
-  };
-
-  const previews: Record<string, string> = {
-    work: "/media/aom-cover.jpg",
-    services: "/media/bts-set.jpg",
-    studio: "/media/bts-camera.jpg",
-    lab: "/media/aom-gallery-2.jpg",
-    process: "/media/georgia-set.jpg",
-    georgia: "/media/georgia-hero.jpg",
-    contact: "/media/aom-hero.jpg",
-    start: "/media/bts-set.jpg",
   };
 
   // §04/§05: the brand mark is an explicit client-side Home destination
@@ -672,27 +645,18 @@ export function DaoChrome({ locale, messages }: { locale: Locale; messages: Chro
           }
           aria-hidden="true"
         >
+          {/* The framed plate that travels with the hovered row, waiting for
+              its photograph. Its size, its drawn red frame, its ±1.5° tilt and
+              the way it follows the cursor down the list are the approved
+              navigation composition and are untouched; what it used to hold was
+              eight demo photographs, one per destination, and those are gone.
+              Nothing here defers loading any more because there is nothing to
+              load - the panel is a surface, not a gallery. */}
           <span className="dao-nav__previewinner">
-            {/* optimized responsive sources at the preview's real display
-                size (max 300×190, dao.css) - same files, same cover crop,
-                same crossfade; DPR handled by the srcset (sizes=300px).
-                Default (lazy/low-priority) loading is deliberate: the open
-                sheet puts them in-viewport so they still fetch immediately,
-                but at low network priority - router RSC fetches always win
-                the connection pool, so a click during the curtain can never
-                queue behind preview bytes. */}
-            {previewsReady &&
-              Object.entries(previews).map(([key, src]) => (
-                <Image
-                  key={key}
-                  src={src}
-                  alt=""
-                  width={600}
-                  height={380}
-                  sizes="300px"
-                  className={preview?.key === key ? "is-on" : ""}
-                />
-              ))}
+            <span className="dms" aria-hidden="true">
+              <span className="dao-grain" />
+              <span className="dms__mark">{up(messages.imagePending)}</span>
+            </span>
           </span>
         </div>
 

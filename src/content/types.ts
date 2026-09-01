@@ -17,7 +17,20 @@ export type { LocalizedText } from "./localized";
 export const mediaKind = z.enum(["image", "video", "detail", "bts"]);
 
 export const mediaSchema = z.object({
-  src: z.string().startsWith("/media/"),
+  /**
+   * The file, once the studio has supplied it.
+   *
+   * Optional because an image POSITION and an image FILE are different
+   * things. The site's compositions are designed around their slots - frame,
+   * ratio, grid cell, the whitespace and the type around them - and those
+   * hold whether or not a master exists yet. A slot with no `src` renders the
+   * waiting mark (see MediaSlot) and keeps its geometry exactly; supplying the
+   * file later is this one line and nothing else.
+   *
+   * `alt` stays required regardless: it records what belongs in the slot, so
+   * the eventual image arrives already described.
+   */
+  src: z.string().startsWith("/media/").optional(),
   alt: localizedTextSchema,
   kind: mediaKind.optional(),
   caption: localizedTextSchema.optional(),

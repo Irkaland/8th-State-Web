@@ -49,8 +49,13 @@ test.describe("§P7 case study Open Graph keeps the shared identity", () => {
       expect(metaProp(body, "og:type")).toBeTruthy();
       expect(metaProp(body, "og:title"), "og:title was dropped").toBeTruthy();
       expect(metaProp(body, "og:description"), "og:description was dropped").toBeTruthy();
-      // the case study's own cover still wins
-      expect(metaProp(body, "og:image")).toContain("/media/");
+      // An og:image is always declared. While no project cover has been
+      // supplied it is the shared brand card - a case study only advertises its
+      // OWN cover once it has one, and an empty og:image would be worse than
+      // the brand fallback. This asserted "/media/" when every project carried
+      // demo photography; the demo imagery is gone, so what has to hold is that
+      // the tag is present and points somewhere real.
+      expect(metaProp(body, "og:image")).toMatch(/\/(og\.png|media\/)/);
       // and the shared Twitter card survives too
       expect(metaName(body, "twitter:card")).toBe("summary_large_image");
     });

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { MediaSlot } from "@/components/dao/MediaSlot";
 import Link from "next/link";
 import type { Messages } from "@/i18n";
 import { type Locale, localeHref } from "@/i18n/locales";
@@ -263,12 +263,10 @@ export function WhatWeMake({ locale, messages }: { locale: Locale; messages: Mes
                   already been given (§30). */}
               <span className="dao-wwm__plate">
                 <span className="dao-wwm__plateimg">
-                  <Image
+                  <MediaSlot
                     src={s.plate.src}
-                    alt=""
-                    fill
+                    mark={messages.common.imagePending}
                     sizes="(max-width: 1100px) 180px, 230px"
-                    className="object-cover"
                   />
                   <span className="dao-wwm__plategrain" aria-hidden="true" />
                 </span>
