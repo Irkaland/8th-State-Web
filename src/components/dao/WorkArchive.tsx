@@ -11,6 +11,7 @@ import { InView } from "./InView";
 import { up } from "@/lib/cn";
 import { safeSession } from "@/lib/session-lifecycle";
 import { WK_CTX_KEY, parseWorkContext } from "@/lib/work-context";
+import { EditorialArrow } from "./EditorialArrow";
 
 export type ArchiveItem = {
   slug: string;
@@ -265,7 +266,7 @@ export function WorkArchive({
           className="dao-cta"
           style={{ color: "var(--dao-paper)" }}
         >
-          {up(m.viewAll)} <span aria-hidden="true">→</span>
+          {up(m.viewAll)} <EditorialArrow />
           <span
             className="dao-strike"
             style={{ background: "var(--dao-blue)" }}
@@ -378,7 +379,7 @@ export function WorkArchive({
           className="dao-cta"
           style={{ color: "var(--dao-yellow)" }}
         >
-          {up(m.startProduction)} <span aria-hidden="true">→</span>
+          {up(m.startProduction)} <EditorialArrow />
         </Link>
       </div>
     </div>

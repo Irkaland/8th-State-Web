@@ -6,6 +6,7 @@ import { t } from "@/content/localized";
 import { WHAT_WE_MAKE, serviceHref } from "@/content/what-we-make";
 import { up } from "@/lib/cn";
 import { Reveal } from "./Reveal";
+import { EditorialArrow } from "./EditorialArrow";
 
 /**
  * Act 04 - WHAT WE MAKE (approved production-dossier design).
@@ -321,20 +322,12 @@ function Rule({ className }: { className?: string }) {
   );
 }
 
-/** The brand's drawn arrow. */
+/** The brand's drawn arrow, at this register's own sizes. */
 function Arrow({ wide }: { wide?: boolean }) {
   return (
-    <svg
+    <EditorialArrow
       className={wide ? "dao-wwm__arrow dao-wwm__arrow--wide" : "dao-wwm__arrow"}
-      viewBox="0 0 46 12"
-      aria-hidden="true"
-    >
-      <path
-        d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
-        strokeWidth="1.4"
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
+      weight={1.4}
+    />
   );
 }

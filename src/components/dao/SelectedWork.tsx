@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { cn, up } from "@/lib/cn";
 import { useInViewOnce, usePrefersReducedMotion } from "./hooks";
+import { EditorialArrow } from "./EditorialArrow";
 
 export type DaoWorkProject = {
   slug: string;
@@ -314,7 +315,7 @@ export function SelectedWork({
       </div>
 
       <Link href={localeHref(locale, "/work")} className="dao-work__all">
-        {up(m.all)} <span aria-hidden="true">→</span>
+        {up(m.all)} <EditorialArrow />
       </Link>
     </section>
   );

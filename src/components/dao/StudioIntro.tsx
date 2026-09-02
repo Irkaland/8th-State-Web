@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { up } from "@/lib/cn";
 import { useInViewOnce, usePrefersReducedMotion } from "./hooks";
+import { EditorialArrow } from "./EditorialArrow";
 
 /**
  * Act 02 - Studio Introduction, v7 orbit v2 (contract #7, states O1-O4).
@@ -296,7 +297,7 @@ export function StudioIntro({ locale, intro }: { locale: Locale; intro: IntroMes
           {/* client-side Link, never a raw <a>: a raw anchor forces a full
               document load, which replays the Studio Ident (§03/§10) */}
           <Link href={localeHref(locale, "/studio")} className="dao-intro__cta">
-            {up(m.cta)} <span aria-hidden="true">→</span>
+            {up(m.cta)} <EditorialArrow />
           </Link>
         </div>
       </div>

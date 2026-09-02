@@ -12,6 +12,7 @@ import { IDENT_ATTR } from "@/lib/session-lifecycle";
 import { Reveal } from "./Reveal";
 import { TeamDocumentControls } from "./TeamDocuments";
 import type { TeamDocument } from "@/content/team-documents";
+import { EditorialArrow } from "./EditorialArrow";
 
 /** One project a person is credited on, resolved against the real Work archive. */
 export type TeamWorkCredit = {
@@ -1010,7 +1011,7 @@ export function TeamContactSheet({
                     />
                     {hasContact && (
                       <a className="dtm__jump" href={`#contact-${card.slug}`}>
-                        {up(R.contact)} <span aria-hidden="true">→</span>
+                        {up(R.contact)} <EditorialArrow />
                       </a>
                     )}
                   </span>
@@ -1249,7 +1250,7 @@ export function TeamContactSheet({
                     <span className="dtm__role dtm__role--2">{up(card.secondaryRoles[0])}</span>
                   )}
                   <span className="dtm__view" aria-hidden="true">
-                    {up(R.viewProfile)} →
+                    {up(R.viewProfile)} <EditorialArrow />
                   </span>
                 </span>
               </button>

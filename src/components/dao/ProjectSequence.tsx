@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cn, up } from "@/lib/cn";
 import { setFocusIntent } from "@/lib/route-focus";
+import { EditorialArrow } from "./EditorialArrow";
 
 export type SequenceNeighbour = { slug: string; title: string; href: string };
 
@@ -78,7 +79,7 @@ export function ProjectSequence({
           >
             <span className="dpj__seqk">{up(labels.endOfArchive)}</span>
             <span className="dpj__seqtitle">
-              {up(labels.viewAllWork)} <span aria-hidden="true">→</span>
+              {up(labels.viewAllWork)} <EditorialArrow />
             </span>
           </Link>
         )}

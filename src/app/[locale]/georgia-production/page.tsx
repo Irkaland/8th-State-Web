@@ -11,6 +11,7 @@ import { GEORGIA_SCOPE, GEORGIA_STILLS } from "@/content/pathways";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { up } from "@/lib/cn";
+import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
 export async function generateMetadata({
   params,
@@ -279,15 +280,7 @@ export default async function GeorgiaPage({ params }: { params: Promise<{ locale
             <span className="dao-label dgp__ctalabel">{up(R.bring)}</span>
             <Link href={localeHref(locale, "/start-a-project")} className="dgp__ctalink">
               {up(R.startProject)}
-              <svg viewBox="0 0 46 12" aria-hidden="true">
-                <path
-                  d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <EditorialArrow />
             </Link>
           </div>
         </InView>

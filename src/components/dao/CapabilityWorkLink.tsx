@@ -3,6 +3,7 @@ import type { Messages } from "@/i18n";
 import { type Locale, localeHref } from "@/i18n/locales";
 import { type CapabilityId, capabilityWorkHref } from "@/content/dao-services";
 import { up } from "@/lib/cn";
+import { EditorialArrow } from "./EditorialArrow";
 
 /**
  * "Related Work" for ONE capability.
@@ -37,7 +38,7 @@ export function CapabilityWorkLink({
       style={style}
       data-dao-capability={id}
     >
-      {up(messages.daoRoutes.services.relatedWork)} <span aria-hidden="true">→</span>
+      {up(messages.daoRoutes.services.relatedWork)} <EditorialArrow />
     </Link>
   );
 }

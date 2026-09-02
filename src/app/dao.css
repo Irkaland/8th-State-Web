@@ -362,6 +362,27 @@ html {
   }
 }
 
+/* THE CTA ARROW.
+   The mark itself is EditorialArrow - one drawn SVG for the whole site. This
+   is the size every arrow-bearing route CTA wears it at, taken from the CTA's
+   own type, so one class serves a 9.5px dossier link and a 26px sequence title
+   at every breakpoint with no rule per page. It is bounded by the two sizes the
+   drawn system was already approved at elsewhere (22px and 46px), so the mark
+   can neither shrink to an icon nor outweigh its label. currentColor
+   throughout, which is what lets the same mark sit on the ink, paper, yellow,
+   red, green and blue grounds without a token of its own. */
+.dao-arrow {
+  flex: none;
+  display: inline-block;
+  width: clamp(22px, 2.6em, 46px);
+  /* the mark is 46 x 12 */
+  height: calc(clamp(22px, 2.6em, 46px) * 12 / 46);
+  /* for the CTAs that are inline text; the flex ones (.dao-cta and the slate)
+     align it on the label's last baseline, which is where it belongs */
+  vertical-align: middle;
+  color: inherit;
+}
+
 /* ============================================================
    Brand-fill buttons - ONE system (§14/§19)
    ============================================================

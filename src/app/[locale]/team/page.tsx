@@ -22,6 +22,7 @@ import {
 import { TeamDecor } from "@/components/dao/TeamDecor";
 import { up } from "@/lib/cn";
 import { teamSheetMessages } from "@/i18n/slices";
+import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
 export async function generateMetadata({
   params,
@@ -208,7 +209,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
             <h2 className="dtm__pendingtitle">{R.pendingTitle}</h2>
             <p className="dtm__pendingdesc">{R.pendingDesc}</p>
             <a href={localeHref(locale, "/work")} className="dao-cta dtm__pendingcta">
-              {up(R.pendingCta)} <span aria-hidden="true">→</span>
+              {up(R.pendingCta)} <EditorialArrow />
             </a>
             <span
               className="dtm__mark dao-mask"
@@ -227,14 +228,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
             <p className="dtm__closeline mo-c">{R.closing}</p>
             <Link href={localeHref(locale, "/start-a-project")} className="dtm__closecta mo-h">
               {up(R.startProject)}
-              <svg viewBox="0 0 46 12" aria-hidden="true">
-                <path
-                  d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
-                  strokeWidth="1.2"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <EditorialArrow weight={1.2} />
             </Link>
           </div>
         </Reveal>

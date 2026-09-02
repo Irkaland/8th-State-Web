@@ -10,6 +10,7 @@ import { DAO_SERVICES } from "@/content/dao-services";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { up } from "@/lib/cn";
+import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
 export async function generateMetadata({
   params,
@@ -129,14 +130,14 @@ export default async function ProcessPage({ params }: { params: Promise<{ locale
                   className="dao-cta"
                   style={{ color: "var(--dao-paper)", fontSize: 10.5 }}
                 >
-                  {up(R.caseStudies)} <span aria-hidden="true">→</span>
+                  {up(R.caseStudies)} <EditorialArrow />
                 </Link>
                 <Link
                   href={localeHref(locale, "/start-a-project")}
                   className="dao-cta"
                   style={{ color: "var(--dao-yellow)", fontSize: 10.5 }}
                 >
-                  {up(R.startProject)} <span aria-hidden="true">→</span>
+                  {up(R.startProject)} <EditorialArrow />
                 </Link>
               </div>
             </div>

@@ -7,6 +7,7 @@ import type { Locale } from "@/i18n/locales";
 import { localeHref } from "@/i18n/locales";
 import { InView } from "./InView";
 import { cn, up } from "@/lib/cn";
+import { EditorialArrow } from "./EditorialArrow";
 
 /**
  * /start-a-project - tactile production brief (handoff 4e). Four paper
@@ -332,7 +333,7 @@ export function DaoBrief({ locale, messages }: { locale: Locale; messages: Brief
           className="dao-cta"
           style={{ color: "var(--dao-paper)", fontSize: 10.5 }}
         >
-          {up(m.contactStudio)} <span aria-hidden="true">→</span>
+          {up(m.contactStudio)} <EditorialArrow />
         </Link>
       </div>
     </form>

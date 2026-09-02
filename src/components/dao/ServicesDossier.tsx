@@ -12,6 +12,7 @@ import { projectsSorted } from "@/content/projects";
 import { capabilityHasWork } from "@/content/work-filters";
 import { up } from "@/lib/cn";
 import { Reveal } from "./Reveal";
+import { EditorialArrow } from "./EditorialArrow";
 
 /**
  * THE SERVICES DOSSIER (approved Services design).
@@ -90,19 +91,9 @@ function Rule({
   );
 }
 
-/** the studio's drawn arrow */
+/** the studio's drawn arrow, at the dossier's own sizes */
 function Arrow({ className, stroke }: { className?: string; stroke?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 46 12" aria-hidden="true">
-      <path
-        d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
-        stroke={stroke ?? "currentColor"}
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <EditorialArrow className={className} weight={1.3} stroke={stroke} />;
 }
 
 function Chapter({ d, locale, index }: { d: Department; locale: Locale; index: number }) {

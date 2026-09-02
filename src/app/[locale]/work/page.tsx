@@ -20,6 +20,7 @@ import { Reveal } from "@/components/dao/Reveal";
 import { WorkArchive, type ArchiveItem } from "@/components/dao/WorkArchive";
 import { cn, up } from "@/lib/cn";
 import { workArchiveMessages } from "@/i18n/slices";
+import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
 export async function generateMetadata({
   params,
@@ -123,7 +124,7 @@ export default async function WorkPage({
                   <span className="dwk__contextlabel">{up(w.showing)}</span>
                   <span className="dwk__contextvalue">{up(t(contextLabel, locale))}</span>
                   <Link className="dwk__contextclear" href={localeHref(locale, "/work")}>
-                    {up(w.clearFilter)} <span aria-hidden="true">→</span>
+                    {up(w.clearFilter)} <EditorialArrow />
                   </Link>
                 </span>
               )}

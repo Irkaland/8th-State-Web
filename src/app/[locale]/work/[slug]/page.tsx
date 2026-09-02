@@ -15,6 +15,7 @@ import { InView } from "@/components/dao/InView";
 import { ProjectSequence } from "@/components/dao/ProjectSequence";
 import { WorkBackLink } from "@/components/dao/WorkBackLink";
 import { up } from "@/lib/cn";
+import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
 export function generateStaticParams() {
   return LOCALES.flatMap((locale) => projectSlugs().map((slug) => ({ locale, slug })));
@@ -190,8 +191,7 @@ export default async function ProjectPage({
                       )}
                       className="dpj__disciplinelink"
                     >
-                      {disciplineText}
-                      <span aria-hidden="true"> →</span>
+                      {disciplineText} <EditorialArrow />
                     </Link>
                   ) : (
                     disciplineText

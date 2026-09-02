@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/cn";
+import { EditorialArrow } from "./EditorialArrow";
 
 /**
  * Studio Lab - the drawn marks the approved design is built from.
@@ -117,24 +118,14 @@ export function DisciplineIcon({
 
 /* -------------------------------------------------------------- the arrow - */
 
-/** The drawn arrow that follows every call to action. */
+/**
+ * The drawn arrow that follows every call to action: the site's one mark
+ * (EditorialArrow) at the size the Lab was approved at. Kept as a named export
+ * because ten call sites ask for it by name; the geometry is no longer a second
+ * copy of the path.
+ */
 export function LabArrow({ className, weight = 1.2 }: { className?: string; weight?: number }) {
-  return (
-    <svg
-      className={cn("dsl-arrow", className)}
-      viewBox="0 0 46 12"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M1 6.4 C14 5.6 28 6.8 43 5.9 M37.5 2.2 C39.6 3.7 41.7 5 44.2 5.9 C41.5 7.1 39.4 8.6 37.8 10.2"
-        stroke="currentColor"
-        strokeWidth={weight}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <EditorialArrow className={cn("dsl-arrow", className)} weight={weight} />;
 }
 
 /** The small registration cross that marks a plate or a note. */

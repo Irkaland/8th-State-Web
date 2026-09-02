@@ -9,6 +9,7 @@ import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
 import { StudioDecor } from "@/components/dao/StudioDecor";
 import { up } from "@/lib/cn";
+import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
 export async function generateMetadata({
   params,
@@ -173,7 +174,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                       </span>
                     </span>
                     <span className="dst__slatecta">
-                      {up(R.meetTheTeam)} <span aria-hidden="true">→</span>
+                      {up(R.meetTheTeam)} <EditorialArrow />
                     </span>
                   </span>
                   {/* frame/focus marks, as on a ground glass - four corners only */}
@@ -203,14 +204,14 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 className="dao-cta"
                 style={{ color: "var(--dao-paper)", fontSize: 10 }}
               >
-                {up(R.capabilities)} <span aria-hidden="true">→</span>
+                {up(R.capabilities)} <EditorialArrow />
               </Link>
               <Link
                 href={localeHref(locale, "/process")}
                 className="dao-cta"
                 style={{ color: "var(--dao-paper)", fontSize: 10 }}
               >
-                {up(R.howWeWork)} <span aria-hidden="true">→</span>
+                {up(R.howWeWork)} <EditorialArrow />
               </Link>
             </div>
           </div>
@@ -243,7 +244,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                   alignSelf: "flex-start",
                 }}
               >
-                {up(R.enterLab)} <span aria-hidden="true">→</span>
+                {up(R.enterLab)} <EditorialArrow />
               </Link>
             </div>
           </div>
@@ -270,7 +271,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                 alignSelf: "flex-start",
               }}
             >
-              {up(R.startProduction)} <span aria-hidden="true">→</span>
+              {up(R.startProduction)} <EditorialArrow />
             </Link>
           </div>
         </InView>
