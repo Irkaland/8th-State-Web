@@ -142,6 +142,8 @@ export function LabRegistrationProvider({
 
   /** the element that asked for the file, so focus can be handed back to it */
   const opener = useRef<HTMLElement | null>(null);
+  /** the overlay root - it carries the visible-viewport variables */
+  const shell = useRef<HTMLDivElement | null>(null);
   const panel = useRef<HTMLDivElement | null>(null);
   const heading = useRef<HTMLSpanElement | null>(null);
   const titleId = useId();
@@ -179,6 +181,74 @@ export function LabRegistrationProvider({
       document.body.style.overflow = prev;
     };
   }, [open, close]);
+
+  /**
+   * THE FILE IS SIZED TO WHAT IS ON SCREEN.
+   *
+   * A fixed overlay is laid out against the LAYOUT viewport, which on a phone
+   * is taller than the glass: the bottom of it sits under Safari's toolbar,
+   * and under the whole keyboard once a field is focused. Everything at the
+   * end of the form - the two required choice rows, the consent line, REGISTER
+   * - was therefore unreachable, because the scroll container ended below the
+   * visible rectangle rather than at it.
+   *
+   * visualViewport reports that rectangle, keyboard included, so the overlay
+   * is given its height and its offset and the whole form can always be
+   * scrolled into sight. CSS keeps 100dvh as the fallback for the first paint.
+   */
+  useEffect(() => {
+    if (!open) return;
+    const el = shell.current;
+    if (!el) return;
+    const vv = window.visualViewport;
+
+    const size = () => {
+      el.style.setProperty("--dlr-vh", `${Math.round(vv ? vv.height : window.innerHeight)}px`);
+      el.style.setProperty("--dlr-vtop", `${Math.round(vv ? vv.offsetTop : 0)}px`);
+    };
+    /**
+     * The keyboard has just opened or closed: keep the field being typed in on
+     * screen. Two things matter here.
+     *
+     * It only runs when the glass has actually changed HEIGHT. WebKit fires
+     * visualViewport resize liberally, and recentring on every one of them
+     * would drag the reader back to the field they last touched each time -
+     * exactly while they are trying to scroll down to REGISTER.
+     *
+     * And it scrolls the surface by arithmetic on its own scrollTop rather
+     * than through scrollIntoView, because WebKit will not always scroll a
+     * fixed container back UP for that call - which is the direction needed
+     * when the keyboard has just taken the bottom of the glass.
+     */
+    let lastH = 0;
+    const resize = () => {
+      const h = Math.round(vv ? vv.height : window.innerHeight);
+      size();
+      if (h === lastH) return;
+      lastH = h;
+      const a = document.activeElement as HTMLElement | null;
+      const surface = el.querySelector<HTMLElement>(".dlr__sheetwrap");
+      if (!a || !surface || a === panel.current || !surface.contains(a)) return;
+      const s = surface.getBoundingClientRect();
+      const r = a.getBoundingClientRect();
+      if (r.top >= s.top + 8 && r.bottom <= s.bottom - 8) return;
+      const delta = r.top + r.height / 2 - (s.top + s.height / 2);
+      const max = surface.scrollHeight - surface.clientHeight;
+      surface.scrollTop = Math.max(0, Math.min(max, surface.scrollTop + delta));
+    };
+
+    size();
+    vv?.addEventListener("resize", resize);
+    vv?.addEventListener("scroll", size);
+    window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
+    return () => {
+      vv?.removeEventListener("resize", resize);
+      vv?.removeEventListener("scroll", size);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", resize);
+    };
+  }, [open]);
 
   // focus moves into the file when it opens, and onto the confirmation when the
   // form is replaced by it - the reader is never left on an unmounted control
@@ -224,11 +294,19 @@ export function LabRegistrationProvider({
     <LabRegCtx.Provider value={openFile}>
       {children}
       {open ? (
-        <div className="dlr">
-          {/* the scrim is not a control: Escape and the CLOSE button close the
-              file, and a click here does too, but it is never in the tab order */}
-          <div className="dlr__scrim" onClick={close} aria-hidden="true" />
-          <div className="dlr__sheetwrap">
+        <div className="dlr" ref={shell}>
+          {/* the scrim is paint, nothing else - it cannot take the pointer, so a
+              drag that starts on it still scrolls the file */}
+          <div className="dlr__scrim" aria-hidden="true" />
+          {/* the scroll container is also the click-outside target: Escape and
+              the CLOSE button close the file, and so does a click on the gutter
+              around the sheet, but none of it is ever in the tab order */}
+          <div
+            className="dlr__sheetwrap"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) close();
+            }}
+          >
             <div
               className="dlr__sheet"
               role="dialog"

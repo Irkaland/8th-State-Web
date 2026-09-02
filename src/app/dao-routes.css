@@ -3142,24 +3142,49 @@ html:has(.dsc) {
    workbook and not as a modal borrowed from somewhere else. Sharp geometry
    only: no rounded panel, no shadowed card, no dashboard chrome. */
 
+/* THE VISIBLE VIEWPORT, NOT THE LAYOUT ONE.
+   Both fixed layers are sized from --dlr-vh / --dlr-vtop, which the provider
+   writes from window.visualViewport while the file is open, with 100dvh as the
+   no-JS/first-paint fallback. `inset: 0` was the bug: a fixed box on iOS is
+   laid out against the LAYOUT viewport, so its bottom - and with it the end of
+   the scroll range, which is where the consent line and REGISTER live - sat
+   underneath Safari's toolbar, and underneath the whole keyboard once a field
+   was focused. There was no way to scroll it into view, because the scroll
+   container itself ended below the glass. Sized to the visible rectangle, the
+   last control is always scrollable into sight. */
 .dlr__scrim {
   position: fixed;
-  inset: 0;
+  top: var(--dlr-vtop, 0px);
+  left: 0;
+  right: 0;
+  height: var(--dlr-vh, 100dvh);
   z-index: 60;
   background: rgb(19 18 16 / 0.62);
+  /* decoration only. Closing on a click outside the sheet is the WRAP's job
+     now (see LabRegistration), because the wrap has to own the pointer to be
+     draggable: with pointer-events: none on it, a drag anywhere in the gutter
+     hit this scrim instead and scrolled nothing. */
+  pointer-events: none;
 }
 
 /* the scroll container: the file itself is centred in it and can grow taller
    than the viewport on a phone without trapping the reader */
 .dlr__sheetwrap {
   position: fixed;
-  inset: 0;
+  top: var(--dlr-vtop, 0px);
+  left: 0;
+  right: 0;
+  height: var(--dlr-vh, 100dvh);
   z-index: 61;
   display: flex;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* a fling that reaches the end of the form stops there instead of handing
+     the rest of the gesture to the page behind it */
+  overscroll-behavior: contain;
   scrollbar-width: none;
   padding: clamp(10px, 3vh, 40px) clamp(8px, 2vw, 24px);
-  pointer-events: none;
+  padding-bottom: calc(clamp(10px, 3vh, 40px) + env(safe-area-inset-bottom, 0px));
 }
 
 .dlr__sheetwrap::-webkit-scrollbar {
@@ -3586,6 +3611,12 @@ html:has(.dsc) {
   .dlr__sheet {
     min-height: 100%;
     width: 100%;
+  }
+
+  /* the file is full-bleed here, so the home-indicator inset belongs on the
+     form's own last line rather than on the wrap's (now zero) padding */
+  .dlr__body {
+    padding-bottom: calc(clamp(20px, 3vh, 30px) + env(safe-area-inset-bottom, 0px));
   }
 
   .dlr__foot {

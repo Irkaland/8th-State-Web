@@ -55,7 +55,13 @@ export default defineConfig({
       // backs, the Work return context, the routed personnel file, direct
       // fragment entry, the motion families - had never run on it once. This
       // is added COVERAGE, not a way to make anything pass.
-      testMatch: /(?:mobile-lifecycle|webkit-media-capability|webkit-journeys)\.spec\.ts/,
+      // lab-registration-reach joins them because the defect it covers is a
+      // WebKit one: a fixed overlay laid out against the LAYOUT viewport is
+      // exactly what hid the end of the registration form under Safari's
+      // toolbar and under its keyboard, so the fix is validated on this engine
+      // and not only in Chromium.
+      testMatch:
+        /(?:mobile-lifecycle|webkit-media-capability|webkit-journeys|lab-registration-reach)\.spec\.ts/,
       use: { ...devices["iPhone 14"] },
     },
     {
