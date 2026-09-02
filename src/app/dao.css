@@ -3686,9 +3686,18 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
    is cropped by the frame, so it never reaches the centred type. */
 .dao-eor__snake {
   position: absolute;
-  left: -16vw;
+  /* SIZE, RETUNED. The mark was reduced by ~27% - min(1160px, 96vw) ->
+     min(850px, 70vw), the same proportion on either side of the crossover, so
+     the reduction is identical at every width - to make it plainly secondary
+     to 8TH STATE / PRODUCTION / PRESENTS. The left crop moved with it:
+     -16vw of a 96vw mark bit 16.7% off the head, and -11.7vw of a 70vw mark
+     bites the same 16.7%, so the serpent still enters and crops from the left
+     exactly as it did rather than being eaten further by an unchanged offset.
+     Everything else - the asset, the aspect ratio, the red, the multiply, the
+     rotation and the 9vw entry travel - is untouched. */
+  left: -11.7vw;
   bottom: 4vh;
-  width: min(1160px, 96vw);
+  width: min(850px, 70vw);
   aspect-ratio: 360 / 116;
   transform: translateX(calc((1 - var(--snake, 0)) * -9vw)) rotate(-6deg);
   -webkit-mask-image: linear-gradient(
