@@ -56,68 +56,13 @@ test.describe("the Studio cover lost its three pale marks", () => {
   }
 });
 
-test.describe("the yellow canvas: no birds, and the sun holds the top right", () => {
-  for (const [w, h] of [
-    [1440, 900],
-    [1024, 900],
-    [768, 900],
-    [390, 664],
-    [320, 568],
-  ] as const) {
-    test(`${w}x${h}`, async ({ page }) => {
-      await page.setViewportSize({ width: w, height: h });
-      await gotoRoute(page, "/");
-      // scroll forward through the end-of-reel zone so the card is fully up
-      await page.evaluate(async () => {
-        document.documentElement.style.scrollBehavior = "auto";
-        const wrap = document.querySelector(".dao-eor")!;
-        const top = wrap.getBoundingClientRect().top + window.scrollY;
-        const travel = wrap.getBoundingClientRect().height - window.innerHeight;
-        for (let s = 0.1; s <= 1.0001; s += 0.05) {
-          window.scrollTo({ top: Math.round(top + travel * Math.min(s, 1)), behavior: "instant" });
-          await new Promise((r) => setTimeout(r, 60));
-        }
-        await new Promise((r) => setTimeout(r, 700));
-      });
-
-      await expect(page.locator(".dao-eor__bird")).toHaveCount(0);
-      const swallows = await page.evaluate(
-        () =>
-          [...document.querySelectorAll(".dao-eor__paper *")].filter((e) =>
-            /swallow|bb-bird/.test(
-              getComputedStyle(e).webkitMaskImage + getComputedStyle(e).maskImage,
-            ),
-          ).length,
-      );
-      expect(swallows, "a bird is still drawn on the card").toBe(0);
-
-      const sun = await page.evaluate(() => {
-        const s = document.querySelector(".dao-eor__sun")!.getBoundingClientRect();
-        const chrome = document.querySelector(".dao-burger")?.getBoundingClientRect();
-        const title = document.querySelector(".dao-eor__t1")!.getBoundingClientRect();
-        const hits = (a: DOMRect, b?: DOMRect) =>
-          !!b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-        return {
-          width: Math.round(s.width),
-          centreX: s.left + s.width / 2,
-          top: Math.round(s.top),
-          inFrame: s.right <= window.innerWidth + 1 && s.left >= -1,
-          overChrome: hits(s, chrome),
-          overTitle: hits(s, title),
-          half: window.innerWidth / 2,
-        };
-      });
-      // moderately larger than the 72-116px it used to be, never huge
-      expect(sun.width, "the sun is outside its approved range").toBeGreaterThanOrEqual(90);
-      expect(sun.width).toBeLessThanOrEqual(160);
-      expect(sun.centreX, "the sun must sit in the right half").toBeGreaterThan(sun.half);
-      expect(sun.top, "the sun must stay clear of the chrome band").toBeGreaterThanOrEqual(88);
-      expect(sun.inFrame, "the sun must not leave the frame").toBe(true);
-      expect(sun.overChrome, "the sun collides with the burger / EN-KA").toBe(false);
-      expect(sun.overTitle, "the sun collides with the title").toBe(false);
-    });
-  }
-});
+/*
+ * The 'yellow canvas' block that stood here covered the intermediate Presents
+ * act - its two removed birds and the red sun in its top right corner. That
+ * whole act has since been removed from the homepage, so there is nothing left
+ * for it to measure; the homepage now runs Showreel -> Studio Intro directly
+ * and home.spec.ts owns that boundary.
+ */
 
 test.describe("the Lab's printed labels stay English on a Georgian page", () => {
   test("the page's own identity is English, its copy is not", async ({ page }) => {
