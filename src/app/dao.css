@@ -1590,15 +1590,43 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
    printed stock rather than flat digital yellow. */
 .dao-intro {
   position: relative;
-  min-height: 72vw;
-  max-height: 1200px;
+  /* THE RING SYSTEM - one oversized circle, one set of numbers. The Presents
+     frame directly above this section is now the same yellow stock, and the
+     SAME circle is read across both: --dao-ring-d is the diameter (halved, it
+     is also the satellite radius, so the symbols still sit on the line),
+     --dao-ring-rise is how far the circle rises ABOVE this section's top edge
+     and therefore how much of it is seen inside the Presents frame, and
+     --dao-ring-cy is the circle's centre measured from that same top edge -
+     so the ring, the orbit and the statement all hang off one value and there
+     is nothing to keep in sync by hand at any viewport. */
+  --dao-ring-d: min(840px, 58vw);
+  --dao-ring-rise: clamp(64px, 7vw, 120px);
+  --dao-ring-cy: calc(var(--dao-ring-d) / 2 - var(--dao-ring-rise));
+  --dao-ring-tail: clamp(96px, 9vw, 150px);
+  min-height: calc(var(--dao-ring-cy) + var(--dao-ring-d) / 2 + var(--dao-ring-tail));
+  /* ONE PIXEL of overlap onto the Presents frame above. That frame ends on a
+     composited layer over the black tube, and where its edge and this one fall
+     on the same fractional device pixel the boundary row is blended with the
+     black behind it - a hairline on a desktop and, once a phone toolbar moves
+     the viewport, a visible dark band. The two fields are the same stock, so
+     overlapping them by a pixel means there is no shared edge to blend. */
+  margin-top: -1px;
   background: linear-gradient(var(--dao-intro-wash), var(--dao-intro-wash)), var(--dao-paper);
   color: var(--dao-ink);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 140px var(--dao-gutter);
+  /* NOT overflow: hidden. The circle has to leave this box through the TOP
+     edge and carry on into the Presents frame above it, which is the same
+     stock - so it is ONE ring crossing a seam rather than two arcs pretending
+     to line up. The clip still closes the sides and the bottom, so the ring
+     can never make the page scroll sideways. */
+  clip-path: inset(calc(-1 * var(--dao-ring-rise)) 0 0 0);
+  /* the statement is centred on the RING, not on the section: the first row is
+     the circle's own band (twice its centre), and the rest of the yellow
+     follows underneath. The row only grows if the copy needs the room. */
+  display: grid;
+  grid-template-rows: minmax(calc(var(--dao-ring-cy) * 2), auto) 1fr;
+  align-content: start;
+  justify-items: center;
+  padding: 0 var(--dao-gutter) var(--dao-ring-tail);
 }
 /* §09/§10: the dashed orbit path is gone. In its place a single black ink
    gesture - a generated vector ring with an out-of-round contour, brush
@@ -1612,8 +1640,8 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
 .dao-intro__ring {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: min(840px, 58vw);
+  top: var(--dao-ring-cy);
+  width: var(--dao-ring-d);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   background: var(--dao-ink);
@@ -1623,7 +1651,7 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
 .dao-intro__orbit {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: var(--dao-ring-cy);
   width: 0;
   height: 0;
   will-change: transform;
@@ -1633,7 +1661,7 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   position: absolute;
   left: 0;
   top: 0;
-  transform: rotate(var(--a)) translateY(calc(min(840px, 58vw) / -2));
+  transform: rotate(var(--a)) translateY(calc(var(--dao-ring-d) / -2));
 }
 .dao-intro__sat > * {
   transform: rotate(calc(-1 * var(--a) - var(--spin, 0deg)));
@@ -1697,6 +1725,8 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
 }
 .dao-intro__center {
   position: relative;
+  /* centred inside the ring's band, which is the first grid row */
+  align-self: center;
   width: min(600px, 84vw);
   text-align: center;
   display: flex;
@@ -1764,6 +1794,10 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
     max-height: none;
     display: block;
     padding: 240px var(--dao-gutter) 220px;
+    /* the constellation arc is already hung 110px above this edge, so the
+       top-side clip is opened to exactly its cap: the same circle carries on
+       into the Presents frame here too, just cropped harder. */
+    --dao-ring-rise: 110px;
   }
   .dao-intro__ring,
   .dao-intro__orbit {
@@ -3462,14 +3496,21 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
 
 .dao-eor {
   position: relative;
-  /* one viewport of stage plus the scroll the choreography is read from */
-  height: calc(100svh + 260vh);
+  /* One viewport of stage plus the scroll the choreography is read from.
+     DYNAMIC viewport units, not small ones: the stage is sticky, so at 100svh
+     it stayed at the SMALL viewport height while a phone with a retracted
+     toolbar shows the LARGE one - and the difference was a black band of bare
+     page under the tube and under the title card. 100dvh is the height
+     actually on screen, whatever the toolbar is doing, so the stage covers the
+     viewport for the whole zone and still releases exactly on this wrapper's
+     bottom edge, which is the studio's top edge. */
+  height: calc(100dvh + 260vh);
 }
 
 .dao-eor__stage {
   position: sticky;
   top: 0;
-  height: 100svh;
+  height: 100dvh;
   min-height: 560px;
   overflow: hidden;
   background: #050505;
@@ -3627,7 +3668,11 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   position: absolute;
   inset: 0;
   z-index: 5;
-  background: var(--dao-paper);
+  /* the SAME dyed stock as the studio act below (.dao-intro): the approved
+     yellow wash as a translucent layer over the paper, with the section's own
+     .dao-grain multiplying on top. The two frames are one field, which is
+     what lets a single ring cross the seam between them. */
+  background: linear-gradient(var(--dao-intro-wash), var(--dao-intro-wash)), var(--dao-paper);
   /* the card is printed ink on paper. Without this it inherits the reel's own
      light-on-dark colour from the act above and the title washes out. */
   color: var(--dao-ink);
@@ -3811,39 +3856,6 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   padding-left: 0.44em;
 }
 
-.dao-eor__foot {
-  position: absolute;
-  bottom: 26px;
-  opacity: calc(var(--t3, 0) * 0.55);
-}
-.dao-eor__foot--l {
-  left: 32px;
-  font-family: var(--dao-f-ui);
-  font-weight: var(--dao-w-copy);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-}
-.dao-eor__foot--r {
-  right: 32px;
-  font-family: var(--f-glacier), sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-}
-
-@media (max-width: 720px) {
-  .dao-eor__foot--l,
-  .dao-eor__foot--r {
-    bottom: 18px;
-    font-size: 9px;
-  }
-  .dao-eor__foot--l {
-    left: 18px;
-  }
-  .dao-eor__foot--r {
-    right: 18px;
-  }
-}
-
 /* Reduced motion: no tube, no scroll choreography. The stage stops being
    sticky and the card simply follows the reel as two plain screens. */
 @media (prefers-reduced-motion: reduce) {
@@ -3906,11 +3918,7 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   .dao-eor__t2 {
     transform: none;
   }
-  .dao-eor__t3,
-  .dao-eor__foot {
+  .dao-eor__t3 {
     opacity: 1;
-  }
-  .dao-eor__foot {
-    opacity: 0.55;
   }
 }

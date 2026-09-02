@@ -21,6 +21,12 @@ import { useEffect, useRef } from "react";
  * halfway continues the choreography already on screen rather than restarting
  * it. The numbers below are the approved ones and are not to be re-tuned.
  *
+ * ONE FIELD, NOT TWO PAGES. The card is printed on the studio's own dyed
+ * yellow stock, and the studio's oversized ink ring rises out of its own
+ * section through the seam and is read at the bottom of this frame - the same
+ * circle, the same stroke, the same axis, carried by the shared --dao-ring-*
+ * values in dao.css rather than drawn a second time here.
+ *
  * ADAPTED, NOT TRANSPLANTED. The approved prototype carried its own copy of the
  * yellow studio field as a final layer. Here that layer is the real
  * StudioIntro, which follows this act on the page, so the stage ends on the
@@ -199,9 +205,13 @@ export function EndOfReel({ children }: { children: React.ReactNode }) {
           <div className="dao-eor__glowin" />
         </div>
 
-        {/* LAYER 4 - the paper world, emerging from the darkness */}
+        {/* LAYER 4 - the paper world, emerging from the darkness. The stock is
+            the studio's own dyed yellow and the studio's own .dao-grain, so
+            this frame and the studio act below it are one continuous field -
+            which is why the studio's oversized ink ring can cross the seam
+            between them as a single circle (see --dao-ring-* in dao.css). */}
         <div className="dao-eor__paper">
-          <div className="dao-grain--strong" aria-hidden="true" />
+          <div className="dao-grain" aria-hidden="true" />
 
           {/* the studio's own serpent - the same serpent-mark the burger sheet
               draws - entering from the LEFT, mirrored, and cropped by a mask
@@ -232,13 +242,6 @@ export function EndOfReel({ children }: { children: React.ReactNode }) {
               <span className="dao-eor__presents">PRESENTS</span>
               <span className="dao-eor__rule" aria-hidden="true" />
             </div>
-          </div>
-
-          <div className="dao-eor__foot dao-eor__foot--l" aria-hidden="true">
-            TBILISI, GEORGIA
-          </div>
-          <div className="dao-eor__foot dao-eor__foot--r" aria-hidden="true">
-            MMXXVI
           </div>
         </div>
       </div>
