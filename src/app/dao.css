@@ -3831,8 +3831,13 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   mask: url("/assets/graphics/star-solid.webp") center / contain no-repeat;
 }
 
-/* the centred type. Each line rises out of its own overflow mask, which is
-   what makes it read as a title card being set rather than text fading in. */
+/* THE CENTRED TYPE IS NOT ANIMATED.
+   It used to be set line by line - each one rising out of its own overflow mask
+   on --t1/--t2/--t3. It is now simply there, in its final position, from the
+   first frame the card is on: no travel, no mask, no fade, no stagger, and so
+   no intermediate state to be caught in on the way back up either. The PAPER
+   still emerges from the darkness (--paperO) and the marks around it keep their
+   own motion; only the three lines stopped moving. */
 .dao-eor__card {
   position: absolute;
   inset: 0;
@@ -3846,7 +3851,6 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
 }
 .dao-eor__line {
   display: block;
-  overflow: hidden;
 }
 .dao-eor__t1 {
   display: block;
@@ -3854,7 +3858,6 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   font-size: clamp(56px, 10.5vw, 164px);
   line-height: 0.94;
   letter-spacing: 0.01em;
-  transform: translate3d(0, calc((1 - var(--t1, 0)) * 108%), 0);
 }
 .dao-eor__t2 {
   display: block;
@@ -3863,14 +3866,12 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   font-size: clamp(19px, 2.6vw, 38px);
   letter-spacing: 0.34em;
   padding-left: 0.34em;
-  transform: translate3d(0, calc((1 - var(--t2, 0)) * 112%), 0);
 }
 .dao-eor__t3 {
   display: flex;
   align-items: center;
   gap: clamp(12px, 2vw, 28px);
   margin-top: clamp(6px, 1.2vh, 16px);
-  opacity: var(--t3, 0);
 }
 .dao-eor__rule {
   display: block;
@@ -3943,12 +3944,5 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   .dao-eor__bird--r {
     transform: rotate(6deg);
     opacity: 0.5;
-  }
-  .dao-eor__t1,
-  .dao-eor__t2 {
-    transform: none;
-  }
-  .dao-eor__t3 {
-    opacity: 1;
   }
 }

@@ -81,26 +81,22 @@ export function EndOfReel({ children }: { children: React.ReactNode }) {
       set("snake", ease(R(0.62, 0.8)).toFixed(4));
       set("sunA", ease(R(0.66, 0.74)).toFixed(3));
       set("birdA", ease(R(0.68, 0.76)).toFixed(3));
-      set("t1", ease(R(0.7, 0.82)).toFixed(4));
-      set("t2", ease(R(0.75, 0.87)).toFixed(4));
-      set("t3", ease(R(0.8, 0.92)).toFixed(3));
     };
 
     /** the studio -> darkness -> CRT ON -> the film returns. No card replay. */
     const reverse = (p: number) => {
       const r = 1 - p;
       const R = (a: number, b: number) => Math.min(1, Math.max(0, (r - a) / (b - a)));
-      // The card LEAVES with the paper and never re-typesets: everything on it
-      // is tied to the same drain, so it can only ever decrease on the way
-      // back. The approved prototype hard-zeroed these instead, which it could
-      // afford because its own copy of the yellow studio field was covering
-      // them; here the studio is the real section further down the page, so
-      // zeroing them at the top of the zone would blank the card in view.
+      // The card LEAVES with the paper: everything on it is tied to the same
+      // drain, so it can only ever decrease on the way back. The approved
+      // prototype hard-zeroed these instead, which it could afford because its
+      // own copy of the yellow studio field was covering them; here the studio
+      // is the real section further down the page, so zeroing them at the top
+      // of the zone would blank the card in view. The three TYPE lines are no
+      // longer in this list: they do not animate at all, in either direction,
+      // so there is no state for them to be caught in on the way back up.
       const leave = 1 - ease(R(0, 0.2));
       set("paperO", leave.toFixed(3));
-      set("t1", leave.toFixed(4));
-      set("t2", leave.toFixed(4));
-      set("t3", leave.toFixed(3));
       set("snake", leave.toFixed(4));
       set("sunA", leave.toFixed(3));
       set("birdA", leave.toFixed(3));
