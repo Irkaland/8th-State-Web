@@ -19,6 +19,15 @@ import type { LocalizedText } from "./types";
  * Nothing here is invented to fill a gap. A TBD value is a TBD value.
  */
 
+/**
+ * The handwritten annotation on a course sheet. Art direction rather than
+ * copy - the phrase is drawn in the studio's hand and stays English in every
+ * locale by design, exactly like the file labels in lab-registration.ts.
+ * Everything else about a course (name, blurb, format, who and learn) localises
+ * normally.
+ */
+const handwritten = (en: string): LocalizedText => ({ en, ka: en });
+
 /** The three disciplines, in the approved order. */
 export type LabDisciplineId = "photography" | "art" | "film";
 
@@ -219,7 +228,7 @@ export const LAB_COURSES: LabCourse[] = [
         note: { en: "Final outcome", ka: "საბოლოო შედეგი" },
       },
     ],
-    annotation: { en: "theory and practice, in parallel", ka: "თეორია და პრაქტიკა, პარალელურად" },
+    annotation: handwritten("theory and practice, in parallel"),
     sheet: [
       {
         key: K_FORMAT,
@@ -300,7 +309,7 @@ export const LAB_COURSES: LabCourse[] = [
         note: { en: "Final outcome", ka: "საბოლოო შედეგი" },
       },
     ],
-    annotation: { en: "make, look, make again", ka: "შექმენი, დააკვირდი, ისევ შექმენი" },
+    annotation: handwritten("make, look, make again"),
     sheet: [
       { key: K_FORMAT, value: TBD_FORMAT, tbd: true },
       { key: K_DURATION, value: TBD_DURATION, tbd: true },
@@ -375,7 +384,7 @@ export const LAB_COURSES: LabCourse[] = [
         note: { en: "Final outcome", ka: "საბოლოო შედეგი" },
       },
     ],
-    annotation: { en: "before → process → final", ka: "მანამდე → პროცესი → საბოლოო" },
+    annotation: handwritten("before → process → final"),
     sheet: [
       { key: K_FORMAT, value: TBD_FORMAT, tbd: true },
       { key: K_DURATION, value: TBD_DURATION, tbd: true },
@@ -456,7 +465,7 @@ export const LAB_COURSES: LabCourse[] = [
         note: { en: "Practice", ka: "პრაქტიკა" },
       },
     ],
-    annotation: { en: "watch closely, then again", ka: "დააკვირდი, შემდეგ თავიდან" },
+    annotation: handwritten("watch closely, then again"),
     sheet: [
       { key: K_FORMAT, value: { en: "Online only", ka: "მხოლოდ ონლაინ" }, tbd: false },
       { key: K_DURATION, value: TBD_DURATION, tbd: true },

@@ -234,45 +234,31 @@ test.describe("§04-§06 the Studio Lab card is an object, not a section", () =>
 /* ------------------------------- §07-§10 brandbook decoration, in place --- */
 
 test.describe("§07-§10 the decoration comes from brandbook assets", () => {
-  test("the Studio hero carries three marks, spread and differently sized", async ({ page }) => {
+  /* The Studio cover used to carry three brandbook marks on its right, which
+     had themselves replaced a single oversized bird. Both are gone by
+     decision now: the cover is type on paper. What this asserts is that
+     neither comes back. */
+  test("the Studio cover carries no decorative marks", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoRoute(page, "/studio");
     // the single giant bird is gone
     expect(await page.locator(".dst__swallow").count()).toBe(0);
-
-    const marks = await page.locator(".dst__decor > span").evaluateAll((els) =>
-      els.map((el) => {
-        const r = el.getBoundingClientRect();
-        return {
-          mask: getComputedStyle(el).getPropertyValue("--m").trim(),
-          w: Math.round(r.width),
-          cx: Math.round(r.left + r.width / 2),
-          cy: Math.round(r.top + r.height / 2),
-        };
-      }),
+    // and so is the trio that replaced it
+    expect(await page.locator(".dst__decor").count()).toBe(0);
+    const retired = await page.evaluate(
+      () =>
+        [...document.querySelectorAll("*")].filter((el) => {
+          const cs = getComputedStyle(el);
+          return /bb-twin-birds|bb-flower-stem|bb-flourish/.test(
+            cs.getPropertyValue("--m") + cs.webkitMaskImage + cs.backgroundImage,
+          );
+        }).length,
     );
-    expect(marks.length).toBe(3);
-    // real brandbook files, not generic stand-ins
-    for (const m of marks) expect(m.mask).toMatch(/bb-(twin-birds|flower-stem|flourish)\.webp/);
-    // three clearly different sizes
-    const widths = marks.map((m) => m.w).sort((a, b) => a - b);
-    expect(widths[1] / widths[0], "sizes differ").toBeGreaterThan(1.4);
-    expect(widths[2] / widths[1], "sizes differ").toBeGreaterThan(1.4);
-    // not clustered, and not on a shared axis
-    for (let i = 0; i < marks.length; i += 1) {
-      for (let j = i + 1; j < marks.length; j += 1) {
-        const d = Math.hypot(marks[i].cx - marks[j].cx, marks[i].cy - marks[j].cy);
-        expect(d, `marks ${i} and ${j} sit too close`).toBeGreaterThan(120);
-        expect(Math.abs(marks[i].cx - marks[j].cx), "shared vertical axis").toBeGreaterThan(12);
-        expect(Math.abs(marks[i].cy - marks[j].cy), "shared horizontal axis").toBeGreaterThan(12);
-      }
-    }
+    expect(retired, "a retired cover mark is being drawn again").toBe(0);
   });
 
   test("decoration is hidden from assistive technology", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoRoute(page, "/studio");
-    await expect(page.locator(".dst__decor")).toHaveAttribute("aria-hidden", "true");
     await gotoRoute(page, "/studio-lab");
     // the Lab's decoration is now its botanicals and drawn marks; the bird went
     // with the field-notes page. Both are kept out of the accessibility tree.

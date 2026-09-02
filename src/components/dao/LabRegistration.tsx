@@ -317,7 +317,6 @@ export function LabRegistrationProvider({
             >
               <span className="dlr__grain" aria-hidden="true" />
               <span className="dlr__weave" aria-hidden="true" />
-              <span className="dlr__serpent" aria-hidden="true" />
 
               <div className="dlr__mast">
                 <span className="dlr__mark" id={titleId}>

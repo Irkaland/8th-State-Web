@@ -306,45 +306,20 @@ test.describe("§04 ENTER THE LAB rule", () => {
 /* ------------------------------------------------------------------ §05 --- */
 
 /**
- * SUPERSEDES "§05 the Studio bird is not being upscaled any more".
+ * SUPERSEDES "§05 the Studio bird is not being upscaled any more", and then
+ * "§05 no Studio cover decoration is being upscaled".
  *
- * That test existed because one 900px swallow filled the right half of the
- * Studio cover and was being drawn past its own resolution. The studio has
- * since removed the single giant bird entirely and replaced it with three
- * smaller brandbook marks - so the original defect cannot recur, and the
- * assertion that guarded it has nothing left to measure.
- *
- * The concern it protected is kept, and widened: NONE of the marks that
- * replaced it may be drawn past its own source either.
+ * The first existed because one 900px swallow filled the right half of the
+ * Studio cover and was drawn past its own resolution; the second widened it to
+ * the three brandbook marks that replaced the bird. The cover now carries no
+ * decoration at all - it is type on paper - so there is nothing left on it
+ * that can be drawn past its source. What remains worth asserting is that
+ * neither generation of the decoration returns.
  */
-test("§05 no Studio cover decoration is being upscaled", async ({ page }) => {
+test("§05 the Studio cover carries no decoration to upscale", async ({ page }) => {
   await gotoRoute(page, "/studio");
-  // the single giant bird is gone
   expect(await page.locator(".dst__swallow").count()).toBe(0);
-
-  const marks = await page.evaluate(async () => {
-    const out: { url: string; natural: number; rendered: number }[] = [];
-    for (const el of document.querySelectorAll<HTMLElement>(".dst__decor > span")) {
-      const cs = getComputedStyle(el);
-      const url = (cs.maskImage || cs.webkitMaskImage)
-        .match(/url\(["']?([^"')]+)/)?.[1]
-        ?.replace(/^.*(\/assets)/, "$1");
-      const img = new Image();
-      img.src = url!;
-      await img.decode();
-      out.push({
-        url: url!,
-        natural: img.naturalWidth,
-        rendered: el.getBoundingClientRect().width,
-      });
-    }
-    return out;
-  });
-  expect(marks.length).toBe(3);
-  for (const m of marks) {
-    expect(m.url, "a real brandbook asset").toMatch(/\/assets\/graphics\/bb-/);
-    expect(m.natural, m.url + " is drawn past its source").toBeGreaterThanOrEqual(m.rendered);
-  }
+  expect(await page.locator(".dst__decor, .dst__decor > span").count()).toBe(0);
 });
 
 /* ------------------------------------------------------------ §06 / §07 --- */

@@ -3746,43 +3746,24 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
   mask: url("/assets/graphics/serpent-mark.webp") center / contain no-repeat;
 }
 
+/* THE RED SUN, moved and grown. It used to sit centred over the type at
+   clamp(72px, 8vw, 116px); it is now a third larger and pinned to the upper
+   RIGHT of the field, where it carries the corner instead of hovering above
+   the title. The top is clamped in px as well as vh so that on a short phone
+   it still clears the chrome - the burger and the EN/KA switch occupy roughly
+   the first 70px - and the right offset keeps it inside the frame, which
+   cannot scroll sideways. */
 .dao-eor__sun {
   position: absolute;
-  left: 50%;
-  top: 10vh;
-  width: clamp(72px, 8vw, 116px);
+  right: clamp(20px, 5vw, 96px);
+  top: clamp(96px, 15vh, 168px);
+  width: clamp(96px, 10.5vw, 152px);
   aspect-ratio: 1;
-  transform: translate(-50%, calc((1 - var(--sunA, 0)) * -18px));
+  transform: translateY(calc((1 - var(--sunA, 0)) * -18px));
   opacity: var(--sunA, 0);
   background: var(--dao-red);
   -webkit-mask: url("/assets/graphics/sun.webp") center / contain no-repeat;
   mask: url("/assets/graphics/sun.webp") center / contain no-repeat;
-}
-
-.dao-eor__bird {
-  position: absolute;
-  aspect-ratio: 1;
-  background: var(--dao-ink);
-}
-.dao-eor__bird--l {
-  left: clamp(16px, 8vw, 150px);
-  top: 13vh;
-  width: clamp(52px, 5.5vw, 88px);
-  transform: translate(calc((1 - var(--birdA, 0)) * -14px), calc((1 - var(--birdA, 0)) * 8px))
-    rotate(-8deg);
-  opacity: calc(var(--birdA, 0) * 0.62);
-  -webkit-mask: url("/assets/graphics/swallow.svg") center / contain no-repeat;
-  mask: url("/assets/graphics/swallow.svg") center / contain no-repeat;
-}
-.dao-eor__bird--r {
-  right: clamp(12px, 6vw, 120px);
-  top: 19vh;
-  width: clamp(58px, 6.5vw, 104px);
-  transform: translate(calc((1 - var(--birdA, 0)) * 14px), calc((1 - var(--birdA, 0)) * -6px))
-    rotate(6deg);
-  opacity: calc(var(--birdA, 0) * 0.5);
-  -webkit-mask: url("/assets/graphics/bb-bird-open.webp") center / contain no-repeat;
-  mask: url("/assets/graphics/bb-bird-open.webp") center / contain no-repeat;
 }
 
 .dao-eor__star {
@@ -3929,20 +3910,10 @@ html[data-dao-idle] .dao-chrome:has(:focus-visible) .dao-burger {
     mask-image: none;
   }
   .dao-eor__sun,
-  .dao-eor__bird--l,
-  .dao-eor__bird--r,
   .dao-eor__star {
     opacity: 1;
   }
   .dao-eor__sun {
-    transform: translateX(-50%);
-  }
-  .dao-eor__bird--l {
-    transform: rotate(-8deg);
-    opacity: 0.62;
-  }
-  .dao-eor__bird--r {
-    transform: rotate(6deg);
-    opacity: 0.5;
+    transform: none;
   }
 }

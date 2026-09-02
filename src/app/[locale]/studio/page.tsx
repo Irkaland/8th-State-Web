@@ -7,7 +7,6 @@ import { getMessages } from "@/i18n";
 import { routeAlternates } from "@/lib/route-metadata";
 import { DaoShell } from "@/components/dao/DaoShell";
 import { InView } from "@/components/dao/InView";
-import { StudioDecor } from "@/components/dao/StudioDecor";
 import { up } from "@/lib/cn";
 import { EditorialArrow } from "@/components/dao/EditorialArrow";
 
@@ -39,6 +38,14 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
   const locale = raw as Locale;
   const m = getMessages(locale);
   const R = m.daoRoutes.studio;
+  /* THE LAB'S OWN LABELS STAY ENGLISH.
+     STUDIO LAB, its three-line descriptor and ENTER THE LAB are part of the
+     Lab's printed identity rather than copy to be read, so they are taken from
+     the EN dictionary in both locales. Nothing else on this route is: the
+     statement, the narrative, the scope and every other label still resolve
+     through `m`. */
+  const EN = getMessages("en");
+  const ENR = EN.daoRoutes.studio;
 
   return (
     <DaoShell locale={locale} messages={m} veil="red">
@@ -51,9 +58,8 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
         <div className="dst__paperblock" data-dao-scene="light">
           <div className="dao-grain" aria-hidden="true" />
 
-          {/* manifesto cover - giant swallow behind statement */}
+          {/* the manifesto cover: type on paper, no decorative marks */}
           <InView className="dst__cover" threshold={0.05}>
-            <StudioDecor />
             <header className="dao-cover" style={{ position: "relative", padding: 0 }}>
               <h1 className="dao-cover__title dao-side" style={{ ["--x" as string]: "-60px" }}>
                 {up(m.nav.studio)}
@@ -221,13 +227,13 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
             <div className="dst__labpanel-inner">
               {/* ink text on the olive lab panel (§07 contrast) */}
               <span className="dao-kicker" style={{ color: "rgba(19,18,16,.75)" }}>
-                {up(m.dao.nav.lab)}
+                {up(EN.dao.nav.lab)}
               </span>
               {/* §04: was a block of inline font declarations; it is now a named
                   class so the type lives with the rest of the design system. The
                   three-line structure is preserved by pre-line on the same
                   newline-separated string. */}
-              <span className="dst__lablines">{R.labLines}</span>
+              <span className="dst__lablines">{ENR.labLines}</span>
               {/* §04: .dst__labpanel-inner is a column flex container, so this link
                   was stretching to the full panel width and .dao-cta::after (left:0
                   right:0) drew its rule all the way across the card. alignSelf
@@ -244,7 +250,7 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
                   alignSelf: "flex-start",
                 }}
               >
-                {up(R.enterLab)} <EditorialArrow />
+                {up(ENR.enterLab)} <EditorialArrow />
               </Link>
             </div>
           </div>

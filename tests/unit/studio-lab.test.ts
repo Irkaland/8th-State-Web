@@ -8,6 +8,12 @@ import {
   labCourseBySlug,
   labCourseSlugs,
 } from "@/content/lab-courses";
+import {
+  LAB_CONTACT_METHODS,
+  LAB_LANGUAGES,
+  LAB_REG_COPY,
+  LAB_REG_FIELDS,
+} from "@/content/lab-registration";
 import en from "@/i18n/messages/en";
 import ka from "@/i18n/messages/ka";
 import { readSource } from "./read-source";
@@ -110,11 +116,13 @@ describe("the course system is the four approved courses", () => {
 
   it("localises every course string", () => {
     for (const c of LAB_COURSES) {
+      // `annotation` is deliberately NOT in this list: the handwritten phrase
+      // on a course sheet is art direction and stays English in both locales.
+      // It has its own assertion below.
       for (const [label, v] of [
         ["name", c.name],
         ["blurb", c.blurb],
         ["format", c.format],
-        ["annotation", c.annotation],
       ] as const) {
         expect(v.en.length, `${c.slug} ${label} en`).toBeGreaterThan(0);
         expect(v.ka, `${c.slug} ${label} ka`).toMatch(/[Ⴀ-ჿ]|Production|Design/);
@@ -122,6 +130,51 @@ describe("the course system is the four approved courses", () => {
       for (const list of [c.who, c.learn]) {
         for (const item of list) expect(item.ka).toMatch(/[Ⴀ-ჿ]/);
       }
+    }
+  });
+
+  it("keeps the registration file's own labels English in both locales", () => {
+    // The numbered field names, the two choice rows, the course line, the desk
+    // note, the consent statement and REGISTRATION belong to the Lab's printed
+    // identity rather than to the copy a Georgian reader is served.
+    const fixed = [
+      LAB_REG_COPY.courseEyebrow,
+      LAB_REG_COPY.courseUnset,
+      LAB_REG_COPY.coursePlaceholder,
+      LAB_REG_COPY.fieldCourse,
+      LAB_REG_COPY.fieldFirst,
+      LAB_REG_COPY.fieldLast,
+      LAB_REG_COPY.fieldEmail,
+      LAB_REG_COPY.fieldPhone,
+      LAB_REG_COPY.fieldContact,
+      LAB_REG_COPY.fieldLang,
+      LAB_REG_COPY.fieldNote,
+      LAB_REG_COPY.notePlaceholder,
+      LAB_REG_COPY.consent,
+      LAB_REG_COPY.submit,
+      LAB_REG_COPY.deskNote,
+      LAB_REG_COPY.enrolmentNote,
+      ...LAB_REG_FIELDS,
+      ...LAB_CONTACT_METHODS.map((o) => o.label),
+      ...LAB_LANGUAGES.map((o) => o.label),
+    ];
+    for (const v of fixed) {
+      expect(v.ka, `${v.en} must not be translated`).toBe(v.en);
+      expect(v.ka).not.toMatch(/[Ⴀ-ჿ]/);
+    }
+    // and the strings that are NOT part of that identity still localise
+    for (const v of [LAB_REG_COPY.close, LAB_REG_COPY.sentTitle, LAB_REG_COPY.fileMark]) {
+      expect(v.ka, `${v.en} should still be Georgian`).toMatch(/[Ⴀ-ჿ]/);
+    }
+  });
+
+  it("keeps the handwritten annotation English in both locales", () => {
+    // The phrase is drawn in the studio's hand - "make, look, make again",
+    // "before -> process -> final" - and belongs to the Lab's printed identity
+    // rather than to the copy a Georgian reader is served.
+    for (const c of LAB_COURSES) {
+      expect(c.annotation.en.length, `${c.slug} annotation en`).toBeGreaterThan(0);
+      expect(c.annotation.ka, `${c.slug} annotation must not be translated`).toBe(c.annotation.en);
     }
   });
 });

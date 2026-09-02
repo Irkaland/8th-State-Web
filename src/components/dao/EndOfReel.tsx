@@ -80,7 +80,6 @@ export function EndOfReel({ children }: { children: React.ReactNode }) {
       set("starA", ease(R(0.6, 0.68)).toFixed(3));
       set("snake", ease(R(0.62, 0.8)).toFixed(4));
       set("sunA", ease(R(0.66, 0.74)).toFixed(3));
-      set("birdA", ease(R(0.68, 0.76)).toFixed(3));
     };
 
     /** the studio -> darkness -> CRT ON -> the film returns. No card replay. */
@@ -99,7 +98,6 @@ export function EndOfReel({ children }: { children: React.ReactNode }) {
       set("paperO", leave.toFixed(3));
       set("snake", leave.toFixed(4));
       set("sunA", leave.toFixed(3));
-      set("birdA", leave.toFixed(3));
       set("starA", leave.toFixed(3));
       // darkness 0.2-0.28, then the tube comes alive
       set("glowO", (R(0.26, 0.33) * (1 - R(0.44, 0.52))).toFixed(3));
@@ -217,8 +215,6 @@ export function EndOfReel({ children }: { children: React.ReactNode }) {
           </div>
 
           <span className="dao-eor__sun" aria-hidden="true" />
-          <span className="dao-eor__bird dao-eor__bird--l" aria-hidden="true" />
-          <span className="dao-eor__bird dao-eor__bird--r" aria-hidden="true" />
 
           <span className="dao-eor__star dao-eor__star--a" aria-hidden="true" />
           <span className="dao-eor__star dao-eor__star--b" aria-hidden="true" />

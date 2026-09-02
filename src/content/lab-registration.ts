@@ -41,6 +41,19 @@ import { LAB_COURSES, type LabCourseId } from "./lab-courses";
 /** Copy with no approved Georgian yet. Renders English in both locales, on purpose. */
 const pendingKa = (en: string): LocalizedText => ({ en, ka: en });
 
+/**
+ * ART DIRECTION, NOT COPY.
+ *
+ * The file's own labels - the numbered field names, the two choice rows, the
+ * course line, the desk note, the consent statement and REGISTRATION - are part
+ * of the Lab's printed identity and stay English in every locale by design.
+ * That is a decision about the design, not a missing translation: it is the
+ * difference between this and `pendingKa` above, which marks copy that is
+ * waiting for a translator. Course names, lecturers, the confirmation screen
+ * and every other string in the file localise normally.
+ */
+const fixedEn = (en: string): LocalizedText => ({ en, ka: en });
+
 export type LabContactMethod = "email" | "phone" | "whatsapp";
 export type LabLanguagePref = "georgian" | "english";
 
@@ -57,25 +70,25 @@ export type LabChoice<T extends string> = { id: T; label: LocalizedText };
  * implemented; it is replaced here by the eight the approved file actually asks.
  */
 export const LAB_REG_FIELDS: LocalizedText[] = [
-  { en: "First name", ka: "სახელი" },
-  { en: "Last name", ka: "გვარი" },
-  { en: "Email", ka: "ელფოსტა" },
-  { en: "Phone", ka: "ტელეფონი" },
-  { en: "Preferred contact method", ka: "სასურველი კონტაქტის საშუალება" },
-  { en: "Language preference", ka: "სასურველი ენა" },
-  { en: "Course", ka: "კურსი" },
-  { en: "A short note - optional", ka: "მოკლე შენიშვნა - სურვილისამებრ" },
+  fixedEn("First name"),
+  fixedEn("Last name"),
+  fixedEn("Email"),
+  fixedEn("Phone"),
+  fixedEn("Preferred contact method"),
+  fixedEn("Language preference"),
+  fixedEn("Course"),
+  fixedEn("A short note - optional"),
 ];
 
 export const LAB_CONTACT_METHODS: LabChoice<LabContactMethod>[] = [
-  { id: "email", label: { en: "Email", ka: "ელფოსტა" } },
-  { id: "phone", label: { en: "Phone", ka: "ტელეფონი" } },
-  { id: "whatsapp", label: { en: "WhatsApp", ka: "WhatsApp" } },
+  { id: "email", label: fixedEn("Email") },
+  { id: "phone", label: fixedEn("Phone") },
+  { id: "whatsapp", label: fixedEn("WhatsApp") },
 ];
 
 export const LAB_LANGUAGES: LabChoice<LabLanguagePref>[] = [
-  { id: "georgian", label: { en: "Georgian", ka: "ქართული" } },
-  { id: "english", label: { en: "English", ka: "ინგლისური" } },
+  { id: "georgian", label: fixedEn("Georgian") },
+  { id: "english", label: fixedEn("English") },
 ];
 
 /**
@@ -109,38 +122,35 @@ export const LAB_REG_COPY = {
   /** the dialog's accessible name */
   dialogLabel: { en: "Studio Lab registration file", ka: "სტუდიო ლაბის სარეგისტრაციო ფაილი" },
 
-  courseEyebrow: { en: "Course", ka: "კურსი" },
-  courseUnset: { en: "Select a course", ka: "აირჩიე კურსი" },
-  coursePlaceholder: { en: "- Select a course -", ka: "- აირჩიე კურსი -" },
-  fieldCourse: { en: "00 / Course", ka: "00 / კურსი" },
+  courseEyebrow: fixedEn("Course"),
+  courseUnset: fixedEn("Select a course"),
+  coursePlaceholder: fixedEn("- Select a course -"),
+  fieldCourse: fixedEn("00 / Course"),
   lecturerLabel: { en: "Lecturer", ka: "ლექტორი" },
   formatLabel: { en: "Format", ka: "ფორმატი" },
 
-  fieldFirst: { en: "01 / First name", ka: "01 / სახელი" },
-  fieldLast: { en: "02 / Last name", ka: "02 / გვარი" },
-  fieldEmail: { en: "03 / Email", ka: "03 / ელფოსტა" },
-  fieldPhone: { en: "04 / Phone", ka: "04 / ტელეფონი" },
-  fieldContact: {
-    en: "05 / Preferred contact method",
-    ka: "05 / სასურველი კონტაქტის საშუალება",
-  },
-  fieldLang: { en: "06 / Language preference", ka: "06 / სასურველი ენა" },
-  fieldNote: { en: "07 / A short note - optional", ka: "07 / მოკლე შენიშვნა - სურვილისამებრ" },
+  fieldFirst: fixedEn("01 / First name"),
+  fieldLast: fixedEn("02 / Last name"),
+  fieldEmail: fixedEn("03 / Email"),
+  fieldPhone: fixedEn("04 / Phone"),
+  fieldContact: fixedEn("05 / Preferred contact method"),
+  fieldLang: fixedEn("06 / Language preference"),
+  fieldNote: fixedEn("07 / A short note - optional"),
 
-  notePlaceholder: pendingKa("Tell us briefly why you want to join this course."),
+  notePlaceholder: fixedEn("Tell us briefly why you want to join this course."),
 
-  /** §J: the consent statement. Legal weight - English until a translator signs it off. */
-  consent: pendingKa(
+  /** §J: the consent statement. Legal weight, and part of the printed file. */
+  consent: fixedEn(
     "I agree that 8th State Production may use the information provided here to contact me regarding this Studio Lab registration.",
   ),
-  submit: { en: "Registration", ka: "რეგისტრაცია" },
+  submit: fixedEn("Registration"),
 
   errMissing: pendingKa("Please complete all required fields (*) and the consent mark."),
   errSend: pendingKa(
     "We couldn't send your registration. Your information is still here - please try again.",
   ),
 
-  deskNote: pendingKa(
+  deskNote: fixedEn(
     "Your file goes directly to the Studio Lab desk. Registration received is not enrolment - the Lab confirms personally.",
   ),
 
@@ -153,7 +163,7 @@ export const LAB_REG_COPY = {
   sentBack: { en: "Back to Studio Lab", ka: "დაბრუნება სტუდიო ლაბში" },
 
   /** section 10's own note, replacing the older payment line */
-  enrolmentNote: pendingKa(
+  enrolmentNote: fixedEn(
     "Registration received is not enrolment - the Lab confirms every place personally.",
   ),
   /** the label above the printed field list in section 10 */

@@ -1479,64 +1479,11 @@ html:has(.dsc) {
   padding: 26px var(--dao-gutter) 120px;
   overflow: visible;
 }
-/* §07/§08: the single giant bird is gone.
-   One 900px silhouette filling the right half of the cover read as a backdrop
-   rather than as artwork placed on a page, and at that size it was also being
-   drawn well past its own resolution. Three brandbook marks take its place - a
-   flowering stem, a twin-bird ornament and a curled flourish - at three clearly
-   different sizes, spaced apart, and deliberately off any shared axis. Each one
-   sits close to its native size, so the print survives.
-   The midground parallax is unchanged: the group moves as one object at 15% of
-   scroll, exactly as the bird did, and is static under reduced motion. */
-.dst__decor {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  will-change: transform;
-}
-.dst__decor span {
-  position: absolute;
-  display: block;
-}
-/* the largest of the three, high on the right */
-.dst__decor--birds {
-  right: clamp(18px, 7vw, 132px);
-  top: clamp(24px, 6vw, 92px);
-  width: clamp(120px, 17vw, 250px);
-  aspect-ratio: 246 / 247;
-  background: rgba(19, 18, 16, 0.13);
-  --m: url("/assets/graphics/bb-twin-birds.webp");
-}
-/* mid-sized, dropped low and pulled well inboard - no shared edge with the
-   ornament above it */
-.dst__decor--stem {
-  right: clamp(96px, 26vw, 430px);
-  bottom: clamp(30px, 9vw, 150px);
-  width: clamp(56px, 8.4vw, 128px);
-  aspect-ratio: 167 / 280;
-  background: rgba(19, 18, 16, 0.115);
-  --m: url("/assets/graphics/bb-flower-stem.webp");
-}
-/* the smallest mark, near the right edge and between the other two in height,
-   so the three read as a composition rather than a row or a column */
-.dst__decor--flourish {
-  right: clamp(10px, 2.6vw, 44px);
-  top: 54%;
-  width: clamp(14px, 2vw, 32px);
-  aspect-ratio: 48 / 223;
-  background: rgba(19, 18, 16, 0.16);
-  --m: url("/assets/graphics/bb-flourish.webp");
-}
-/* below 720 the cover is a single narrow column: the stem would land on the
-   statement, so only the two marks that sit clear of the type are kept */
-@media (max-width: 720px) {
-  .dst__decor--stem {
-    display: none;
-  }
-  .dst__decor--birds {
-    width: clamp(84px, 22vw, 120px);
-  }
-}
+/* The cover carries no decorative marks. The pale brandbook trio that used to
+   sit on its right - a twin-bird ornament, a flowering stem and a curled
+   flourish, drawn by StudioDecor with a 15%-of-scroll parallax - was removed
+   together with the component, its rules and its 720px branch. The cover is
+   type on paper. */
 /* the studio manifesto statement - medium editorial copy, so strong Optika
    rather than the display face (§02) */
 .dst__statement {
@@ -2220,8 +2167,8 @@ html:has(.dsc) {
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.32em;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgb(19 18 16 / 0.65);
+  /* no rule under it: the straight 1px line that used to sit here read as a
+     stray divider under the CTA rather than as part of the label */
   color: var(--dao-ink);
   transition: gap 240ms ease;
 }
@@ -2436,12 +2383,18 @@ html:has(.dsc) {
   text-wrap: pretty;
 }
 
+/* the handwritten annotation. Same hand, same colour, same texture, same
+   rotation - it just sits lower. It used to be 34px under the statement, tight
+   against the last line of type; the offset is now a proportion of the
+   viewport, so the note stands in the middle of the paper between the
+   statement above it and the content below rather than hanging off the
+   paragraph. */
 .dsl__hand {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  margin-top: 34px;
+  margin-top: clamp(56px, 9vh, 120px);
   margin-left: clamp(0px, 4vw, 60px);
   transform: rotate(-6deg);
 }
@@ -3209,8 +3162,7 @@ html:has(.dsc) {
 
 /* the same stock every other Lab surface is printed on */
 .dlr__grain,
-.dlr__weave,
-.dlr__serpent {
+.dlr__weave {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -3228,15 +3180,6 @@ html:has(.dsc) {
   background-size: 512px;
   opacity: 0.12;
   mix-blend-mode: overlay;
-}
-
-.dlr__serpent {
-  inset: auto auto -30px clamp(-60px, -3vw, -20px);
-  width: clamp(260px, 30vw, 420px);
-  aspect-ratio: 1;
-  background: url("/assets/graphics/serpent-long.webp") no-repeat left bottom / contain;
-  opacity: 0.14;
-  transform: rotate(-6deg);
 }
 
 .dlr__mast {
@@ -3479,7 +3422,8 @@ html:has(.dsc) {
   justify-content: space-between;
   gap: 18px 28px;
   flex-wrap: wrap;
-  border-top: 1px solid rgb(19 18 16 / 0.3);
+  /* the standalone divider above the consent line is gone; the space it
+     occupied stays, so the row keeps its place in the composition */
   padding-top: clamp(14px, 2vh, 18px);
 }
 
@@ -4151,8 +4095,12 @@ html:has(.dsc) {
     margin-top: 22px;
   }
 
+  /* stacked layout: a clear band of paper between the last line of the
+     statement and the hand, without the desktop offset that would leave the
+     note stranded in the middle of a phone screen */
   .dsl__hand {
     margin-left: 0;
+    margin-top: clamp(44px, 7vh, 76px);
   }
 }
 

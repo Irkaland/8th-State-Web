@@ -67,6 +67,14 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
   const locale = raw as Locale;
   const m = getMessages(locale);
   const R = m.daoRoutes.lab;
+  /* THE LAB'S PRINTED IDENTITY STAYS ENGLISH.
+     The masthead, the STUDIO LAB title and the handwritten annotations are
+     art direction rather than copy - the same decision the file labels carry
+     in lab-registration.ts - so they are taken from the EN dictionary in both
+     locales. Everything else on this route still resolves through `R`: the
+     lede, the section labels, the statements, the course text and the whole
+     programme remain Georgian on /ka. */
+  const EN = getMessages("en").daoRoutes.lab;
 
   const photography = labCourseBySlug("photography")!;
   const portfolio = labCourseBySlug("portfolio")!;
@@ -88,7 +96,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
             <LabStain style={{ left: "30%", top: "-160px", width: "820px", opacity: 0.045 }} />
 
             <div className="dsl__mast">
-              <span>{up(R.mastheadLeft)}</span>
+              <span>{up(EN.mastheadLeft)}</span>
               <span className="dsl__mastmid">{up(R.mastheadMid)}</span>
               <span className="dsl__mastr">
                 {up(R.city)}
@@ -104,8 +112,8 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
             <div className="dsl__herobody">
               <div className="dsl__lede">
                 <h1 className="dsl__title">
-                  <span>{up(R.titleLine1)}</span>
-                  <span>{up(R.titleLine2)}</span>
+                  <span>{up(EN.titleLine1)}</span>
+                  <span>{up(EN.titleLine2)}</span>
                 </h1>
                 <p className="dsl__copy">{R.copy}</p>
                 <div className="dsl__heroctas">
@@ -160,9 +168,9 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                 <span className="dsl__hand" aria-hidden="true">
                   <LabCross />
                   <span className="dsl__handtext">
-                    <span>{R.s02Annotation1}</span>
-                    <span>{R.s02Annotation2}</span>
-                    <span>{R.s02Annotation3}</span>
+                    <span>{EN.s02Annotation1}</span>
+                    <span>{EN.s02Annotation2}</span>
+                    <span>{EN.s02Annotation3}</span>
                   </span>
                 </span>
               </div>
@@ -367,7 +375,7 @@ export default async function StudioLabPage({ params }: { params: Promise<{ loca
                   </div>
                 ))}
                 <span className="dsl__folionote" aria-hidden="true">
-                  {R.portfolioAnnotation}
+                  {EN.portfolioAnnotation}
                 </span>
               </div>
             </div>
